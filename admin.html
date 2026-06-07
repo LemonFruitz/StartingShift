@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>FMS Light — Admin CCR</title>
+<link rel="stylesheet" href="style.css"/>
+<style>
+.uc{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-md);margin-bottom:8px;overflow:hidden;box-shadow:var(--shadow-sm);transition:box-shadow .2s}
+.uc:hover{box-shadow:var(--shadow-md)}
+.uc.st-Ready{border-left:3px solid var(--success)}.uc.st-Breakdown{border-left:3px solid var(--danger)}.uc.st-Maintenance{border-left:3px solid var(--warning)}
+.uc-top{padding:12px 14px;display:flex;justify-content:space-between;align-items:center}
+.uc-id{font-size:.92rem;font-weight:800;color:var(--text)}.uc-type{font-size:.68rem;color:var(--text-muted)}
+.uc-btns{display:flex;gap:4px}
+.sb{padding:5px 9px;border-radius:6px;font-size:.6rem;font-weight:700;cursor:pointer;border:1.5px solid;font-family:var(--font);min-height:30px;transition:all .15s}
+.sb:active{transform:scale(.95)}.sb:disabled{opacity:.25;cursor:not-allowed}
+.sb.r{border-color:var(--success);color:var(--success);background:transparent}.sb.r.c{background:var(--success);color:white;border-color:var(--success)}
+.sb.b{border-color:var(--danger);color:var(--danger);background:transparent}.sb.b.c{background:var(--danger);color:white;border-color:var(--danger)}
+.sb.m{border-color:var(--warning);color:var(--warning);background:transparent}.sb.m.c{background:var(--warning);color:white;border-color:var(--warning)}
+.uc-detail{padding:0 14px 10px;font-size:.7rem;color:var(--text-muted);line-height:1.6}
+.uc-notes{background:var(--danger-bg);border-radius:6px;padding:6px 10px;margin-top:4px;font-size:.7rem;color:var(--danger);cursor:pointer}
+.dr{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-md);margin-bottom:8px;padding:14px;box-shadow:var(--shadow-sm)}
+.dr-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.dr-name{font-size:.9rem;font-weight:800;color:var(--text)}.dr-time{font-size:.62rem;color:var(--text-muted)}
+.dr-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:6px}
+.dr-cell{background:var(--input-bg);border:1px solid var(--border);border-radius:6px;padding:6px 8px;text-align:center}
+.dr-cell-label{font-size:.5rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em}
+.dr-cell-val{font-size:.78rem;font-weight:700;margin-top:2px}
+.dr-hm{display:flex;gap:6px;align-items:center;margin-top:6px}
+.dr-hm input{padding:7px;background:var(--input-bg);border:1px solid var(--input-border);border-radius:6px;color:var(--text);font-family:var(--font);font-size:.82rem;font-weight:700;width:90px;text-align:center;outline:none}
+.dr-hm button{padding:7px 12px;border:none;border-radius:6px;background:var(--grad);color:white;font-family:var(--font);font-size:.7rem;font-weight:700;cursor:pointer;white-space:nowrap}
+.shift-toggle{display:flex;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-md);padding:3px;margin-bottom:10px;box-shadow:var(--shadow-sm)}
+.shift-btn{flex:1;padding:8px;text-align:center;font-size:.7rem;font-weight:700;color:var(--text-muted);cursor:pointer;border:none;background:none;border-radius:var(--radius-sm);transition:all .2s}
+.shift-btn.active{background:var(--grad);color:white;box-shadow:var(--shadow-btn)}
+</style>
+</head>
+<body>
+<div class="app app-wide">
+<div class="topnav">
+  <div class="topnav-left"><img class="topnav-logo" src="logo-hte.png" alt="HTE"/><div class="topnav-text"><div class="tn-title">FMS Light</div><div class="tn-sub">Super Admin CCR</div></div></div>
+  <div class="topnav-actions"><button class="topnav-btn" style="color:var(--success);border-color:rgba(16,185,129,.3)" onclick="downloadAll()">📥 Download</button><button class="topnav-btn" onclick="doLogout()">Logout</button></div>
+</div>
+<div class="stats-grid">
+  <div class="stat-card"><div class="stat-val text-success" id="stReady">—</div><div class="stat-label">Unit Ready</div></div>
+  <div class="stat-card"><div class="stat-val text-primary" id="stDrivers">—</div><div class="stat-label">Driver Aktif</div></div>
+  <div class="stat-card"><div class="stat-val text-danger" id="stBD">—</div><div class="stat-label">BD / MT</div></div>
+</div>
+<div class="tabs">
+  <button class="tab active" id="t1" onclick="switchTab('units')">🚛 Unit</button>
+  <button class="tab" id="t2" onclick="switchTab('drivers')">👤 Driver Monitor</button>
+</div>
+<div class="tab-panel active" id="pUnits">
+  <input class="search-input" type="text" id="uSearch" placeholder="Cari unit..." oninput="renderUnits()"/>
+  <div class="pills" id="uPills"></div>
+  <div id="uList"></div>
+</div>
+<div class="tab-panel" id="pDrivers">
+  <div class="shift-toggle">
+    <button class="shift-btn active" id="shAll" onclick="setShift('')">Semua</button>
+    <button class="shift-btn" id="sh1" onclick="setShift('1')">Shift 1 (07-19)</button>
+    <button class="shift-btn" id="sh2" onclick="setShift('2')">Shift 2 (19-07)</button>
+  </div>
+  <input class="search-input" type="text" id="dSearch" placeholder="Cari driver..." oninput="renderDrivers()"/>
+  <div id="dList" class="empty">⏳ Memuat...</div>
+</div>
+</div>
+
+<div class="modal-overlay" id="modalBD"><div class="modal">
+  <div class="modal-head" id="mdTitle">🔴 Keterangan Breakdown</div>
+  <div class="modal-body">
+    <div class="mf"><label>Deskripsi</label><textarea id="mdDesc" placeholder="Jelaskan kerusakan..."></textarea></div>
+    <div class="mf"><label>Lokasi Unit</label><input type="text" id="mdLoc" placeholder="Contoh: Pit Cendana Ext"/></div>
+  </div>
+  <div class="modal-footer"><button class="mbtn-cancel" onclick="closeModal()">Batal</button><button class="mbtn-ok" id="mdOk" onclick="confirmBD()">Konfirmasi</button></div>
+</div></div>
+<div class="modal-overlay" id="modalEdit"><div class="modal">
+  <div class="modal-head">✏️ Edit Keterangan</div>
+  <div class="modal-body"><div class="mf"><label>Keterangan</label><textarea id="edNotes"></textarea></div></div>
+  <div class="modal-footer"><button class="mbtn-cancel" onclick="closeEdit()">Batal</button><button class="mbtn-ok" onclick="saveNotes()">💾 Simpan</button></div>
+</div></div>
+
+<script>
+const API='https://fms-light-backend-production.up.railway.app/api/v1',TOKEN=localStorage.getItem('fms_token'),SESSION=JSON.parse(localStorage.getItem('fms_session')||'null');
+if(!SESSION||!TOKEN)window.location.href='index.html';
+let allUnits=[],driverMap={},allReports=[],uFilter='ALL',curShift='',pendingUnit='',pendingStatus='',editingUnit='';
+document.addEventListener('DOMContentLoaded',()=>{loadAll()});
+async function loadAll(){await Promise.all([loadUnits(),loadActiveDrivers(),loadStats()]);updateUnitStats();buildPills();renderUnits();}
+function switchTab(t){document.getElementById('pUnits').classList.toggle('active',t==='units');document.getElementById('pDrivers').classList.toggle('active',t==='drivers');document.getElementById('t1').classList.toggle('active',t==='units');document.getElementById('t2').classList.toggle('active',t==='drivers');if(t==='drivers')loadReports();}
+async function loadStats(){try{const r=await fetch(`${API}/supervisor/dashboard-stats`,{headers:{'Authorization':'Bearer '+TOKEN}});const d=await r.json();if(d.success)document.getElementById('stDrivers').textContent=d.data.active_drivers;}catch{}}
+function updateUnitStats(){document.getElementById('stReady').textContent=allUnits.filter(u=>u.status_unit==='Ready').length;document.getElementById('stBD').textContent=allUnits.filter(u=>u.status_unit!=='Ready').length;}
+async function loadUnits(){try{const r=await fetch(`${API}/vehicles`,{headers:{'Authorization':'Bearer '+TOKEN}});const d=await r.json();if(d.success)allUnits=d.data;}catch{}}
+async function loadActiveDrivers(){try{const r=await fetch(`${API}/vehicles/active-drivers`,{headers:{'Authorization':'Bearer '+TOKEN}});const d=await r.json();if(d.success){driverMap={};d.data.forEach(x=>{driverMap[x.unit_id]=x;});}}catch{}}
+function buildPills(){const cls=[...new Set(allUnits.map(u=>u.equipment_class||'Other'))].sort();let h=`<button class="pill ${uFilter==='ALL'?'active':''}" onclick="setUFilter('ALL')">Semua (${allUnits.length})</button>`;cls.forEach(c=>{const n=allUnits.filter(u=>(u.equipment_class||'Other')===c).length;h+=`<button class="pill ${uFilter===c?'active':''}" onclick="setUFilter('${c}')">${c} (${n})</button>`;});document.getElementById('uPills').innerHTML=h;}
+function setUFilter(f){uFilter=f;buildPills();renderUnits();}
+function renderUnits(){const q=(document.getElementById('uSearch').value||'').toUpperCase();let list=allUnits;if(uFilter!=='ALL')list=list.filter(u=>(u.equipment_class||'Other')===uFilter);if(q)list=list.filter(u=>u.unit_id.toUpperCase().includes(q)||(u.vehicle_type||'').toUpperCase().includes(q));if(!list.length){document.getElementById('uList').innerHTML='<div class="empty">Tidak ada unit.</div>';return;}
+document.getElementById('uList').innerHTML=list.map(u=>{const s=u.status_unit,drv=driverMap[u.unit_id];let det='';if(drv)det+=`<div>👤 <span style="color:var(--success);font-weight:600">${drv.driver_name}</span> (${drv.driver_id})</div>`;if(u.notes&&s!=='Ready')det+=`<div class="uc-notes" onclick="openEdit('${u.unit_id}')">📝 ${u.notes} <span style="opacity:.4">(edit)</span></div>`;return `<div class="uc st-${s}"><div class="uc-top"><div style="flex:1;min-width:0"><div class="uc-id">${u.unit_id}</div><div class="uc-type">${u.vehicle_type||'—'}</div></div><div class="uc-btns"><button class="sb r ${s==='Ready'?'c':''}" onclick="clickSt('${u.unit_id}','Ready')" ${s==='Ready'?'disabled':''}>✅</button><button class="sb b ${s==='Breakdown'?'c':''}" onclick="clickSt('${u.unit_id}','Breakdown')" ${s==='Breakdown'?'disabled':''}>BD</button><button class="sb m ${s==='Maintenance'?'c':''}" onclick="clickSt('${u.unit_id}','Maintenance')" ${s==='Maintenance'?'disabled':''}>MT</button></div></div>${det?`<div class="uc-detail">${det}</div>`:''}</div>`;}).join('');}
+function clickSt(uid,st){if(st==='Ready'){setSt(uid,'Ready',null);return;}pendingUnit=uid;pendingStatus=st;document.getElementById('mdTitle').textContent=st==='Breakdown'?'🔴 Keterangan Breakdown':'🟡 Keterangan Maintenance';document.getElementById('mdDesc').value='';document.getElementById('mdLoc').value='';document.getElementById('modalBD').classList.add('show');}
+function closeModal(){document.getElementById('modalBD').classList.remove('show');}
+function confirmBD(){const d=document.getElementById('mdDesc').value.trim(),l=document.getElementById('mdLoc').value.trim();const notes=[d,l?'Lokasi: '+l:''].filter(Boolean).join(' | ');closeModal();setSt(pendingUnit,pendingStatus,notes);}
+async function setSt(uid,st,notes){try{const body={status_unit:st,changed_by:SESSION.id};if(notes)body.notes=notes;const r=await fetch(`${API}/vehicles/${uid}/status`,{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},body:JSON.stringify(body)});const d=await r.json();if(d.success){const u=allUnits.find(x=>x.unit_id===uid);if(u){u.status_unit=st;u.notes=st==='Ready'?null:(notes||u.notes);}updateUnitStats();renderUnits();loadStats();}}catch{alert('Gagal.');}}
+function openEdit(uid){editingUnit=uid;const u=allUnits.find(x=>x.unit_id===uid);document.getElementById('edNotes').value=u?.notes||'';document.getElementById('modalEdit').classList.add('show');}
+function closeEdit(){document.getElementById('modalEdit').classList.remove('show');}
+async function saveNotes(){const notes=document.getElementById('edNotes').value.trim();try{await fetch(`${API}/vehicles/${editingUnit}/notes`,{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},body:JSON.stringify({notes})});const u=allUnits.find(x=>x.unit_id===editingUnit);if(u)u.notes=notes;closeEdit();renderUnits();}catch{alert('Gagal.');}}
+function setShift(s){curShift=s;['shAll','sh1','sh2'].forEach(id=>document.getElementById(id).classList.remove('active'));document.getElementById(s===''?'shAll':s==='1'?'sh1':'sh2').classList.add('active');loadReports();}
+async function loadReports(){const c=document.getElementById('dList');c.innerHTML='<div class="empty">⏳ Memuat...</div>';const today=new Date().toISOString().slice(0,10);let url=`${API}/supervisor/shift-reports?date=${today}`;if(curShift)url+=`&shift=${curShift}`;try{const r=await fetch(url,{headers:{'Authorization':'Bearer '+TOKEN}});const d=await r.json();if(!d.success||!d.data.reports.length){c.innerHTML='<div class="empty">Belum ada laporan.</div>';allReports=[];return;}allReports=d.data.reports;renderDrivers();}catch{c.innerHTML='<div class="empty">⛔ Gagal memuat.</div>';}}
+function renderDrivers(){const q=(document.getElementById('dSearch').value||'').toUpperCase();let list=allReports;if(q)list=list.filter(r=>(r.driver_name||'').toUpperCase().includes(q)||r.driver_id.toUpperCase().includes(q)||r.unit_id.toUpperCase().includes(q));if(!list.length){document.getElementById('dList').innerHTML='<div class="empty">Tidak ada data.</div>';return;}
+document.getElementById('dList').innerHTML=list.map(r=>{const t=new Date(r.timestamp_filled).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});const oc=r.overall_status==='Ready to Work'?'success':'danger';const fc=r.fit_status==='Fit'?'success':'danger';const pc=r.p2h_status==='Passed'?'success':'danger';const vc=r.validation_status==='Approved'?'success':r.validation_status==='Rejected'?'danger':'warning';let hm='';if(r.odometer_end){const diff=r.odometer_end-r.odometer_entered;hm=`<div style="font-size:.7rem;color:var(--text-muted);margin-top:4px">HM: ${r.odometer_entered} → ${r.odometer_end} <span style="color:var(--success);font-weight:700">(+${diff})</span></div>`;}else{hm=`<div class="dr-hm"><span style="font-size:.62rem;color:var(--text-muted)">HM ${r.odometer_entered} →</span><input type="number" id="hm-${r.report_id}" placeholder="Akhir" inputmode="numeric"/><button onclick="submitHM('${r.report_id}')">Simpan</button></div>`;}
+return `<div class="dr"><div class="dr-head"><div><div class="dr-name">${r.driver_name||r.driver_id}</div><div class="dr-time">${r.driver_id} · ${r.unit_id} · ${t}</div></div><span class="badge badge-${oc}">${r.overall_status==='Ready to Work'?'✅ RTW':'⛔ '+r.overall_status}</span></div><div class="dr-grid"><div class="dr-cell"><div class="dr-cell-label">FTW</div><div class="dr-cell-val" style="color:var(--${fc})">${r.fit_status}</div></div><div class="dr-cell"><div class="dr-cell-label">P2H</div><div class="dr-cell-val" style="color:var(--${pc})">${r.p2h_status}</div></div><div class="dr-cell"><div class="dr-cell-label">Validasi</div><div class="dr-cell-val" style="color:var(--${vc})">${r.validation_status||'Pending'}</div></div></div>${hm}</div>`;}).join('');}
+async function submitHM(rid){const v=parseInt(document.getElementById('hm-'+rid).value);if(!v||v<=0){alert('Masukkan HM akhir.');return;}try{const r=await fetch(`${API}/supervisor/shift-reports/${rid}/end-shift`,{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},body:JSON.stringify({odometer_end:v})});const d=await r.json();if(d.success)loadReports();else alert(d.message||'Gagal');}catch{alert('Gagal.');}}
+async function downloadAll(){try{let c1='Unit ID,Tipe,Kelas,Status,Keterangan\n';allUnits.forEach(u=>{c1+=`${u.unit_id},"${u.vehicle_type||''}",${u.equipment_class||''},${u.status_unit},"${(u.notes||'').replace(/"/g,'""')}"\n`;});const today=new Date().toISOString().slice(0,10);const sr=await fetch(`${API}/supervisor/shift-reports?date=${today}&limit=500`,{headers:{'Authorization':'Bearer '+TOKEN}});const sd=await sr.json();let c2='Driver ID,Nama,Unit,Tipe,FTW,P2H,Status,HM Awal,HM Akhir,Selisih,Waktu,Validasi\n';if(sd.success)sd.data.reports.forEach(r=>{const diff=r.odometer_end?(r.odometer_end-r.odometer_entered):'';c2+=`${r.driver_id},"${r.driver_name||''}",${r.unit_id},"${r.vehicle_type||''}",${r.fit_status},${r.p2h_status},"${r.overall_status}",${r.odometer_entered||''},${r.odometer_end||''},${diff},"${r.timestamp_filled?new Date(r.timestamp_filled).toLocaleString('id-ID'):''}",${r.validation_status||'Pending'}\n`;});const lr=await fetch(`${API}/vehicles/status-log?limit=1000`,{headers:{'Authorization':'Bearer '+TOKEN}});const ld=await lr.json();let c3='Unit,Dari,Ke,Keterangan,Diubah Oleh,Mulai,Selesai,Durasi (menit)\n';if(ld.success)ld.data.forEach(l=>{c3+=`${l.unit_id},${l.status_from},${l.status_to},"${(l.notes||'').replace(/"/g,'""')}",${l.changed_by_name||l.changed_by||''},"${l.time_start?new Date(l.time_start).toLocaleString('id-ID'):''}","${l.time_end?new Date(l.time_end).toLocaleString('id-ID'):''}",${l.duration_minutes||''}\n`;});const B='\uFEFF';dl(B+c1,`Unit_Status_${today}.csv`);setTimeout(()=>dl(B+c2,`Shift_Report_${today}.csv`),500);setTimeout(()=>dl(B+c3,`Status_Log_${today}.csv`),1000);}catch{alert('Gagal.');}}
+function dl(c,f){const b=new Blob([c],{type:'text/csv;charset=utf-8;'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=f;document.body.appendChild(a);a.click();document.body.removeChild(a);}
+function doLogout(){localStorage.removeItem('fms_token');localStorage.removeItem('fms_session');window.location.href='index.html';}
+</script>
+</body>
+</html>

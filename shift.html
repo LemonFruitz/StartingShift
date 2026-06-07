@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>FMS Light — Shift Starter</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+:root{
+  --bg:#F0F4F8;--surface:#F8FAFC;--card:#FFFFFF;--border:#E2E8F0;
+  --accent:#00C853;--accent2:#00B0FF;--text:#1E293B;--muted:#64748B;
+  --success:#10B981;--danger:#EF4444;--warning:#F59E0B;--input-bg:#F8FAFC;
+  --shadow:0 4px 12px rgba(0,0,0,.07);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100dvh;background:var(--bg);font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);padding:0;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,200,83,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,200,83,.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
+
+.app{max-width:480px;margin:0 auto;padding:12px 16px 24px;position:relative;z-index:1}
+
+/* Brand mini */
+.brand-mini{text-align:center;padding:10px 0 6px;font-family:'Plus Jakarta Sans',sans-serif;font-size:1rem;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+
+/* Progress */
+.progress{display:flex;gap:4px;margin-bottom:16px}
+.prog-seg{flex:1;height:4px;border-radius:2px;background:var(--border);transition:background .4s}
+.prog-seg.done{background:var(--success)}
+.prog-seg.active{background:var(--accent)}
+
+/* Step info */
+.step-info{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.step-num{font-size:.68rem;color:var(--muted);letter-spacing:.12em;text-transform:uppercase}
+.step-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:1.35rem;font-weight:900;letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px}
+.step-desc{font-size:.8rem;color:var(--muted);margin-bottom:16px}
+
+/* Panels */
+.step-panel{display:none;animation:fadeUp .35s ease}
+.step-panel.active{display:block}
+
+/* Cards */
+.card-s{background:var(--card);border:1px solid var(--border);border-radius:6px;margin-bottom:12px;overflow:hidden}
+.card-s-head{padding:12px 14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)}
+.card-s-body{padding:14px}
+
+/* FTW question */
+.ftw-q{background:var(--card);border:1px solid var(--border);border-radius:6px;margin-bottom:10px;padding:14px;transition:border-color .3s}
+.ftw-q.answered-ok{border-color:var(--success)}
+.ftw-q.answered-bad{border-color:var(--danger)}
+.ftw-q .q-badge{display:inline-block;font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:2px 6px;border-radius:2px;margin-bottom:6px}
+.q-badge.critical{background:rgba(239,68,68,.15);color:var(--danger)}
+.ftw-q .q-text{font-size:.88rem;line-height:1.5;margin-bottom:10px}
+.ftw-q .q-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.q-btn{padding:12px;border-radius:4px;border:1.5px solid var(--border);background:var(--input-bg);color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;font-size:.95rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:all .2s;min-height:48px}
+.q-btn:active{transform:scale(.97)}
+.q-btn.selected-ok{border-color:var(--success);background:rgba(16,185,129,.12);color:var(--success)}
+.q-btn.selected-bad{border-color:var(--danger);background:rgba(239,68,68,.12);color:var(--danger)}
+
+/* P2H item */
+.p2h-item{background:var(--card);border:1px solid var(--border);border-radius:6px;margin-bottom:10px;padding:14px;transition:border-color .3s}
+.p2h-item.checked-ok{border-color:var(--success)}
+.p2h-item.checked-fail{border-color:var(--danger)}
+.p2h-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:4px}
+.p2h-name{font-family:'Plus Jakarta Sans',sans-serif;font-size:1rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.p2h-class{font-size:.58rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:2px 6px;border-radius:2px;white-space:nowrap;margin-top:2px}
+.p2h-class.crit{background:rgba(239,68,68,.15);color:var(--danger)}
+.p2h-class.non-crit{background:rgba(0,200,83,.12);color:var(--accent)}
+.p2h-type{font-size:.75rem;color:var(--muted);margin-bottom:10px}
+.bd-detail{display:none;margin-top:10px;padding:10px 12px;background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);border-radius:4px}
+.bd-detail.show{display:block}
+.bd-detail .bd-title{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--danger);margin-bottom:8px}
+.bd-field{margin-bottom:8px}
+.bd-field label{display:block;font-size:.68rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.bd-field input,.bd-field textarea,.bd-field select{width:100%;padding:9px 10px;background:var(--input-bg);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:.82rem;outline:none}
+.bd-field input:focus,.bd-field textarea:focus,.bd-field select:focus{border-color:var(--accent)}
+.bd-field textarea{resize:none;min-height:60px}
+
+/* Odometer */
+.odo-input{width:100%;padding:16px;background:var(--input-bg);border:1.5px solid var(--border);border-radius:4px;color:var(--accent);font-family:'Plus Jakarta Sans',sans-serif;font-size:2rem;font-weight:900;text-align:center;letter-spacing:.08em;outline:none}
+.odo-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,200,83,.12)}
+.odo-input.err{border-color:var(--danger)}
+/* Photo */
+.photo-area{border:2px dashed var(--border);border-radius:6px;padding:24px;text-align:center;cursor:pointer;transition:border-color .3s;margin-bottom:12px;position:relative;overflow:hidden;min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
+.photo-area:active{border-color:var(--accent)}
+.photo-area.has-photo{border-color:var(--success);padding:0}
+.photo-area .ph-ico{font-size:2rem}
+.photo-area .ph-text{font-size:.8rem;color:var(--muted)}
+.photo-area img{width:100%;max-height:240px;object-fit:contain;display:none;border-radius:4px}
+.photo-area.has-photo img{display:block}
+.photo-area.has-photo .ph-ico,.photo-area.has-photo .ph-text{display:none}
+.photo-area input{position:absolute;inset:0;opacity:0;cursor:pointer}
+
+/* Signature */
+.sig-canvas-wrap{border:1.5px solid var(--border);border-radius:6px;background:var(--input-bg);overflow:hidden;touch-action:none;position:relative}
+.sig-canvas-wrap canvas{display:block;width:100%;height:180px}
+.sig-hint{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:.85rem;color:var(--muted);opacity:.5;pointer-events:none;transition:opacity .3s}
+.sig-canvas-wrap.has-sig .sig-hint{opacity:0}
+.sig-actions{display:flex;gap:8px;margin-top:8px}
+.sig-clear{padding:8px 14px;border:1px solid var(--border);border-radius:4px;background:transparent;color:var(--muted);font-size:.78rem;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif}
+
+/* Buttons */
+.btn-row{display:flex;gap:10px;margin-top:16px}
+.btn{flex:1;padding:15px;border-radius:4px;font-family:'Plus Jakarta Sans',sans-serif;font-size:1.05rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;min-height:52px;transition:all .2s;border:none}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-next{background:linear-gradient(135deg,#00C853,#00B0FF);color:white}
+.btn-back{background:transparent;border:1.5px solid var(--border);color:var(--muted)}
+.btn-submit{background:linear-gradient(135deg,#10B981,#059669);color:white}
+.btn-danger{background:linear-gradient(135deg,#e74c3c,#c0392b);color:white}
+.btn-full{width:100%}
+.btn .spinner{display:none;width:18px;height:18px;border:2.5px solid rgba(0,0,0,.2);border-top-color:white;border-radius:50%;animation:spin .6s linear infinite;margin:0 auto}
+.btn.loading .btn-text{display:none}
+.btn.loading .spinner{display:block}
+
+/* Alert */
+.alert-box{padding:12px 14px;border-radius:4px;font-size:.82rem;margin-bottom:14px;border-left:3px solid;display:none;line-height:1.5}
+.alert-box.show{display:block}
+.alert-box.red{background:rgba(239,68,68,.1);border-color:var(--danger);color:var(--danger)}
+.alert-box.green{background:rgba(16,185,129,.1);border-color:var(--success);color:var(--success)}
+.alert-box.yellow{background:rgba(0,200,83,.1);border-color:var(--accent);color:var(--accent)}
+
+/* Result */
+.result-card{text-align:center;padding:30px 20px}
+.result-icon{font-size:3.5rem;margin-bottom:14px}
+.result-status{font-family:'Plus Jakarta Sans',sans-serif;font-size:1.8rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px}
+.result-msg{font-size:.85rem;color:var(--muted);line-height:1.5;margin-bottom:20px}
+.result-details{text-align:left;background:var(--input-bg);border:1px solid var(--border);border-radius:4px;padding:14px;margin-bottom:20px}
+.rd-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:.82rem}
+.rd-row:last-child{border:none}
+.rd-row .rd-label{color:var(--muted)}
+.rd-row .rd-val{font-weight:600}
+.rd-val.green{color:var(--success)}
+.rd-val.red{color:var(--danger)}
+
+/* Review table */
+.review-section{margin-bottom:16px}
+.review-section .rs-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:.85rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--border)}
+.review-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:.82rem}
+.review-row .rr-q{flex:1;color:var(--text)}
+.review-row .rr-a{font-weight:700;margin-left:10px}
+.rr-a.ok{color:var(--success)}
+.rr-a.fail{color:var(--danger)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+</style>
+</head>
+<body>
+<div class="app">
+
+<div style="display:flex;justify-content:space-between;align-items:center;padding:14px 0 10px"><div style="display:flex;align-items:center;gap:8px"><img src="logo-hte.png" alt="HTE" style="height:26px"/><div><div style="font-size:.82rem;font-weight:800;color:var(--text)">FMS Light</div><div style="font-size:.6rem;color:var(--muted)">Shift Starter</div></div></div><button onclick="backToLogin()" style="padding:7px 12px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--muted);font-size:.72rem;font-weight:600;cursor:pointer;font-family:inherit;box-shadow:0 1px 3px rgba(0,0,0,.06)">← Kembali</button></div>
+
+<!-- Progress bar -->
+<div class="progress" id="progBar">
+  <div class="prog-seg active" id="prog1"></div>
+  <div class="prog-seg" id="prog2"></div>
+  <div class="prog-seg" id="prog3"></div>
+  <div class="prog-seg" id="prog4"></div>
+  <div class="prog-seg" id="prog5"></div>
+</div>
+
+<!-- ═══════ STEP 1: FIT TO WORK ═══════ -->
+<div class="step-panel active" id="step1">
+  <div class="step-info"><span class="step-num">Langkah 1 / 5</span><span class="step-num" id="driverBadge"></span></div>
+  <div class="step-title">🩺 Skrining Fit-to-Work</div>
+  <div class="step-desc">Jawab pertanyaan kesehatan berikut dengan jujur. Jika ada jawaban tidak ideal, Anda tidak diizinkan beroperasi.</div>
+  <div class="alert-box red" id="ftwAlert"></div>
+  <div id="ftwList"></div>
+  <div class="btn-row">
+    <button class="btn btn-back" onclick="backToLogin()">← Kembali</button>
+    <button class="btn btn-next" id="btnFtw" onclick="nextStep(2)" disabled>Lanjut →</button>
+  </div>
+</div>
+
+<!-- ═══════ STEP 2: P2H CHECKLIST ═══════ -->
+<div class="step-panel" id="step2">
+  <div class="step-info"><span class="step-num">Langkah 2 / 5</span></div>
+  <div class="step-title">🔧 Inspeksi P2H</div>
+  <div class="step-desc">Periksa setiap komponen kendaraan. Komponen CRITICAL yang rusak akan memblokir unit.</div>
+  <div class="alert-box red" id="p2hAlert"></div>
+  <div id="p2hList"></div>
+  <div class="btn-row">
+    <button class="btn btn-back" onclick="prevStep(1)">← Kembali</button>
+    <button class="btn btn-next" id="btnP2h" onclick="nextStep(3)" disabled>Lanjut →</button>
+  </div>
+</div>
+
+<!-- ═══════ STEP 3: ODOMETER + PHOTO ═══════ -->
+<div class="step-panel" id="step3">
+  <div class="step-info"><span class="step-num">Langkah 3 / 5</span></div>
+  <div class="step-title">📸 Odometer & Foto</div>
+  <div class="step-desc">Catat angka HM/Odometer aktual dan ambil foto panel sebagai bukti.</div>
+
+  <div class="card-s">
+    <div class="card-s-head"><span style="font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em">Angka HM / Odometer</span></div>
+    <div class="card-s-body">
+      <input type="number" class="odo-input" id="odoInput" placeholder="0" inputmode="numeric" oninput="checkOdo()"/>
+      <span class="field-err" id="odoErr" style="font-size:.72rem;color:var(--danger);display:block;margin-top:4px;min-height:16px"></span>
+    </div>
+  </div>
+
+  <div class="card-s">
+    <div class="card-s-head"><span style="font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em">Foto Panel Odometer</span></div>
+    <div class="card-s-body">
+      <div class="photo-area" id="photoArea">
+        <span class="ph-ico">📷</span>
+        <span class="ph-text">Ketuk untuk ambil foto</span>
+        <img id="photoPreview" alt=""/>
+        <input type="file" accept="image/*" capture="environment" id="photoInput" onchange="handlePhoto(this)"/>
+      </div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-back" onclick="prevStep(2)">← Kembali</button>
+    <button class="btn btn-next" id="btnOdo" onclick="nextStep(4)" disabled>Lanjut →</button>
+  </div>
+</div>
+
+<!-- ═══════ STEP 4: SIGNATURE ═══════ -->
+<div class="step-panel" id="step4">
+  <div class="step-info"><span class="step-num">Langkah 4 / 5</span></div>
+  <div class="step-title">✍️ Tanda Tangan Digital</div>
+  <div class="step-desc">Tanda tangani deklarasi kebenaran data. Gunakan jari atau stylus di area di bawah.</div>
+
+  <div class="sig-canvas-wrap" id="sigWrap">
+    <canvas id="sigCanvas"></canvas>
+    <div class="sig-hint">Tanda tangan di sini</div>
+  </div>
+  <div class="sig-actions">
+    <button class="sig-clear" onclick="clearSig()">🗑️ Hapus & Ulang</button>
+  </div>
+
+  <div style="margin-top:14px;font-size:.78rem;color:var(--muted);line-height:1.5;background:var(--input-bg);border:1px solid var(--border);border-radius:4px;padding:10px 12px">
+    Dengan menandatangani ini, saya menyatakan bahwa <strong style="color:var(--text)">seluruh data yang saya isi adalah benar dan sesuai kondisi aktual</strong>. Saya memahami bahwa pemalsuan data melanggar regulasi K3 perusahaan.
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-back" onclick="prevStep(3)">← Kembali</button>
+    <button class="btn btn-next" id="btnSig" onclick="nextStep(5)" disabled>Review →</button>
+  </div>
+</div>
+
+<!-- ═══════ STEP 5: REVIEW & SUBMIT ═══════ -->
+<div class="step-panel" id="step5">
+  <div class="step-info"><span class="step-num">Langkah 5 / 5</span></div>
+  <div class="step-title">📋 Review & Kirim</div>
+  <div class="step-desc">Periksa ringkasan data sebelum mengirim laporan shift.</div>
+
+  <div class="alert-box" id="reviewAlert"></div>
+  <div id="reviewContent"></div>
+
+  <div class="btn-row">
+    <button class="btn btn-back" onclick="prevStep(4)">← Kembali</button>
+    <button class="btn btn-submit" id="btnSubmit" onclick="submitReport()">
+      <span class="btn-text">✅ Kirim Laporan</span>
+      <div class="spinner"></div>
+    </button>
+  </div>
+</div>
+
+<!-- ═══════ STEP 6: RESULT ═══════ -->
+<div class="step-panel" id="step6">
+  <div class="result-card" id="resultCard"></div>
+</div>
+
+</div><!-- /.app -->
+
+<script>
+// ══════════════════════════════════════════════════════════════
+//  CONFIG — GANTI DENGAN URL BACKEND KAMU (sama seperti di index.html)
+// ══════════════════════════════════════════════════════════════
+const API = 'https://fms-light-backend-production.up.railway.app/api/v1';
+
+// ── Session dari login ──
+const TOKEN = localStorage.getItem('fms_token');
+const SESSION = JSON.parse(localStorage.getItem('fms_session') || 'null');
+
+if (!TOKEN || !SESSION) {
+  alert('Sesi login tidak ditemukan. Silakan login terlebih dahulu.');
+  window.location.href = 'index.html';
+}
+
+// ── Master Data (dari seed, hardcoded karena backend tak punya GET endpoint) ──
+const FTW_QUESTIONS = [
+  { question_id:1, text:'Apakah Anda beristirahat/tidur cukup minimal 6 jam sebelum shift ini?', ideal:true },
+  { question_id:2, text:'Apakah Anda sedang dalam pengaruh obat-obatan yang memicu kantuk?', ideal:false },
+  { question_id:3, text:'Apakah Anda saat ini merasakan gejala pusing, demam, atau mual berlebih?', ideal:false },
+  { question_id:4, text:'Apakah Anda dalam kondisi bugar dan siap untuk mengemudikan unit?', ideal:true },
+  { question_id:5, text:'Apakah Anda telah mengonsumsi alkohol dalam 12 jam terakhir?', ideal:false },
+];
+
+const P2H_ITEMS = [
+  { item_id:1, name:'Sistem Pengereman', type:'Fungsi rem utama & parkir', cls:'CRITICAL' },
+  { item_id:2, name:'Kemudi & Ban', type:'Tekanan angin & baut roda', cls:'CRITICAL' },
+  { item_id:3, name:'Sistem Kemudi', type:'Kelancaran & responsivitas setir', cls:'CRITICAL' },
+  { item_id:4, name:'Cairan & Pelumas', type:'Level oli mesin & air radiator', cls:'NON_CRITICAL' },
+  { item_id:5, name:'Sistem Penerangan', type:'Lampu senja & lampu kabin', cls:'NON_CRITICAL' },
+  { item_id:6, name:'Kaca & Spion', type:'Kondisi kaca depan & spion samping', cls:'NON_CRITICAL' },
+  { item_id:7, name:'Klakson & Alarm', type:'Fungsi klakson & backup alarm', cls:'NON_CRITICAL' },
+  { item_id:8, name:'Kebersihan Unit', type:'Kondisi kabin & tangga naik/turun', cls:'NON_CRITICAL' },
+];
+
+// ── State ──
+const state = {
+  ftw: {},       // { question_id: boolean }
+  p2h: {},       // { item_id: { is_ok: boolean, notes: string } }
+  odometer: null,
+  photoDataUri: null,
+  signatureDataUri: null,
+  currentStep: 1,
+};
+
+// ══════════════════════════════════
+//  INIT
+// ══════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('driverBadge').textContent = SESSION.id + ' · ' + SESSION.unit;
+  renderFTW();
+  renderP2H();
+  initSignature();
+});
+
+// ══════════════════════════════════
+//  STEP NAVIGATION
+// ══════════════════════════════════
+function goToStep(n) {
+  for (let i = 1; i <= 6; i++) {
+    document.getElementById('step' + i).classList.toggle('active', i === n);
+    const seg = document.getElementById('prog' + i);
+    if (seg) { seg.className = 'prog-seg' + (i < n ? ' done' : i === n ? ' active' : ''); }
+  }
+  state.currentStep = n;
+  window.scrollTo(0, 0);
+  if (n === 5) renderReview();
+}
+function nextStep(n) { goToStep(n); }
+function prevStep(n) { goToStep(n); }
+function backToLogin() { window.location.href = 'index.html'; }
+
+// ══════════════════════════════════
+//  STEP 1: FIT TO WORK
+// ══════════════════════════════════
+function renderFTW() {
+  const c = document.getElementById('ftwList');
+  c.innerHTML = FTW_QUESTIONS.map(q => `
+    <div class="ftw-q" id="ftw-${q.question_id}">
+      <div class="q-badge critical">⚠ Kritikal</div>
+      <div class="q-text">${q.question_id}. ${q.text}</div>
+      <div class="q-btns">
+        <button class="q-btn" id="ftw-${q.question_id}-yes" onclick="answerFTW(${q.question_id},true)">✔ Ya</button>
+        <button class="q-btn" id="ftw-${q.question_id}-no" onclick="answerFTW(${q.question_id},false)">✖ Tidak</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function answerFTW(qid, answer) {
+  state.ftw[qid] = answer;
+  const q = FTW_QUESTIONS.find(x => x.question_id === qid);
+  const isIdeal = (answer === q.ideal);
+  const wrap = document.getElementById('ftw-' + qid);
+  wrap.className = 'ftw-q ' + (isIdeal ? 'answered-ok' : 'answered-bad');
+  // Reset buttons
+  document.getElementById(`ftw-${qid}-yes`).className = 'q-btn' + (answer === true ? (isIdeal ? ' selected-ok' : ' selected-bad') : '');
+  document.getElementById(`ftw-${qid}-no`).className = 'q-btn' + (answer === false ? (isIdeal ? ' selected-ok' : ' selected-bad') : '');
+  checkFTWComplete();
+}
+
+function checkFTWComplete() {
+  const allAnswered = FTW_QUESTIONS.every(q => state.ftw[q.question_id] !== undefined);
+  const allIdeal = FTW_QUESTIONS.every(q => state.ftw[q.question_id] === q.ideal);
+  const alert = document.getElementById('ftwAlert');
+
+  if (allAnswered && !allIdeal) {
+    alert.innerHTML = '⛔ <strong>Status: TEMPORARY UNFIT</strong> — Anda tidak memenuhi syarat kesehatan. Segera laporkan ke Supervisor/HSE. Data tetap akan dicatat.';
+    alert.className = 'alert-box red show';
+  } else {
+    alert.className = 'alert-box red';
+  }
+  document.getElementById('btnFtw').disabled = !allAnswered;
+}
+
+// ══════════════════════════════════
+//  STEP 2: P2H CHECKLIST
+// ══════════════════════════════════
+function renderP2H() {
+  const c = document.getElementById('p2hList');
+  c.innerHTML = P2H_ITEMS.map(it => `
+    <div class="p2h-item" id="p2h-${it.item_id}">
+      <div class="p2h-head">
+        <div>
+          <div class="p2h-name">${it.name}</div>
+          <div class="p2h-type">${it.type}</div>
+        </div>
+        <div class="p2h-class ${it.cls === 'CRITICAL' ? 'crit' : 'non-crit'}">${it.cls === 'CRITICAL' ? '🔴 Critical' : '🟡 Non-Critical'}</div>
+      </div>
+      <div class="q-btns">
+        <button class="q-btn" id="p2h-${it.item_id}-ok" onclick="answerP2H(${it.item_id},true)">✔ Baik / OK</button>
+        <button class="q-btn" id="p2h-${it.item_id}-fail" onclick="answerP2H(${it.item_id},false)">✖ Rusak</button>
+      </div>
+      <div class="bd-detail" id="bd-detail-${it.item_id}">
+        <div class="bd-title">📝 Detail Laporan Kerusakan</div>
+        <div class="bd-field">
+          <label>Deskripsi Kerusakan</label>
+          <textarea id="bd-desc-${it.item_id}" placeholder="Jelaskan kondisi kerusakan..." oninput="updateBD(${it.item_id})"></textarea>
+        </div>
+        <div class="bd-field">
+          <label>Lokasi Unit Saat BD</label>
+          <input type="text" id="bd-loc-${it.item_id}" placeholder="Contoh: Pit Cendana Ext, Front 3" oninput="updateBD(${it.item_id})"/>
+        </div>
+        <div class="bd-field">
+          <label>Waktu Ditemukan</label>
+          <input type="datetime-local" id="bd-time-${it.item_id}" oninput="updateBD(${it.item_id})"/>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function answerP2H(id, isOk) {
+  if (!state.p2h[id]) state.p2h[id] = { is_ok: true, notes: '', bd_desc:'', bd_loc:'', bd_time:'' };
+  state.p2h[id].is_ok = isOk;
+  const wrap = document.getElementById('p2h-' + id);
+  wrap.className = 'p2h-item ' + (isOk ? 'checked-ok' : 'checked-fail');
+  document.getElementById(`p2h-${id}-ok`).className = 'q-btn' + (isOk ? ' selected-ok' : '');
+  document.getElementById(`p2h-${id}-fail`).className = 'q-btn' + (!isOk ? ' selected-bad' : '');
+  const bd = document.getElementById(`bd-detail-${id}`);
+  bd.classList.toggle('show', !isOk);
+  if (!isOk) {
+    // Pre-fill waktu dengan sekarang
+    const now = new Date(); now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    document.getElementById(`bd-time-${id}`).value = now.toISOString().slice(0,16);
+    state.p2h[id].bd_time = document.getElementById(`bd-time-${id}`).value;
+  }
+  checkP2HComplete();
+}
+
+function updateBD(id) {
+  if (!state.p2h[id]) return;
+  state.p2h[id].bd_desc = document.getElementById(`bd-desc-${id}`).value;
+  state.p2h[id].bd_loc  = document.getElementById(`bd-loc-${id}`).value;
+  state.p2h[id].bd_time = document.getElementById(`bd-time-${id}`).value;
+  // Gabungkan ke notes untuk dikirim ke backend
+  const parts = [];
+  if (state.p2h[id].bd_desc) parts.push('Deskripsi: ' + state.p2h[id].bd_desc);
+  if (state.p2h[id].bd_loc)  parts.push('Lokasi: ' + state.p2h[id].bd_loc);
+  if (state.p2h[id].bd_time) parts.push('Waktu BD: ' + state.p2h[id].bd_time);
+  state.p2h[id].notes = parts.join(' | ');
+}
+
+function checkP2HComplete() {
+  const allChecked = P2H_ITEMS.every(it => state.p2h[it.item_id] !== undefined);
+  const hasCritFail = P2H_ITEMS.some(it => it.cls === 'CRITICAL' && state.p2h[it.item_id] && !state.p2h[it.item_id].is_ok);
+  const alert = document.getElementById('p2hAlert');
+
+  if (hasCritFail) {
+    alert.innerHTML = '⛔ <strong>CRITICAL ITEM RUSAK</strong> — Unit akan otomatis berstatus BREAKDOWN setelah laporan dikirim. Unit tidak boleh beroperasi hingga diperbaiki.';
+    alert.className = 'alert-box red show';
+  } else {
+    alert.className = 'alert-box red';
+  }
+  document.getElementById('btnP2h').disabled = !allChecked;
+}
+
+// ══════════════════════════════════
+//  STEP 3: ODOMETER + PHOTO
+// ══════════════════════════════════
+function checkOdo() {
+  const v = parseInt(document.getElementById('odoInput').value);
+  const err = document.getElementById('odoErr');
+  const inp = document.getElementById('odoInput');
+
+  if (isNaN(v) || v <= 0) {
+    err.textContent = '';
+    inp.classList.remove('err');
+    state.odometer = null;
+  } else {
+    err.textContent = '';
+    inp.classList.remove('err');
+    state.odometer = v;
+  }
+  checkStep3();
+}
+
+function handlePhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    state.photoDataUri = e.target.result;
+    document.getElementById('photoPreview').src = e.target.result;
+    document.getElementById('photoArea').classList.add('has-photo');
+    checkStep3();
+  };
+  reader.readAsDataURL(file);
+}
+
+function checkStep3() {
+  document.getElementById('btnOdo').disabled = !(state.odometer && state.photoDataUri);
+}
+
+// ══════════════════════════════════
+//  STEP 4: SIGNATURE
+// ══════════════════════════════════
+let sigCanvas, sigCtx, sigDrawing = false, sigHasContent = false;
+
+function initSignature() {
+  sigCanvas = document.getElementById('sigCanvas');
+  sigCtx = sigCanvas.getContext('2d');
+  resizeSigCanvas();
+  window.addEventListener('resize', resizeSigCanvas);
+
+  sigCanvas.addEventListener('pointerdown', sigStart);
+  sigCanvas.addEventListener('pointermove', sigMove);
+  sigCanvas.addEventListener('pointerup', sigEnd);
+  sigCanvas.addEventListener('pointerleave', sigEnd);
+}
+
+function resizeSigCanvas() {
+  const wrap = document.getElementById('sigWrap');
+  const rect = wrap.getBoundingClientRect();
+  sigCanvas.width = rect.width;
+  sigCanvas.height = 180;
+  sigCtx.strokeStyle = '#f0a500';
+  sigCtx.lineWidth = 2.5;
+  sigCtx.lineCap = 'round';
+  sigCtx.lineJoin = 'round';
+}
+
+function sigStart(e) {
+  sigDrawing = true;
+  sigCtx.beginPath();
+  const r = sigCanvas.getBoundingClientRect();
+  sigCtx.moveTo(e.clientX - r.left, e.clientY - r.top);
+}
+function sigMove(e) {
+  if (!sigDrawing) return;
+  e.preventDefault();
+  const r = sigCanvas.getBoundingClientRect();
+  sigCtx.lineTo(e.clientX - r.left, e.clientY - r.top);
+  sigCtx.stroke();
+  sigHasContent = true;
+  document.getElementById('sigWrap').classList.add('has-sig');
+  state.signatureDataUri = sigCanvas.toDataURL('image/png');
+  document.getElementById('btnSig').disabled = false;
+}
+function sigEnd() { sigDrawing = false; }
+
+function clearSig() {
+  sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+  sigHasContent = false;
+  state.signatureDataUri = null;
+  document.getElementById('sigWrap').classList.remove('has-sig');
+  document.getElementById('btnSig').disabled = true;
+}
+
+// ══════════════════════════════════
+//  STEP 5: REVIEW
+// ══════════════════════════════════
+function renderReview() {
+  const ftwIdeal = FTW_QUESTIONS.every(q => state.ftw[q.question_id] === q.ideal);
+  const critFail = P2H_ITEMS.some(it => it.cls === 'CRITICAL' && state.p2h[it.item_id] && !state.p2h[it.item_id].is_ok);
+  const nonCritFails = P2H_ITEMS.filter(it => it.cls === 'NON_CRITICAL' && state.p2h[it.item_id] && !state.p2h[it.item_id].is_ok);
+
+  // Predicted status
+  let predicted, predClass;
+  if (!ftwIdeal) { predicted = 'DRIVER UNFIT'; predClass = 'red'; }
+  else if (critFail) { predicted = 'UNIT BREAKDOWN'; predClass = 'red'; }
+  else { predicted = 'READY TO WORK'; predClass = 'green'; }
+
+  const alert = document.getElementById('reviewAlert');
+  if (predClass === 'red') {
+    alert.innerHTML = `⚠️ Status prediksi: <strong>${predicted}</strong>. Laporan tetap akan dikirim untuk dokumentasi.`;
+    alert.className = 'alert-box yellow show';
+  } else {
+    alert.innerHTML = `✅ Status prediksi: <strong>${predicted}</strong>`;
+    alert.className = 'alert-box green show';
+  }
+
+  let html = '';
+
+  // Driver & Unit
+  html += `<div class="review-section">
+    <div class="rs-title">👤 Driver & Unit</div>
+    <div class="review-row"><span class="rr-q">Driver</span><span class="rr-a ok">${SESSION.name} (${SESSION.id})</span></div>
+    <div class="review-row"><span class="rr-q">Unit</span><span class="rr-a ok">${SESSION.unit}</span></div>
+    <div class="review-row"><span class="rr-q">Odometer</span><span class="rr-a ok">${state.odometer?.toLocaleString('id-ID')}</span></div>
+  </div>`;
+
+  // FTW
+  html += `<div class="review-section"><div class="rs-title">🩺 Fit-to-Work (${ftwIdeal ? 'FIT' : 'UNFIT'})</div>`;
+  FTW_QUESTIONS.forEach(q => {
+    const ans = state.ftw[q.question_id];
+    const ideal = ans === q.ideal;
+    html += `<div class="review-row"><span class="rr-q" style="font-size:.78rem">${q.text}</span><span class="rr-a ${ideal?'ok':'fail'}">${ans?'Ya':'Tidak'}</span></div>`;
+  });
+  html += `</div>`;
+
+  // P2H
+  html += `<div class="review-section"><div class="rs-title">🔧 P2H (${critFail ? 'FAILED' : 'PASSED'})</div>`;
+  P2H_ITEMS.forEach(it => {
+    const r = state.p2h[it.item_id];
+    html += `<div class="review-row"><span class="rr-q" style="font-size:.78rem">${it.name} <span style="color:${it.cls==='CRITICAL'?'var(--danger)':'var(--accent)'}; font-size:.65rem">[${it.cls}]</span></span><span class="rr-a ${r.is_ok?'ok':'fail'}">${r.is_ok?'OK':'RUSAK'}</span></div>`;
+    if (!r.is_ok && (r.bd_desc || r.bd_loc || r.bd_time)) {
+      html += `<div style="margin:-2px 0 6px;padding:8px 10px;background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.15);border-radius:4px;font-size:.75rem;color:var(--muted);line-height:1.5">`;
+      if (r.bd_desc) html += `<div>📝 ${r.bd_desc}</div>`;
+      if (r.bd_loc)  html += `<div>📍 ${r.bd_loc}</div>`;
+      if (r.bd_time) html += `<div>🕐 ${r.bd_time.replace('T',' ')}</div>`;
+      html += `</div>`;
+    }
+  });
+  html += `</div>`;
+
+  if (nonCritFails.length > 0) {
+    html += `<div style="font-size:.78rem;color:var(--accent);background:rgba(0,200,83,.08);border:1px solid rgba(0,200,83,.2);border-radius:4px;padding:10px 12px;margin-bottom:14px">
+      📝 ${nonCritFails.length} komponen non-critical rusak — tiket maintenance akan otomatis dibuat.
+    </div>`;
+  }
+
+  document.getElementById('reviewContent').innerHTML = html;
+}
+
+// ══════════════════════════════════
+//  SUBMIT
+// ══════════════════════════════════
+async function submitReport() {
+  const btn = document.getElementById('btnSubmit');
+  btn.disabled = true;
+  btn.classList.add('loading');
+
+  const body = {
+    driver_id: SESSION.id,
+    unit_id: SESSION.unit,
+    fit_to_work_answers: FTW_QUESTIONS.map(q => ({
+      question_id: q.question_id,
+      answer: state.ftw[q.question_id]
+    })),
+    p2h_results: P2H_ITEMS.map(it => ({
+      item_id: it.item_id,
+      is_ok: state.p2h[it.item_id].is_ok,
+      notes: state.p2h[it.item_id].notes || null
+    })),
+    odometer_entered: state.odometer,
+    photo_odometer_url: state.photoDataUri,
+    signature_data_uri: state.signatureDataUri,
+    device_timestamp: new Date().toISOString(),
+  };
+
+  try {
+    const res = await fetch(`${API}/shift-reports`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + TOKEN
+      },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    btn.classList.remove('loading');
+
+    if (!res.ok || !data.success) {
+      btn.disabled = false;
+      alert('⛔ Gagal mengirim: ' + (data.message || 'Unknown error'));
+      return;
+    }
+
+    showResult(data.data);
+  } catch (e) {
+    btn.classList.remove('loading');
+    btn.disabled = false;
+    alert('⛔ Gagal terhubung ke server. Coba lagi.');
+  }
+}
+
+// ══════════════════════════════════
+//  RESULT
+// ══════════════════════════════════
+function showResult(d) {
+  goToStep(6);
+  // Hide progress
+  document.getElementById('progBar').style.display = 'none';
+
+  let icon, statusColor, statusText, msg;
+  switch (d.overall_status) {
+    case 'Ready to Work':
+      icon = '✅'; statusColor = 'var(--success)'; statusText = 'READY TO WORK';
+      msg = 'Semua pengecekan lolos. Anda diizinkan mengoperasikan unit. Selamat bertugas dan utamakan keselamatan!';
+      break;
+    case 'Driver Unfit':
+      icon = '🚫'; statusColor = 'var(--danger)'; statusText = 'DRIVER UNFIT';
+      msg = 'Anda tidak memenuhi syarat kesehatan untuk beroperasi. Segera laporkan ke Supervisor atau tim HSE.';
+      break;
+    default:
+      icon = '⚠️'; statusColor = 'var(--danger)'; statusText = 'UNIT BREAKDOWN';
+      msg = 'Komponen kritikal rusak. Unit dikunci dari operasi. Hubungi tim Maintenance untuk perbaikan.';
+  }
+
+  document.getElementById('resultCard').innerHTML = `
+    <div class="result-icon" style="animation:pulse 1s ease 2">${icon}</div>
+    <div class="result-status" style="color:${statusColor}">${statusText}</div>
+    <div class="result-msg">${msg}</div>
+    <div class="result-details">
+      <div class="rd-row"><span class="rd-label">Report ID</span><span class="rd-val" style="font-size:.72rem;word-break:break-all">${d.report_id}</span></div>
+      <div class="rd-row"><span class="rd-label">Driver</span><span class="rd-val">${SESSION.name}</span></div>
+      <div class="rd-row"><span class="rd-label">Unit</span><span class="rd-val">${SESSION.unit}</span></div>
+      <div class="rd-row"><span class="rd-label">Fit-to-Work</span><span class="rd-val ${d.fit_status==='Fit'?'green':'red'}">${d.fit_status}</span></div>
+      <div class="rd-row"><span class="rd-label">P2H</span><span class="rd-val ${d.p2h_status==='Passed'?'green':'red'}">${d.p2h_status}</span></div>
+      <div class="rd-row"><span class="rd-label">Time Drift</span><span class="rd-val ${d.time_drift_flagged?'red':'green'}">${d.time_drift_flagged?'⚠ Flagged':'Normal'}</span></div>
+      <div class="rd-row"><span class="rd-label">Submitted</span><span class="rd-val">${new Date(d.submitted_at).toLocaleString('id-ID')}</span></div>
+    </div>
+    <button class="btn btn-next btn-full" onclick="window.location.href='index.html'" style="margin-bottom:10px">🏠 Kembali ke Login</button>
+    <button class="btn btn-back btn-full" onclick="window.location.reload()">🔄 Isi Shift Baru</button>
+  `;
+}
+</script>
+</body>
+</html>

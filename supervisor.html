@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>FMS Light — Dashboard Supervisor</title>
+<link rel="stylesheet" href="style.css"/>
+<style>
+.report-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-md);margin-bottom:8px;overflow:hidden;box-shadow:var(--shadow-sm)}
+.rc-head{padding:12px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)}
+.rc-driver{font-size:.92rem;font-weight:800;color:var(--text)}.rc-time{font-size:.62rem;color:var(--text-muted)}
+.rc-body{padding:12px 16px}
+.rc-row{display:flex;justify-content:space-between;padding:4px 0;font-size:.8rem}
+.rc-label{color:var(--text-muted)}.rc-val{font-weight:700}
+.rc-footer{padding:10px 16px;background:var(--input-bg);border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end}
+.rc-btn{padding:8px 14px;border-radius:var(--radius-sm);font-size:.75rem;font-weight:700;cursor:pointer;border:none;min-height:34px;font-family:var(--font)}
+.rc-btn.approve{background:var(--success);color:white}.rc-btn.reject{background:var(--danger);color:white}
+.rc-btn.approved{background:var(--success-bg);color:var(--success);cursor:default}.rc-btn.rejected{background:var(--danger-bg);color:var(--danger);cursor:default}
+.rc-btn:disabled{opacity:.5}
+.bd-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-md);margin-bottom:8px;overflow:hidden;box-shadow:var(--shadow-sm)}
+.bd-card.sev-Critical{border-left:3px solid var(--danger)}.bd-card.sev-Major{border-left:3px solid var(--warning)}.bd-card.sev-Minor{border-left:3px solid var(--info)}
+.bd-card-head{padding:10px 14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)}
+.bch-comp{font-size:.88rem;font-weight:800}.bch-sev{font-size:.58rem;font-weight:700;padding:3px 8px;border-radius:var(--radius-pill)}
+.bch-sev.s-Critical{background:var(--danger-bg);color:var(--danger)}.bch-sev.s-Major{background:var(--warning-bg);color:var(--warning)}.bch-sev.s-Minor{background:var(--info-bg);color:var(--info)}
+.bd-card-body{padding:10px 14px;font-size:.78rem;color:var(--text-secondary);line-height:1.7}
+.bcb-row{display:flex;gap:6px;margin-bottom:2px}
+.bd-card-footer{padding:8px 14px;background:var(--input-bg);font-size:.68rem;color:var(--text-muted);display:flex;justify-content:space-between;align-items:center}
+.bd-status-btn{padding:4px 10px;border-radius:var(--radius-pill);font-size:.62rem;font-weight:700;cursor:pointer;border:1px solid var(--border);background:var(--card);color:var(--text-secondary);font-family:var(--font)}
+.filter-bar{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
+.filter-bar input[type=date]{flex:1;min-width:110px;padding:10px 12px;background:var(--card);border:1.5px solid var(--input-border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--font);font-size:.82rem;outline:none;box-shadow:var(--shadow-sm)}
+.filter-bar input:focus{border-color:var(--primary)}
+.filter-bar button{padding:10px 14px;border:none;border-radius:var(--radius-sm);background:var(--grad);color:white;font-family:var(--font);font-weight:700;font-size:.78rem;cursor:pointer;min-height:40px;box-shadow:var(--shadow-btn)}
+.filter-bar .dl-btn{background:var(--success)}
+.counter{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;border-radius:9px;background:var(--danger);color:white;font-size:.58rem;font-weight:700;margin-left:4px}
+</style>
+</head>
+<body>
+<div class="app app-wide">
+<div class="topnav">
+  <div class="topnav-left"><img class="topnav-logo" src="logo-hte.png" alt="HTE"/><div class="topnav-text"><div class="tn-title">FMS Light</div><div class="tn-sub">Supervisor Dashboard</div></div></div>
+  <button class="topnav-btn" onclick="doLogout()">Logout</button>
+</div>
+<div class="stats-grid">
+  <div class="stat-card"><div class="stat-val text-success" id="stActive">—</div><div class="stat-label">Driver Aktif</div></div>
+  <div class="stat-card"><div class="stat-val text-primary" id="stTotal">—</div><div class="stat-label">Total Report</div></div>
+  <div class="stat-card"><div class="stat-val text-warning" id="stPending">—</div><div class="stat-label">Pending</div></div>
+  <div class="stat-card"><div class="stat-val text-danger" id="stUnfit">—</div><div class="stat-label">Unfit</div></div>
+  <div class="stat-card"><div class="stat-val text-danger" id="stBD">—</div><div class="stat-label">Unit BD</div></div>
+  <div class="stat-card"><div class="stat-val text-danger" id="stBDOpen">—</div><div class="stat-label">BD Open</div></div>
+</div>
+<div class="filter-bar">
+  <input type="date" id="dateFrom" title="Dari"/>
+  <span style="color:var(--text-muted);font-size:.75rem">s/d</span>
+  <input type="date" id="dateTo" title="Sampai"/>
+  <button onclick="loadData()">🔍</button>
+  <button class="dl-btn" onclick="downloadCSV('shift')">📥 Shift</button>
+  <button style="background:var(--danger)" onclick="downloadCSV('bd')">📥 BD</button>
+</div>
+<div class="tabs">
+  <button class="tab active" id="tabReports" onclick="switchTab('reports')">📋 Shift Reports</button>
+  <button class="tab" id="tabBD" onclick="switchTab('bd')">🔴 BD Reports <span class="counter" id="bdCount" style="display:none">0</span></button>
+</div>
+<div class="tab-panel active" id="panelReports"><div id="reportsList" class="empty">⏳ Memuat...</div></div>
+<div class="tab-panel" id="panelBD"><div id="bdList" class="empty">⏳ Memuat...</div></div>
+</div>
+<script>
+const API     = 'https://fms-light-backend-production.up.railway.app/api/v1';
+const TOKEN   = localStorage.getItem('fms_token');
+const SESSION = JSON.parse(localStorage.getItem('fms_session') || 'null');
+
+if (!SESSION || !TOKEN) {
+  alert('Sesi login tidak ditemukan.');
+  window.location.href = 'index.html';
+}
+
+// ── Init ──
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('hName').textContent = SESSION.name;
+  document.getElementById('hRole').textContent = SESSION.role || 'SUPERVISOR';
+  document.getElementById('dateFrom').value = new Date().toISOString().slice(0, 10);
+  document.getElementById('dateTo').value = new Date().toISOString().slice(0, 10);
+  loadData();
+});
+
+// ── Tabs ──
+function switchTab(t) {
+  document.getElementById('panelReports').classList.toggle('active', t === 'reports');
+  document.getElementById('panelBD').classList.toggle('active', t === 'bd');
+  document.getElementById('tabReports').classList.toggle('active', t === 'reports');
+  document.getElementById('tabBD').classList.toggle('active', t === 'bd');
+  if (t === 'bd') loadBDReports();
+}
+
+// ── Load all data ──
+async function loadData() {
+  await Promise.all([loadStats(), loadReports()]);
+}
+
+// ── Dashboard stats ──
+async function loadStats() {
+  try {
+    const r = await fetch(`${API}/supervisor/dashboard-stats`, {
+      headers: { 'Authorization': 'Bearer ' + TOKEN }
+    });
+    const d = await r.json();
+    if (!d.success) return;
+    const s = d.data;
+    document.getElementById('stActive').textContent  = s.active_drivers;
+    document.getElementById('stTotal').textContent   = s.total_reports;
+    document.getElementById('stPending').textContent = s.pending_validation;
+    document.getElementById('stUnfit').textContent   = s.driver_unfit;
+    document.getElementById('stBD').textContent      = s.unit_breakdown;
+    document.getElementById('stBDOpen').textContent  = s.bd_open;
+    const bc = document.getElementById('bdCount');
+    bc.textContent = s.bd_open; bc.style.display = s.bd_open > 0 ? 'inline-flex' : 'none';
+  } catch {}
+}
+
+// ── Shift reports list ──
+async function loadReports() {
+  const dateFrom = document.getElementById('dateFrom').value;
+  const dateTo = document.getElementById('dateTo').value;
+  const container = document.getElementById('reportsList');
+  container.innerHTML = '<div class="loading">⏳ Memuat shift reports...</div>';
+  try {
+    const r = await fetch(`${API}/supervisor/shift-reports?date_from=${dateFrom}&date_to=${dateTo}&limit=500`, {
+      headers: { 'Authorization': 'Bearer ' + TOKEN }
+    });
+    const d = await r.json();
+    if (!d.success || d.data.reports.length === 0) {
+      container.innerHTML = '<div class="empty"><div style="font-size:2rem;margin-bottom:8px">📭</div>Belum ada shift report untuk tanggal ini.</div>';
+      return;
+    }
+    container.innerHTML = d.data.reports.map(renderReportCard).join('');
+  } catch {
+    container.innerHTML = '<div class="empty">⛔ Gagal memuat data.</div>';
+  }
+}
+
+function renderReportCard(r) {
+  const time = new Date(r.timestamp_filled).toLocaleString('id-ID', { hour:'2-digit', minute:'2-digit', day:'2-digit', month:'short' });
+  const oColor = r.overall_status === 'Ready to Work' ? 'green' : 'red';
+  const fColor = r.fit_status === 'Fit' ? 'green' : 'red';
+  const pColor = r.p2h_status === 'Passed' ? 'green' : 'red';
+  const vs = r.validation_status || 'Pending';
+
+  let footerHtml = '';
+  if (vs === 'Approved') {
+    footerHtml = `<span class="rc-btn approved">✅ Approved</span>`;
+  } else if (vs === 'Rejected') {
+    footerHtml = `<span class="rc-btn rejected">❌ Rejected</span>`;
+  } else {
+    footerHtml = `
+      <button class="rc-btn approve" onclick="validateReport('${r.report_id}','Approved',this)">✅ Approve</button>
+      <button class="rc-btn reject" onclick="validateReport('${r.report_id}','Rejected',this)">❌ Reject</button>`;
+  }
+
+  return `
+    <div class="report-card" style="animation:fadeUp .3s ease">
+      <div class="rc-head">
+        <div>
+          <div class="rc-driver">${r.driver_name || r.driver_id}</div>
+          <div class="rc-time">${r.driver_id} · ${time}</div>
+        </div>
+        <span style="font-size:.65rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:2px;
+          background:${oColor === 'green' ? 'rgba(46,204,113,.12)' : 'rgba(231,76,60,.12)'};
+          color:var(--${oColor});border:1px solid var(--${oColor})">${r.overall_status}</span>
+      </div>
+      <div class="rc-body">
+        <div class="rc-row"><span class="rc-label">Unit</span><span class="rc-val">${r.unit_id} ${r.vehicle_type ? '('+r.vehicle_type+')' : ''}</span></div>
+        <div class="rc-row"><span class="rc-label">Fit-to-Work</span><span class="rc-val ${fColor}">${r.fit_status}</span></div>
+        <div class="rc-row"><span class="rc-label">P2H</span><span class="rc-val ${pColor}">${r.p2h_status}</span></div>
+        <div class="rc-row"><span class="rc-label">Odometer</span><span class="rc-val">${r.odometer_entered?.toLocaleString('id-ID') || '—'}</span></div>
+        ${r.time_drift_flagged ? '<div class="rc-row"><span class="rc-label">Time Drift</span><span class="rc-val red">⚠ Flagged</span></div>' : ''}
+      </div>
+      <div class="rc-footer" id="footer-${r.report_id}">${footerHtml}</div>
+    </div>`;
+}
+
+// ── Validate report ──
+async function validateReport(reportId, status, btn) {
+  btn.disabled = true;
+  btn.textContent = '⏳';
+  try {
+    const r = await fetch(`${API}/supervisor/shift-reports/${reportId}/validate`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + TOKEN },
+      body: JSON.stringify({ validation_status: status, validated_by: SESSION.id })
+    });
+    const d = await r.json();
+    if (d.success) {
+      const footer = document.getElementById('footer-' + reportId);
+      if (status === 'Approved') footer.innerHTML = '<span class="rc-btn approved">✅ Approved</span>';
+      else footer.innerHTML = '<span class="rc-btn rejected">❌ Rejected</span>';
+      loadStats();
+    } else {
+      alert('Gagal: ' + d.message);
+      btn.disabled = false;
+    }
+  } catch {
+    alert('Gagal terhubung.');
+    btn.disabled = false;
+  }
+}
+
+// ── BD Reports ──
+async function loadBDReports() {
+  const container = document.getElementById('bdList');
+  container.innerHTML = '<div class="loading">⏳ Memuat BD reports...</div>';
+  try {
+    const r = await fetch(`${API}/bd-reports?limit=50`, {
+      headers: { 'Authorization': 'Bearer ' + TOKEN }
+    });
+    const d = await r.json();
+    if (!d.success || d.data.reports.length === 0) {
+      container.innerHTML = '<div class="empty"><div style="font-size:2rem;margin-bottom:8px">📭</div>Belum ada BD report.</div>';
+      return;
+    }
+    container.innerHTML = d.data.reports.map(r => `
+      <div class="bd-card sev-${r.severity}">
+        <div class="bd-card-head">
+          <span class="bch-comp">${r.component}</span>
+          <span class="bch-sev s-${r.severity}">${r.severity==='Critical'?'🔴':r.severity==='Major'?'🟠':'🟡'} ${r.severity}</span>
+        </div>
+        <div class="bd-card-body">
+          <div class="bcb-row">📝 ${r.description}</div>
+          <div class="bcb-row">📍 ${r.location}</div>
+          <div class="bcb-row">🕐 ${r.event_time ? new Date(r.event_time).toLocaleString('id-ID') : '—'}</div>
+          <div class="bcb-row">🚛 ${r.unit_id} · 👤 ${r.driver_name || r.driver_id}</div>
+          ${r.action_taken ? `<div class="bcb-row">🔧 ${r.action_taken}</div>` : ''}
+        </div>
+        <div class="bd-card-footer">
+          <span>BD #${r.bd_id} · <span style="color:${r.status==='Open'?'var(--danger)':r.status==='Resolved'?'var(--success)':'var(--warning)'}">${r.status}</span></span>
+          <div>
+            ${r.status === 'Open' ? `<button class="bd-status-btn" onclick="updateBD(${r.bd_id},'In Progress',this)">🔄 In Progress</button>` : ''}
+            ${r.status !== 'Resolved' ? `<button class="bd-status-btn" onclick="updateBD(${r.bd_id},'Resolved',this)" style="margin-left:4px;border-color:var(--success);color:var(--success)">✅ Resolved</button>` : ''}
+          </div>
+        </div>
+      </div>
+    `).join('');
+  } catch {
+    container.innerHTML = '<div class="empty">⛔ Gagal memuat data.</div>';
+  }
+}
+
+async function updateBD(bdId, status, btn) {
+  btn.disabled = true; btn.textContent = '⏳';
+  try {
+    await fetch(`${API}/bd-reports/${bdId}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + TOKEN },
+      body: JSON.stringify({ status, resolved_by: SESSION.id })
+    });
+    loadBDReports(); loadStats();
+  } catch { btn.disabled = false; }
+}
+
+function doLogout() {
+  localStorage.removeItem('fms_token');
+  localStorage.removeItem('fms_session');
+  window.location.href = 'index.html';
+}
+
+// ── Data cache for downloads ──
+let cachedShiftReports = [];
+let cachedBDReports = [];
+
+// ── CSV Download ──
+async function downloadCSV(type) {
+  const dateFrom = document.getElementById('dateFrom').value;
+  const dateTo = document.getElementById('dateTo').value;
+  if (type === 'shift') {
+    try {
+      const r = await fetch(`${API}/supervisor/shift-reports?date_from=${dateFrom}&date_to=${dateTo}&limit=500`, {
+        headers: { 'Authorization': 'Bearer ' + TOKEN }
+      });
+      const d = await r.json();
+      if (!d.success || !d.data.reports.length) { alert('Tidak ada data untuk didownload.'); return; }
+
+      const rows = d.data.reports;
+      const headers = ['Driver ID','Nama Driver','Unit','Tipe Unit','Fit-to-Work','P2H','Status','Odometer','Waktu Isi','Validasi','Divalidasi Oleh'];
+      const csv = [headers.join(',')].concat(rows.map(r => [
+        r.driver_id,
+        '"'+(r.driver_name||'')+'"',
+        r.unit_id,
+        '"'+(r.vehicle_type||'')+'"',
+        r.fit_status,
+        r.p2h_status,
+        '"'+r.overall_status+'"',
+        r.odometer_entered||'',
+        '"'+(r.timestamp_filled ? new Date(r.timestamp_filled).toLocaleString('id-ID') : '')+'"',
+        r.validation_status||'Pending',
+        r.validated_by||''
+      ].join(','))).join('\n');
+
+      saveFile(csv, `Shift_Report_${dateFrom}_sd_${dateTo}.csv`);
+    } catch { alert('Gagal mengambil data.'); }
+
+  } else {
+    try {
+      const r = await fetch(`${API}/bd-reports?limit=500`, {
+        headers: { 'Authorization': 'Bearer ' + TOKEN }
+      });
+      const d = await r.json();
+      if (!d.success || !d.data.reports.length) { alert('Tidak ada data BD untuk didownload.'); return; }
+
+      const rows = d.data.reports;
+      const headers = ['BD ID','Driver ID','Nama Driver','Unit','Komponen','Severity','Deskripsi','Lokasi','Waktu Kejadian','Tindakan','Status','Dibuat'];
+      const csv = [headers.join(',')].concat(rows.map(r => [
+        r.bd_id,
+        r.driver_id,
+        '"'+(r.driver_name||'')+'"',
+        r.unit_id,
+        '"'+(r.component||'')+'"',
+        r.severity,
+        '"'+(r.description||'').replace(/"/g,'""')+'"',
+        '"'+(r.location||'')+'"',
+        '"'+(r.event_time ? new Date(r.event_time).toLocaleString('id-ID') : '')+'"',
+        '"'+(r.action_taken||'')+'"',
+        r.status,
+        '"'+(r.created_at ? new Date(r.created_at).toLocaleString('id-ID') : '')+'"'
+      ].join(','))).join('\n');
+
+      const today = new Date().toISOString().slice(0,10);
+      saveFile(csv, `BD_Report_${today}.csv`);
+    } catch { alert('Gagal mengambil data.'); }
+  }
+}
+
+function saveFile(content, filename) {
+  const BOM = '\uFEFF';
+  const blob = new Blob([BOM + content], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+</script>
+</body></html>

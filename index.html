@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="theme-color" content="#F0F4F8"/>
+<title>FMS Light — Login</title>
+<link rel="stylesheet" href="style.css"/>
+<style>
+  .login-wrap{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 16px;background:linear-gradient(135deg,rgba(0,200,83,.04),rgba(0,176,255,.04))}
+  .login-brand{text-align:center;margin-bottom:28px;animation:fadeDown .5s ease both}
+  .login-brand img{height:44px;margin-bottom:10px}
+  .login-brand .brand-title{font-size:1.1rem;font-weight:800;color:var(--text);letter-spacing:.02em}
+  .login-brand .brand-sub{font-size:.65rem;color:var(--text-muted);letter-spacing:.06em;margin-top:4px}
+  .login-card{width:100%;max-width:400px;animation:fadeUp .5s ease both .1s}
+  .login-card .card-header-gradient{padding:16px 20px;text-align:center}
+  .login-card .card-header-gradient .ch-title{font-size:1rem;font-weight:700}
+  .login-card .card-header-gradient .ch-ico{font-size:1.2rem}
+
+  .dashboard{display:none;width:100%;max-width:420px;animation:fadeUp .4s ease both}
+  .profile-card{background:var(--grad);border-radius:var(--radius);padding:22px 20px;color:white;margin-bottom:14px;box-shadow:var(--shadow-btn);position:relative;overflow:hidden}
+  .profile-card::after{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.1)}
+  .profile-card .pc-hello{font-size:.7rem;opacity:.8;margin-bottom:2px}
+  .profile-card .pc-name{font-size:1.4rem;font-weight:800;letter-spacing:-.01em}
+  .profile-card .pc-badge{display:inline-block;margin-top:8px;padding:4px 12px;border-radius:var(--radius-pill);background:rgba(255,255,255,.2);font-size:.65rem;font-weight:700;letter-spacing:.04em}
+  .profile-card .pc-id{position:absolute;right:20px;top:22px;font-size:.72rem;opacity:.7;font-weight:500}
+
+  .unit-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-md);padding:18px;margin-bottom:12px;box-shadow:var(--shadow-sm)}
+  .unit-box-title{font-size:.75rem;font-weight:700;color:var(--text-secondary);margin-bottom:10px}
+  .unit-row{display:flex;gap:8px}
+  .unit-row input{flex:1;padding:12px 14px;background:var(--input-bg);border:1.5px solid var(--input-border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--font);font-size:.9rem;font-weight:500;outline:none;text-transform:uppercase}
+  .unit-row input:focus{border-color:var(--primary)}
+  .unit-row button{padding:12px 18px;background:var(--grad);color:white;border:none;border-radius:var(--radius-sm);font-family:var(--font);font-weight:700;font-size:.82rem;cursor:pointer;min-height:44px;box-shadow:var(--shadow-btn);white-space:nowrap}
+  .unit-row button:disabled{opacity:.5;box-shadow:none}
+
+  .unit-sel{display:none;margin-bottom:12px}.unit-sel.show{display:block}
+  .us-card{background:var(--card);border:1px solid rgba(16,185,129,.25);border-radius:var(--radius-md);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;box-shadow:var(--shadow-sm)}
+  .us-unit{font-size:1.05rem;font-weight:800;color:var(--text)}
+  .us-type{font-size:.72rem;color:var(--text-muted)}
+  .us-change{padding:6px 12px;border:1px solid var(--border);border-radius:var(--radius-pill);background:var(--card);color:var(--text-secondary);font-size:.68rem;font-weight:600;cursor:pointer;font-family:var(--font)}
+
+  .end-shift-box{display:none;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-md);padding:16px;margin-bottom:10px;box-shadow:var(--shadow-sm)}
+  .es-title{font-size:.75rem;font-weight:700;color:var(--text-secondary);margin-bottom:8px}
+  .es-row{display:flex;gap:8px;align-items:center}
+  .es-row input{flex:1;padding:11px;background:var(--input-bg);border:1.5px solid var(--input-border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--font);font-size:1rem;font-weight:700;text-align:center;outline:none}
+  .es-row input:focus{border-color:var(--primary)}
+  .es-row button{padding:11px 16px;background:var(--grad);color:white;border:none;border-radius:var(--radius-sm);font-family:var(--font);font-weight:700;font-size:.82rem;cursor:pointer;white-space:nowrap;min-height:44px;box-shadow:var(--shadow-btn)}
+</style>
+</head>
+<body>
+
+<div class="login-wrap" id="loginWrap">
+  <div class="login-brand">
+    <img src="logo-hte.png" alt="HTE"/>
+    <div class="brand-title">FMS Light</div>
+    <div class="brand-sub">PT Halmahera Transportasi Energi · Shift Starter System</div>
+  </div>
+
+  <div class="card login-card" id="authCard">
+    <div class="card-header card-header-gradient">
+      <span class="ch-title">🔐 Login Shift</span>
+    </div>
+    <div class="card-body">
+      <div class="alert alert-error" id="loginAlert"></div>
+
+      <div class="field">
+        <label class="field-label">ID Karyawan</label>
+        <div class="field-wrap">
+          <span class="field-ico">👤</span>
+          <input class="field-input upper" type="text" id="loginId" placeholder="Nomor NIK / Badge" autocomplete="off"/>
+        </div>
+        <span class="field-err" id="loginIdErr"></span>
+      </div>
+
+      <div class="field">
+        <label class="field-label">PIN</label>
+        <div class="field-wrap">
+          <span class="field-ico">🔑</span>
+          <input class="field-input" type="password" id="loginPin" placeholder="Masukkan 4-6 digit PIN" inputmode="numeric" maxlength="6" autocomplete="off"/>
+        </div>
+        <span class="field-err" id="loginPinErr"></span>
+      </div>
+
+      <button class="btn btn-primary" id="btnLogin" onclick="doLogin()">
+        <span class="btn-text">Masuk</span>
+        <div class="spinner"></div>
+      </button>
+
+      <div class="hint">
+        Masukkan <strong>ID Karyawan</strong> (nomor NIK/badge) di kolom pertama, lalu <strong>PIN 4 digit</strong> yang diberikan admin di kolom kedua.
+      </div>
+    </div>
+    <div class="card-footer">
+      <span><span class="status-dot"></span> System Online</span>
+      <span>v2.0 · FMS Light</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ DASHBOARD ═══ -->
+<div class="dashboard" id="dashboardView">
+  <div class="app">
+    <div class="topnav">
+      <div class="topnav-left">
+        <img class="topnav-logo" src="logo-hte.png" alt="HTE"/>
+        <div class="topnav-text"><div class="tn-title">FMS Light</div><div class="tn-sub">Dashboard</div></div>
+      </div>
+      <button class="topnav-btn" onclick="doLogout()">Logout</button>
+    </div>
+
+    <div class="profile-card">
+      <div class="pc-hello">Selamat bertugas</div>
+      <div class="pc-name" id="dashName">—</div>
+      <div class="pc-badge" id="dashRole">DRIVER</div>
+      <div class="pc-id" id="dashId">—</div>
+    </div>
+
+    <div class="unit-box" id="unitSection">
+      <div class="unit-box-title">🚛 Pilih Unit Operasi</div>
+      <div class="unit-row">
+        <input type="text" id="unitInput" placeholder="Nomor lambung..." list="unitList"/>
+        <datalist id="unitList"></datalist>
+        <button id="btnPickUnit" onclick="pickUnit()">Pilih</button>
+      </div>
+      <div class="field-err" id="unitErr" style="margin-top:6px"></div>
+    </div>
+
+    <div class="unit-sel" id="unitInfo">
+      <div class="us-card">
+        <div><div class="us-unit" id="uiUnit">—</div><div class="us-type" id="uiType">—</div></div>
+        <button class="us-change" onclick="changeUnit()">Ganti Unit</button>
+      </div>
+    </div>
+
+    <div class="status-bar" id="dashStatus" style="display:none">
+      <span class="status-dot"></span>
+      <span class="status-text">✅ Unit siap — sesi aktif</span>
+    </div>
+
+    <button class="btn btn-primary mb-8" id="btnFTW" onclick="goToFTW()" disabled>▶ Mulai Fit-to-Work & P2H</button>
+    <button class="btn btn-outline danger mb-8" id="btnBD" onclick="window.location.href='bd-report.html'" disabled>🔴 Lapor Breakdown</button>
+
+    <div class="end-shift-box" id="endShiftBox">
+      <div class="es-title">⏱️ Akhiri Shift — Input HM Akhir</div>
+      <div class="es-row">
+        <input type="number" id="hmEndInput" placeholder="HM Akhir" inputmode="numeric"/>
+        <button onclick="submitEndShift()">Simpan</button>
+      </div>
+      <div id="hmEndMsg" style="font-size:.7rem;margin-top:5px;min-height:16px"></div>
+    </div>
+
+    <button class="btn btn-outline" onclick="doLogout()">🚪 Akhiri Sesi</button>
+  </div>
+</div>
+
+<script>
+const API='https://fms-light-backend-production.up.railway.app/api/v1';
+const TOKEN_KEY='fms_token',SESSION_KEY='fms_session';
+function showAlert(m,t='error'){const e=document.getElementById('loginAlert');e.textContent=m;e.className=`alert alert-${t} show`}
+function hideAlert(){document.getElementById('loginAlert').className='alert alert-error'}
+function setErr(id,m){document.getElementById(id+'Err').textContent=m||'';document.getElementById(id).classList.toggle('err',!!m);return !!m}
+function setLoading(on){const b=document.getElementById('btnLogin');b.disabled=on;b.classList.toggle('loading',on)}
+
+window.addEventListener('DOMContentLoaded',async()=>{
+  const token=localStorage.getItem(TOKEN_KEY),sess=JSON.parse(localStorage.getItem(SESSION_KEY)||'null');
+  if(token&&sess){try{const r=await fetch(`${API}/auth/validate`,{headers:{'Authorization':'Bearer '+token}});
+  if(r.ok){if(sess.role==='Supervisor'||sess.role==='Foreman'){window.location.href='supervisor.html';return;}
+  if(sess.role==='Admin'){window.location.href='admin.html';return;}
+  showDashboard(sess);loadUnits(sess.equipment_class||'ALL');if(sess.unit)restoreUnit(sess);return;}}catch{}
+  localStorage.removeItem(TOKEN_KEY);localStorage.removeItem(SESSION_KEY);}
+});
+
+async function doLogin(){hideAlert();
+  const driver_id=document.getElementById('loginId').value.trim().toUpperCase(),pin=document.getElementById('loginPin').value.trim();
+  let bad=false;bad=setErr('loginId',driver_id?'':'ID wajib diisi.')||bad;bad=setErr('loginPin',pin?'':'PIN wajib diisi.')||bad;
+  if(bad){document.getElementById('authCard').classList.add('shake');setTimeout(()=>document.getElementById('authCard').classList.remove('shake'),400);return;}
+  setLoading(true);
+  try{const res=await fetch(`${API}/auth/login`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({driver_id,pin})});
+  const data=await res.json();if(!res.ok||!data.success){setLoading(false);showAlert(data.message||'Login gagal.');return;}
+  const token=data.data.token,role=data.data.driver.role||'Driver';localStorage.setItem(TOKEN_KEY,token);
+  const session={id:data.data.driver.driver_id,name:data.data.driver.name,role,equipment_class:data.data.driver.equipment_class||'ALL'};
+  localStorage.setItem(SESSION_KEY,JSON.stringify(session));setLoading(false);
+  if(role==='Supervisor'||role==='Foreman'){window.location.href='supervisor.html';return;}
+  if(role==='Admin'){window.location.href='admin.html';return;}
+  showDashboard(session);loadUnits(session.equipment_class);
+  }catch{setLoading(false);showAlert('Server sedang bangun (~30 dtk) — coba lagi.');}
+}
+
+function showDashboard(s){document.getElementById('loginWrap').style.display='none';document.getElementById('dashboardView').style.display='block';
+  document.getElementById('dashName').textContent=(s.name||'').toUpperCase();document.getElementById('dashRole').textContent=s.role||'DRIVER';document.getElementById('dashId').textContent=s.id;}
+
+async function loadUnits(ec){try{const token=localStorage.getItem(TOKEN_KEY);
+  const url=ec&&ec!=='ALL'?`${API}/vehicles?equipment_class=${encodeURIComponent(ec)}`:`${API}/vehicles`;
+  const r=await fetch(url,{headers:{'Authorization':'Bearer '+token}});const d=await r.json();if(!d.success)return;
+  document.getElementById('unitList').innerHTML=d.data.filter(v=>v.status_unit==='Ready').map(v=>`<option value="${v.unit_id}">${v.unit_id} — ${v.vehicle_type}</option>`).join('');}catch{}}
+
+async function pickUnit(){const unit_id=document.getElementById('unitInput').value.trim().toUpperCase();
+  if(!unit_id){document.getElementById('unitErr').textContent='Masukkan nomor unit.';return;}
+  const btn=document.getElementById('btnPickUnit');btn.disabled=true;btn.textContent='⏳';document.getElementById('unitErr').innerHTML='';
+  try{const token=localStorage.getItem(TOKEN_KEY);
+  const vr=await fetch(`${API}/vehicles/${encodeURIComponent(unit_id)}`,{headers:{'Authorization':'Bearer '+token}});const vdata=await vr.json();
+  if(!vr.ok||!vdata.success){let e=vdata.message||'Unit tidak ditemukan.';if(vdata.data&&vdata.data.notes)e+='<br>📝 <strong>Keterangan:</strong> '+vdata.data.notes;
+  document.getElementById('unitErr').innerHTML=e;btn.disabled=false;btn.textContent='Pilih';return;}
+  const v=vdata.data,sess=JSON.parse(localStorage.getItem(SESSION_KEY));sess.unit=unit_id;sess.type=v.vehicle_type||'—';
+  localStorage.setItem(SESSION_KEY,JSON.stringify(sess));activateUnit(unit_id,v.vehicle_type||'—');
+  }catch{document.getElementById('unitErr').textContent='Gagal terhubung.';}finally{btn.disabled=false;btn.textContent='Pilih';}}
+
+function activateUnit(u,t){document.getElementById('unitSection').style.display='none';document.getElementById('unitInfo').classList.add('show');
+  document.getElementById('uiUnit').textContent=u;document.getElementById('uiType').textContent=t;document.getElementById('dashStatus').style.display='flex';
+  document.getElementById('btnFTW').disabled=false;document.getElementById('btnBD').disabled=false;checkActiveShift();}
+function restoreUnit(s){if(s.unit)activateUnit(s.unit,s.type||'—');}
+function changeUnit(){document.getElementById('unitSection').style.display='block';document.getElementById('unitInfo').classList.remove('show');
+  document.getElementById('dashStatus').style.display='none';document.getElementById('btnFTW').disabled=true;document.getElementById('btnBD').disabled=true;
+  document.getElementById('endShiftBox').style.display='none';document.getElementById('unitInput').value='';
+  const s=JSON.parse(localStorage.getItem(SESSION_KEY));delete s.unit;delete s.type;localStorage.setItem(SESSION_KEY,JSON.stringify(s));}
+function goToFTW(){window.location.href='shift.html';}
+
+let activeReportId=null;
+async function checkActiveShift(){try{const token=localStorage.getItem(TOKEN_KEY),sess=JSON.parse(localStorage.getItem(SESSION_KEY));
+  const today=new Date().toISOString().slice(0,10);
+  const r=await fetch(`${API}/supervisor/shift-reports?date=${today}&driver_id=${sess.id}&limit=1`,{headers:{'Authorization':'Bearer '+token}});
+  const d=await r.json();if(d.success&&d.data.reports.length>0){const rpt=d.data.reports[0];
+  if(rpt.overall_status==='Ready to Work'){activeReportId=rpt.report_id;const box=document.getElementById('endShiftBox');box.style.display='block';
+  if(rpt.odometer_end){box.innerHTML='<div style="font-size:.8rem;color:var(--success);padding:6px">✅ HM akhir: <strong>'+rpt.odometer_end+'</strong> (awal: '+rpt.odometer_entered+', selisih: +'+(rpt.odometer_end-rpt.odometer_entered)+')</div>';}}}}catch{}}
+async function submitEndShift(){const val=parseInt(document.getElementById('hmEndInput').value),msg=document.getElementById('hmEndMsg');
+  if(!val||val<=0){msg.textContent='Masukkan angka HM akhir.';msg.style.color='var(--danger)';return;}
+  try{const r=await fetch(`${API}/supervisor/shift-reports/${activeReportId}/end-shift`,{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+localStorage.getItem(TOKEN_KEY)},body:JSON.stringify({odometer_end:val})});
+  const d=await r.json();if(d.success){msg.textContent='✅ Tersimpan!';msg.style.color='var(--success)';setTimeout(()=>checkActiveShift(),1000);}
+  else{msg.textContent=d.message||'Gagal.';msg.style.color='var(--danger)';}}catch{msg.textContent='Gagal terhubung.';msg.style.color='var(--danger)';}}
+function doLogout(){localStorage.removeItem(TOKEN_KEY);localStorage.removeItem(SESSION_KEY);window.location.href='index.html';}
+</script>
+</body>
+</html>

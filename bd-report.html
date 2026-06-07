@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>FMS Light — Lapor Breakdown</title>
+<link rel="stylesheet" href="style.css"/>
+<style>
+.header-bar{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-md);padding:12px 16px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;box-shadow:var(--shadow-sm)}
+.hb-unit{font-size:1rem;font-weight:800;color:var(--text)}.hb-driver{font-size:.7rem;color:var(--text-muted)}
+.hb-status{font-size:.6rem;font-weight:700;padding:4px 10px;border-radius:var(--radius-pill);background:var(--success-bg);color:var(--success)}
+.page-title{font-size:1.1rem;font-weight:800;color:var(--text);margin-bottom:4px}
+.page-desc{font-size:.78rem;color:var(--text-secondary);margin-bottom:16px;line-height:1.5}
+.field select{width:100%;padding:12px;background:var(--input-bg);border:1.5px solid var(--input-border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--font);font-size:.88rem;font-weight:500;outline:none;-webkit-appearance:none;cursor:pointer}
+.field select:focus{border-color:var(--primary)}
+.field textarea{width:100%;padding:12px;background:var(--input-bg);border:1.5px solid var(--input-border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--font);font-size:.88rem;outline:none;resize:none;min-height:80px}
+.field textarea:focus,.field input:focus{border-color:var(--primary)}
+.field input[type=text],.field input[type=datetime-local]{width:100%;padding:12px;background:var(--input-bg);border:1.5px solid var(--input-border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--font);font-size:.88rem;outline:none}
+.sev-row{display:flex;gap:8px}
+.sev-pill{flex:1;padding:10px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--card);font-family:var(--font);font-size:.82rem;font-weight:700;color:var(--text-secondary);cursor:pointer;text-align:center;min-height:44px;transition:all .2s;box-shadow:var(--shadow-sm)}
+.sev-pill.sel-critical{border-color:var(--danger);background:var(--danger-bg);color:var(--danger)}
+.sev-pill.sel-major{border-color:var(--warning);background:var(--warning-bg);color:var(--warning)}
+.sev-pill.sel-minor{border-color:var(--info);background:var(--info-bg);color:var(--info)}
+.photo-area{border:2px dashed var(--border);border-radius:var(--radius-md);padding:24px;text-align:center;cursor:pointer;position:relative;overflow:hidden;min-height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:var(--input-bg);transition:border-color .2s}
+.photo-area.has-photo{border-color:var(--success);padding:0;background:white}
+.photo-area .ph-ico{font-size:1.8rem;opacity:.5}.photo-area .ph-text{font-size:.78rem;color:var(--text-muted)}
+.photo-area img{width:100%;max-height:200px;object-fit:contain;display:none;border-radius:var(--radius-sm)}
+.photo-area.has-photo img{display:block}.photo-area.has-photo .ph-ico,.photo-area.has-photo .ph-text{display:none}
+.photo-area input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.bd-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-md);margin-bottom:8px;overflow:hidden;box-shadow:var(--shadow-sm)}
+.bd-card.sev-Critical{border-left:3px solid var(--danger)}.bd-card.sev-Major{border-left:3px solid var(--warning)}.bd-card.sev-Minor{border-left:3px solid var(--info)}
+.bd-card-head{padding:10px 14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)}
+.bch-comp{font-size:.88rem;font-weight:800}.bch-sev{font-size:.58rem;font-weight:700;padding:3px 8px;border-radius:var(--radius-pill)}
+.bch-sev.s-Critical{background:var(--danger-bg);color:var(--danger)}.bch-sev.s-Major{background:var(--warning-bg);color:var(--warning)}.bch-sev.s-Minor{background:var(--info-bg);color:var(--info)}
+.bd-card-body{padding:10px 14px;font-size:.78rem;color:var(--text-secondary);line-height:1.7}
+.bd-card-body img{width:100%;max-height:150px;object-fit:contain;border-radius:var(--radius-sm);margin-top:6px;border:1px solid var(--border)}
+.bd-card-footer{padding:8px 14px;background:var(--input-bg);font-size:.68rem;color:var(--text-muted);display:flex;justify-content:space-between}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="topnav">
+  <div class="topnav-left"><img class="topnav-logo" src="logo-hte.png" alt="HTE"/><div class="topnav-text"><div class="tn-title">FMS Light</div><div class="tn-sub">Lapor Breakdown</div></div></div>
+  <button class="topnav-btn" onclick="window.location.href='index.html'">← Kembali</button>
+</div>
+<div class="header-bar">
+  <div><div class="hb-unit" id="hbUnit">—</div><div class="hb-driver" id="hbDriver">—</div></div>
+  <div class="hb-status">Shift Aktif</div>
+</div>
+<div class="tabs">
+  <button class="tab active" id="tabForm" onclick="switchTab('form')">📝 Buat Laporan</button>
+  <button class="tab" id="tabHistory" onclick="switchTab('history')">📋 Riwayat <span class="counter" id="histCount" style="display:none">0</span></button>
+</div>
+<div class="tab-panel active" id="panelForm">
+  <div class="page-title">🔴 Lapor Temuan Breakdown</div>
+  <div class="page-desc">Laporkan kerusakan yang ditemukan selama shift berjalan.</div>
+  <div class="alert alert-error" id="formAlert"></div>
+  <div class="field"><label class="field-label">Komponen Rusak</label>
+    <select id="bdComp"><option value="">— Pilih komponen —</option>
+    <optgroup label="Sistem Utama"><option value="Sistem Pengereman">Sistem Pengereman</option><option value="Kemudi & Ban">Kemudi & Ban</option><option value="Sistem Kemudi">Sistem Kemudi</option><option value="Transmisi">Transmisi</option><option value="Engine / Mesin">Engine / Mesin</option></optgroup>
+    <optgroup label="Sistem Pendukung"><option value="Cairan & Pelumas">Cairan & Pelumas</option><option value="Sistem Penerangan">Sistem Penerangan</option><option value="Kaca & Spion">Kaca & Spion</option><option value="Klakson & Alarm">Klakson & Alarm</option><option value="AC / Pendingin Kabin">AC / Pendingin</option><option value="Wiper">Wiper</option></optgroup>
+    <optgroup label="Struktur"><option value="Body / Bak">Body / Bak</option><option value="Hydraulic System">Hydraulic</option><option value="Suspension">Suspension</option><option value="Exhaust System">Exhaust</option></optgroup>
+    <optgroup label="Lainnya"><option value="Lainnya">Lainnya</option></optgroup></select></div>
+  <div class="field"><label class="field-label">Tingkat Keparahan</label>
+    <div class="sev-row"><button class="sev-pill" id="sevCritical" onclick="setSev('Critical')">🔴 Critical</button><button class="sev-pill" id="sevMajor" onclick="setSev('Major')">🟠 Major</button><button class="sev-pill" id="sevMinor" onclick="setSev('Minor')">🟡 Minor</button></div></div>
+  <div class="field"><label class="field-label">Deskripsi Kerusakan</label><textarea id="bdDesc" placeholder="Jelaskan kondisi kerusakan..."></textarea></div>
+  <div class="field"><label class="field-label">Lokasi Kejadian</label><input type="text" id="bdLoc" placeholder="Contoh: Pit Cendana Ext, Hauling Road KM 2"/></div>
+  <div class="field"><label class="field-label">Waktu Kejadian</label><input type="datetime-local" id="bdTime"/></div>
+  <div class="field"><label class="field-label">Foto (opsional)</label>
+    <div class="photo-area" id="bdPhotoArea"><span class="ph-ico">📷</span><span class="ph-text">Ketuk untuk foto</span><img id="bdPhotoPreview" alt=""/><input type="file" accept="image/*" capture="environment" onchange="handleBdPhoto(this)"/></div></div>
+  <div class="field"><label class="field-label">Tindakan Sementara (opsional)</label><input type="text" id="bdAction" placeholder="Contoh: Unit dihentikan"/></div>
+  <button class="btn btn-danger" id="btnSubmitBd" onclick="submitBD()">🔴 Kirim Laporan BD</button>
+  <button class="btn btn-outline mt-12" onclick="window.location.href='index.html'">← Kembali ke Dashboard</button>
+</div>
+<div class="tab-panel" id="panelHistory">
+  <div class="page-title">📋 Riwayat BD Shift Ini</div>
+  <div id="historyList"></div>
+  <button class="btn btn-outline mt-12" onclick="window.location.href='index.html'">← Kembali</button>
+</div>
+</div>
+<script>
+const API     = 'https://fms-light-backend-production.up.railway.app/api/v1';
+const SESSION = JSON.parse(localStorage.getItem('fms_session') || 'null');
+const TOKEN   = localStorage.getItem('fms_token');
+const BD_KEY  = 'fms_bd_reports';
+
+if (!SESSION || !TOKEN) {
+  alert('Sesi login tidak ditemukan. Silakan login dulu.');
+  window.location.href = 'index.html';
+}
+
+// ── State ──
+let currentSev = '';
+let bdPhotoData = null;
+
+// ── Init ──
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('hbUnit').textContent = SESSION.unit;
+  document.getElementById('hbDriver').textContent = SESSION.name + ' (' + SESSION.id + ')';
+  // Pre-fill waktu sekarang
+  const now = new Date();
+  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+  document.getElementById('bdTime').value = now.toISOString().slice(0,16);
+  updateHistoryCount();
+});
+
+// ── Tabs ──
+function switchTab(tab) {
+  document.getElementById('panelForm').classList.toggle('active', tab === 'form');
+  document.getElementById('panelHistory').classList.toggle('active', tab === 'history');
+  document.getElementById('tabForm').classList.toggle('active', tab === 'form');
+  document.getElementById('tabHistory').classList.toggle('active', tab === 'history');
+  if (tab === 'history') renderHistory();
+}
+
+// ── Severity ──
+function setSev(sev) {
+  currentSev = sev;
+  ['Critical','Major','Minor'].forEach(s => {
+    document.getElementById('sev'+s).className = 'sev-pill' + (s === sev ? ' sel-'+s.toLowerCase() : '');
+  });
+  // Fix class names
+  document.getElementById('sevCritical').className = 'sev-pill' + (sev==='Critical' ? ' sel-critical' : '');
+  document.getElementById('sevMajor').className    = 'sev-pill' + (sev==='Major'    ? ' sel-major'    : '');
+  document.getElementById('sevMinor').className    = 'sev-pill' + (sev==='Minor'    ? ' sel-minor'    : '');
+}
+
+// ── Photo ──
+function handleBdPhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    bdPhotoData = e.target.result;
+    document.getElementById('bdPhotoPreview').src = e.target.result;
+    document.getElementById('bdPhotoArea').classList.add('has-photo');
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── Submit (ke API backend) ──
+async function submitBD() {
+  const comp = document.getElementById('bdComp').value;
+  const desc = document.getElementById('bdDesc').value.trim();
+  const loc  = document.getElementById('bdLoc').value.trim();
+  const time = document.getElementById('bdTime').value;
+  const action = document.getElementById('bdAction').value.trim();
+
+  // Validasi
+  if (!comp) { showAlert('Pilih komponen yang rusak.', 'red'); return; }
+  if (!currentSev) { showAlert('Pilih tingkat keparahan.', 'red'); return; }
+  if (!desc) { showAlert('Isi deskripsi kerusakan.', 'red'); return; }
+  if (!loc) { showAlert('Isi lokasi saat kejadian.', 'red'); return; }
+
+  const body = {
+    driver_id: SESSION.id,
+    unit_id: SESSION.unit,
+    component: comp,
+    severity: currentSev,
+    description: desc,
+    location: loc,
+    event_time: time ? new Date(time).toISOString() : new Date().toISOString(),
+    action_taken: action || null,
+    photo_url: bdPhotoData || null,
+  };
+
+  const btn = document.getElementById('btnSubmitBd');
+  btn.disabled = true;
+  btn.textContent = '⏳ Mengirim...';
+
+  try {
+    const res = await fetch(`${API}/bd-reports`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + TOKEN
+      },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+
+    if (!res.ok || !data.success) {
+      btn.disabled = false;
+      btn.textContent = '🔴 KIRIM LAPORAN BD';
+      showAlert('⛔ Gagal: ' + (data.message || 'Server error'), 'red');
+      return;
+    }
+
+    // Berhasil
+    const bdId = data.data.bd_id;
+    showAlert(`✅ Laporan BD #${bdId} berhasil dikirim ke database!` +
+      (currentSev === 'Critical' ? ' Unit otomatis berstatus BREAKDOWN.' : ''), 'green');
+
+    // Reset form
+    document.getElementById('bdComp').value = '';
+    document.getElementById('bdDesc').value = '';
+    document.getElementById('bdLoc').value = '';
+    document.getElementById('bdAction').value = '';
+    currentSev = '';
+    setSev('');
+    bdPhotoData = null;
+    document.getElementById('bdPhotoArea').classList.remove('has-photo');
+    document.getElementById('bdPhotoPreview').src = '';
+
+    // Auto-fill waktu baru
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    document.getElementById('bdTime').value = now.toISOString().slice(0,16);
+
+    // Refresh count
+    await updateHistoryCount();
+
+  } catch (e) {
+    showAlert('⛔ Gagal terhubung ke server. Coba lagi.', 'red');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🔴 KIRIM LAPORAN BD';
+  }
+}
+
+// ── History (dari API) ──
+async function updateHistoryCount() {
+  try {
+    const res = await fetch(`${API}/bd-reports?unit_id=${SESSION.unit}&limit=1`, {
+      headers: { 'Authorization': 'Bearer ' + TOKEN }
+    });
+    const data = await res.json();
+    const c = data.success ? data.data.total : 0;
+    const el = document.getElementById('histCount');
+    el.textContent = c;
+    el.style.display = c > 0 ? 'inline-flex' : 'none';
+  } catch { /* silent */ }
+}
+
+async function renderHistory() {
+  const container = document.getElementById('historyList');
+  container.innerHTML = '<div class="bd-history-empty">⏳ Memuat data...</div>';
+
+  try {
+    const res = await fetch(`${API}/bd-reports?unit_id=${SESSION.unit}&limit=50`, {
+      headers: { 'Authorization': 'Bearer ' + TOKEN }
+    });
+    const data = await res.json();
+
+    if (!data.success || data.data.reports.length === 0) {
+      container.innerHTML = `<div class="bd-history-empty">
+        <div style="font-size:2rem;margin-bottom:8px">📭</div>
+        Belum ada laporan BD untuk unit ini.
+      </div>`;
+      return;
+    }
+
+    container.innerHTML = data.data.reports.map(r => `
+      <div class="bd-card sev-${r.severity}">
+        <div class="bd-card-head">
+          <span class="bch-comp">${r.component}</span>
+          <span class="bch-sev s-${r.severity}">${r.severity === 'Critical' ? '🔴' : r.severity === 'Major' ? '🟠' : '🟡'} ${r.severity}</span>
+        </div>
+        <div class="bd-card-body">
+          <div class="bcb-row"><span class="bcb-ico">📝</span> ${r.description}</div>
+          <div class="bcb-row"><span class="bcb-ico">📍</span> ${r.location}</div>
+          <div class="bcb-row"><span class="bcb-ico">🕐</span> ${r.event_time ? new Date(r.event_time).toLocaleString('id-ID') : '—'}</div>
+          ${r.action_taken ? `<div class="bcb-row"><span class="bcb-ico">🔧</span> ${r.action_taken}</div>` : ''}
+          <div class="bcb-row"><span class="bcb-ico">👤</span> ${r.driver_name || r.driver_id}</div>
+          ${r.photo_url ? `<img src="${r.photo_url}" alt="Foto BD"/>` : ''}
+        </div>
+        <div class="bd-card-footer">
+          <span>BD #${r.bd_id} · <span style="color:${r.status==='Open'?'var(--danger)':r.status==='Resolved'?'var(--success)':'var(--warning)'}">${r.status}</span></span>
+          <span>${new Date(r.created_at).toLocaleString('id-ID')}</span>
+        </div>
+      </div>
+    `).join('');
+  } catch (e) {
+    container.innerHTML = `<div class="bd-history-empty">⛔ Gagal memuat data dari server.</div>`;
+  }
+}
+
+// ── Alert ──
+function showAlert(msg, type) {
+  const el = document.getElementById('formAlert');
+  el.innerHTML = msg;
+  el.className = `alert-box ${type} show`;
+  window.scrollTo(0, 0);
+  if (type === 'green') setTimeout(() => { el.className = 'alert-box'; }, 4000);
+}
+</script>
+</body></html>
