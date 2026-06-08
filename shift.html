@@ -176,7 +176,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 <div class="step-panel" id="step2">
   <div class="step-info"><span class="step-num">Langkah 2 / 5</span></div>
   <div class="step-title">🔧 Inspeksi P2H</div>
-  <div class="step-desc">Periksa setiap komponen kendaraan. Komponen CRITICAL yang rusak akan memblokir unit.</div>
+  <div class="step-desc">Checklist sesuai jenis unit yang dipilih. Kode AA (Kritis) wajib STOP. Kode A perbaiki 12 jam. Kode B perbaiki 24 jam.</div>
   <div class="alert-box red" id="p2hAlert"></div>
   <div id="p2hList"></div>
   <div class="btn-row">
@@ -266,6 +266,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 
 </div><!-- /.app -->
 
+<script src="p2h-data.js"></script>
 <script>
 // ══════════════════════════════════════════════════════════════
 //  CONFIG — GANTI DENGAN URL BACKEND KAMU (sama seperti di index.html)
@@ -290,16 +291,16 @@ const FTW_QUESTIONS = [
   { question_id:5, text:'Apakah Anda telah mengonsumsi alkohol dalam 12 jam terakhir?', ideal:false },
 ];
 
-const P2H_ITEMS = [
-  { item_id:1, name:'Sistem Pengereman', type:'Fungsi rem utama & parkir', cls:'CRITICAL' },
-  { item_id:2, name:'Kemudi & Ban', type:'Tekanan angin & baut roda', cls:'CRITICAL' },
-  { item_id:3, name:'Sistem Kemudi', type:'Kelancaran & responsivitas setir', cls:'CRITICAL' },
-  { item_id:4, name:'Cairan & Pelumas', type:'Level oli mesin & air radiator', cls:'NON_CRITICAL' },
-  { item_id:5, name:'Sistem Penerangan', type:'Lampu senja & lampu kabin', cls:'NON_CRITICAL' },
-  { item_id:6, name:'Kaca & Spion', type:'Kondisi kaca depan & spion samping', cls:'NON_CRITICAL' },
-  { item_id:7, name:'Klakson & Alarm', type:'Fungsi klakson & backup alarm', cls:'NON_CRITICAL' },
-  { item_id:8, name:'Kebersihan Unit', type:'Kondisi kabin & tangga naik/turun', cls:'NON_CRITICAL' },
-];
+// P2H items loaded dynamically based on unit type from p2h-data.js
+const eqClass = SESSION.eq_class || SESSION.type || 'Dump Truck';
+const rawP2H = getP2HItems(eqClass);
+const P2H_ITEMS = rawP2H.map(it => ({
+  item_id: it.id,
+  name: it.item,
+  hazard: it.hazard,
+  section: it.section,
+  cls: it.hazard === 'AA' ? 'CRITICAL' : 'NON_CRITICAL'
+}));
 
 // ── State ──
 const state = {
@@ -387,36 +388,45 @@ function checkFTWComplete() {
 // ══════════════════════════════════
 function renderP2H() {
   const c = document.getElementById('p2hList');
-  c.innerHTML = P2H_ITEMS.map(it => `
-    <div class="p2h-item" id="p2h-${it.item_id}">
-      <div class="p2h-head">
-        <div>
-          <div class="p2h-name">${it.name}</div>
-          <div class="p2h-type">${it.type}</div>
+  // Group by section
+  const sections = {};
+  P2H_ITEMS.forEach(it => {
+    if (!sections[it.section]) sections[it.section] = [];
+    sections[it.section].push(it);
+  });
+  
+  let html = `<div style="font-size:.72rem;color:var(--muted);margin-bottom:10px;padding:8px 10px;background:var(--input-bg);border:1px solid var(--border);border-radius:6px">
+    📋 Checklist <strong style="color:var(--text)">${eqClass}</strong> — ${P2H_ITEMS.length} item.
+    <span style="color:var(--danger)">AA=Kritis(STOP)</span> · <span style="color:var(--warning)">A=Tinggi(12jam)</span> · <span style="color:#3B82F6">B=Sedang(24jam)</span>
+  </div>`;
+  
+  for (const [sec, items] of Object.entries(sections)) {
+    if (sec) html += `<div style="font-size:.72rem;font-weight:700;color:var(--muted);margin:12px 0 6px;padding:4px 0;border-bottom:1px solid var(--border)">${sec}</div>`;
+    items.forEach(it => {
+      const h = HAZARD[it.hazard] || HAZARD['B'];
+      const badgeColor = it.hazard==='AA'?'var(--danger)':it.hazard==='A'?'var(--warning)':'#3B82F6';
+      html += `
+      <div class="p2h-item" id="p2h-${it.item_id}">
+        <div class="p2h-head">
+          <div>
+            <div class="p2h-name">${it.name}</div>
+          </div>
+          <div class="p2h-class" style="background:${h.bg};color:${h.color};border:1px solid ${h.color}30">${it.hazard} · ${h.level}</div>
         </div>
-        <div class="p2h-class ${it.cls === 'CRITICAL' ? 'crit' : 'non-crit'}">${it.cls === 'CRITICAL' ? '🔴 Critical' : '🟡 Non-Critical'}</div>
-      </div>
-      <div class="q-btns">
-        <button class="q-btn" id="p2h-${it.item_id}-ok" onclick="answerP2H(${it.item_id},true)">✔ Baik / OK</button>
-        <button class="q-btn" id="p2h-${it.item_id}-fail" onclick="answerP2H(${it.item_id},false)">✖ Rusak</button>
-      </div>
-      <div class="bd-detail" id="bd-detail-${it.item_id}">
-        <div class="bd-title">📝 Detail Laporan Kerusakan</div>
-        <div class="bd-field">
-          <label>Deskripsi Kerusakan</label>
-          <textarea id="bd-desc-${it.item_id}" placeholder="Jelaskan kondisi kerusakan..." oninput="updateBD(${it.item_id})"></textarea>
+        <div class="q-btns">
+          <button class="q-btn" id="p2h-${it.item_id}-ok" onclick="answerP2H(${it.item_id},true)">✔ Baik</button>
+          <button class="q-btn" id="p2h-${it.item_id}-fail" onclick="answerP2H(${it.item_id},false)">✖ Rusak</button>
         </div>
-        <div class="bd-field">
-          <label>Lokasi Unit Saat BD</label>
-          <input type="text" id="bd-loc-${it.item_id}" placeholder="Contoh: Pit Cendana Ext, Front 3" oninput="updateBD(${it.item_id})"/>
+        <div class="bd-detail" id="bd-detail-${it.item_id}">
+          <div class="bd-title">📝 Detail Kerusakan — Kode ${it.hazard}: ${h.action}</div>
+          <div class="bd-field"><label>Deskripsi</label><textarea id="bd-desc-${it.item_id}" placeholder="Jelaskan kerusakan..." oninput="updateBD(${it.item_id})"></textarea></div>
+          <div class="bd-field"><label>Lokasi</label><input type="text" id="bd-loc-${it.item_id}" placeholder="Lokasi unit saat ditemukan" oninput="updateBD(${it.item_id})"/></div>
+          <div class="bd-field"><label>Waktu</label><input type="datetime-local" id="bd-time-${it.item_id}" oninput="updateBD(${it.item_id})"/></div>
         </div>
-        <div class="bd-field">
-          <label>Waktu Ditemukan</label>
-          <input type="datetime-local" id="bd-time-${it.item_id}" oninput="updateBD(${it.item_id})"/>
-        </div>
-      </div>
-    </div>
-  `).join('');
+      </div>`;
+    });
+  }
+  c.innerHTML = html;
 }
 
 function answerP2H(id, isOk) {
@@ -452,12 +462,16 @@ function updateBD(id) {
 
 function checkP2HComplete() {
   const allChecked = P2H_ITEMS.every(it => state.p2h[it.item_id] !== undefined);
-  const hasCritFail = P2H_ITEMS.some(it => it.cls === 'CRITICAL' && state.p2h[it.item_id] && !state.p2h[it.item_id].is_ok);
+  const hasAAFail = P2H_ITEMS.some(it => it.hazard === 'AA' && state.p2h[it.item_id] && !state.p2h[it.item_id].is_ok);
+  const aFails = P2H_ITEMS.filter(it => it.hazard === 'A' && state.p2h[it.item_id] && !state.p2h[it.item_id].is_ok);
   const alert = document.getElementById('p2hAlert');
 
-  if (hasCritFail) {
-    alert.innerHTML = '⛔ <strong>CRITICAL ITEM RUSAK</strong> — Unit akan otomatis berstatus BREAKDOWN setelah laporan dikirim. Unit tidak boleh beroperasi hingga diperbaiki.';
+  if (hasAAFail) {
+    alert.innerHTML = '⛔ <strong>KODE AA — KRITIS</strong> — Komponen kritis rusak. Unit TIDAK BOLEH dioperasikan. Lapor ke Supervisor segera. Status unit akan otomatis BREAKDOWN.';
     alert.className = 'alert-box red show';
+  } else if (aFails.length > 0) {
+    alert.innerHTML = `⚠️ <strong>KODE A — ${aFails.length} item</strong> — Unit boleh operasi sementara. Harus diperbaiki dalam 1×12 jam.`;
+    alert.className = 'alert-box yellow show';
   } else {
     alert.className = 'alert-box red';
   }
@@ -561,13 +575,13 @@ function clearSig() {
 // ══════════════════════════════════
 function renderReview() {
   const ftwIdeal = FTW_QUESTIONS.every(q => state.ftw[q.question_id] === q.ideal);
-  const critFail = P2H_ITEMS.some(it => it.cls === 'CRITICAL' && state.p2h[it.item_id] && !state.p2h[it.item_id].is_ok);
-  const nonCritFails = P2H_ITEMS.filter(it => it.cls === 'NON_CRITICAL' && state.p2h[it.item_id] && !state.p2h[it.item_id].is_ok);
+  const hasAAFail = P2H_ITEMS.some(it => it.hazard === 'AA' && state.p2h[it.item_id] && !state.p2h[it.item_id].is_ok);
+  const failedItems = P2H_ITEMS.filter(it => state.p2h[it.item_id] && !state.p2h[it.item_id].is_ok);
 
   // Predicted status
   let predicted, predClass;
   if (!ftwIdeal) { predicted = 'DRIVER UNFIT'; predClass = 'red'; }
-  else if (critFail) { predicted = 'UNIT BREAKDOWN'; predClass = 'red'; }
+  else if (hasAAFail) { predicted = 'UNIT BREAKDOWN'; predClass = 'red'; }
   else { predicted = 'READY TO WORK'; predClass = 'green'; }
 
   const alert = document.getElementById('reviewAlert');
@@ -599,10 +613,10 @@ function renderReview() {
   html += `</div>`;
 
   // P2H
-  html += `<div class="review-section"><div class="rs-title">🔧 P2H (${critFail ? 'FAILED' : 'PASSED'})</div>`;
+  html += `<div class="review-section"><div class="rs-title">🔧 P2H (${hasAAFail ? 'FAILED' : 'PASSED'})</div>`;
   P2H_ITEMS.forEach(it => {
     const r = state.p2h[it.item_id];
-    html += `<div class="review-row"><span class="rr-q" style="font-size:.78rem">${it.name} <span style="color:${it.cls==='CRITICAL'?'var(--danger)':'var(--accent)'}; font-size:.65rem">[${it.cls}]</span></span><span class="rr-a ${r.is_ok?'ok':'fail'}">${r.is_ok?'OK':'RUSAK'}</span></div>`;
+    html += `<div class="review-row"><span class="rr-q" style="font-size:.78rem">${it.name} <span style="color:${it.cls==='CRITICAL'?'var(--danger)':'var(--accent)'}; font-size:.65rem">${it.hazard}</span></span><span class="rr-a ${r.is_ok?'ok':'fail'}">${r.is_ok?'OK':'RUSAK'}</span></div>`;
     if (!r.is_ok && (r.bd_desc || r.bd_loc || r.bd_time)) {
       html += `<div style="margin:-2px 0 6px;padding:8px 10px;background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.15);border-radius:4px;font-size:.75rem;color:var(--muted);line-height:1.5">`;
       if (r.bd_desc) html += `<div>📝 ${r.bd_desc}</div>`;
@@ -613,9 +627,9 @@ function renderReview() {
   });
   html += `</div>`;
 
-  if (nonCritFails.length > 0) {
+  if (failedItems.length > 0) {
     html += `<div style="font-size:.78rem;color:var(--accent);background:rgba(0,200,83,.08);border:1px solid rgba(0,200,83,.2);border-radius:4px;padding:10px 12px;margin-bottom:14px">
-      📝 ${nonCritFails.length} komponen non-critical rusak — tiket maintenance akan otomatis dibuat.
+      📝 ${failedItems.length} item rusak ditemukan — tiket perbaikan dibuat otomatis.
     </div>`;
   }
 

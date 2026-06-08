@@ -203,7 +203,7 @@ async function pickUnit(){const unit_id=document.getElementById('unitInput').val
   const vr=await fetch(`${API}/vehicles/${encodeURIComponent(unit_id)}`,{headers:{'Authorization':'Bearer '+token}});const vdata=await vr.json();
   if(!vr.ok||!vdata.success){let e=vdata.message||'Unit tidak ditemukan.';if(vdata.data&&vdata.data.notes)e+='<br>📝 <strong>Keterangan:</strong> '+vdata.data.notes;
   document.getElementById('unitErr').innerHTML=e;btn.disabled=false;btn.textContent='Pilih';return;}
-  const v=vdata.data,sess=JSON.parse(localStorage.getItem(SESSION_KEY));sess.unit=unit_id;sess.type=v.vehicle_type||'—';
+  const v=vdata.data,sess=JSON.parse(localStorage.getItem(SESSION_KEY));sess.unit=unit_id;sess.type=v.vehicle_type||'—';sess.eq_class=v.equipment_class||'Dump Truck';
   localStorage.setItem(SESSION_KEY,JSON.stringify(sess));activateUnit(unit_id,v.vehicle_type||'—');
   }catch{document.getElementById('unitErr').textContent='Gagal terhubung.';}finally{btn.disabled=false;btn.textContent='Pilih';}}
 
