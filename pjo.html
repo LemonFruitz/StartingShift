@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Starting Shift — Dashboard PJO</title>
+<link rel="stylesheet" href="style.css"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
+<style>
+.kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px 16px;box-shadow:var(--shadow-sm);position:relative;overflow:hidden}
+.kpi::after{content:'';position:absolute;top:-20px;right:-20px;width:60px;height:60px;border-radius:50%;opacity:.08}
+.kpi.green::after{background:var(--success)}.kpi.red::after{background:var(--danger)}.kpi.blue::after{background:var(--secondary)}.kpi.yellow::after{background:var(--warning)}
+.kpi-val{font-size:2rem;font-weight:800;line-height:1;margin-bottom:4px}
+.kpi-label{font-size:.68rem;font-weight:600;color:var(--text-muted);letter-spacing:.02em}
+.kpi-sub{font-size:.6rem;color:var(--text-muted);margin-top:4px}
+
+.chart-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:14px;box-shadow:var(--shadow-sm)}
+.chart-title{font-size:.85rem;font-weight:700;color:var(--text);margin-bottom:12px}
+.chart-wrap{position:relative;height:220px}
+.chart-wrap canvas{max-height:220px}
+
+.eq-table{width:100%;border-collapse:collapse;font-size:.78rem}
+.eq-table th{text-align:left;padding:8px 10px;background:var(--input-bg);color:var(--text-muted);font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--border)}
+.eq-table td{padding:8px 10px;border-bottom:1px solid var(--border)}
+.eq-table tr:hover{background:var(--input-bg)}
+.eq-table .num{text-align:center;font-weight:700}
+
+.alert-card{background:var(--danger-bg);border:1px solid rgba(239,68,68,.2);border-radius:var(--radius-md);padding:14px;margin-bottom:10px;display:flex;gap:10px;align-items:flex-start}
+.alert-card .ac-ico{font-size:1.2rem;flex-shrink:0}.alert-card .ac-text{font-size:.78rem;color:var(--danger);line-height:1.5}
+.alert-card .ac-unit{font-weight:700}
+
+.section-title{font-size:.92rem;font-weight:700;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+</style>
+</head>
+<body>
+<div class="app app-wide">
+
+<div class="topnav">
+  <div class="topnav-left"><img class="topnav-logo" src="logo-hte.png" alt="HTE"/><div class="topnav-text"><div class="tn-title">Starting Shift</div><div class="tn-sub">Dashboard PJO</div></div></div>
+  <div class="topnav-actions">
+    <button class="topnav-btn" style="color:var(--danger);border-color:rgba(239,68,68,.3)" onclick="downloadPJOPDF()">📄 PDF</button>
+    <button class="topnav-btn" onclick="doLogout()">Logout</button>
+  </div>
+</div>
+
+<!-- KPI Cards -->
+<div class="kpi-grid" id="kpiGrid">
+  <div class="kpi green"><div class="kpi-val text-success" id="kP2h">—</div><div class="kpi-label">P2H Compliance</div><div class="kpi-sub" id="kP2hSub">—</div></div>
+  <div class="kpi blue"><div class="kpi-val text-primary" id="kFtw">—</div><div class="kpi-label">FTW Pass Rate</div><div class="kpi-sub" id="kFtwSub">—</div></div>
+  <div class="kpi green"><div class="kpi-val text-success" id="kFleet">—</div><div class="kpi-label">Fleet Readiness</div><div class="kpi-sub" id="kFleetSub">—</div></div>
+  <div class="kpi yellow"><div class="kpi-val" style="color:var(--warning)" id="kDriver">—</div><div class="kpi-label">Driver Coverage</div><div class="kpi-sub" id="kDriverSub">—</div></div>
+</div>
+
+<!-- Trend Chart -->
+<div class="chart-card">
+  <div class="chart-title">📈 Tren 7 Hari Terakhir — Laporan Shift</div>
+  <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
+</div>
+
+<!-- BD Trend -->
+<div class="chart-card">
+  <div class="chart-title">🔴 Tren Breakdown & Unfit</div>
+  <div class="chart-wrap"><canvas id="bdChart"></canvas></div>
+</div>
+
+<!-- Equipment Summary -->
+<div class="chart-card">
+  <div class="section-title">🏗️ Ringkasan per Jenis Unit</div>
+  <div style="overflow-x:auto">
+    <table class="eq-table" id="eqTable">
+      <thead><tr><th>Kelas Unit</th><th class="num">Total</th><th class="num">Ready</th><th class="num">BD</th><th class="num">MT</th><th class="num">Driver Lapor</th><th class="num">Avg HM/Shift</th></tr></thead>
+      <tbody id="eqBody"><tr><td colspan="7" style="text-align:center;color:var(--text-muted)">Memuat...</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Alerts -->
+<div id="alertSection"></div>
+
+</div>
+
+<script>
+const API='https://fms-light-backend-production.up.railway.app/api/v1';
+const TOKEN=localStorage.getItem('fms_token');
+const SESSION=JSON.parse(localStorage.getItem('fms_session')||'null');
+if(!SESSION||!TOKEN)window.location.href='index.html';
+
+let trendData=[],eqData=[],statsData=null,allUnits=[];
+
+document.addEventListener('DOMContentLoaded',()=>{ loadAll(); });
+
+async function loadAll(){
+  await Promise.all([loadStats(),loadTrends(),loadEquipment(),loadUnits()]);
+  renderKPI();renderTrendChart();renderBDChart();renderEquipment();renderAlerts();
+}
+
+async function loadStats(){
+  try{const r=await fetch(`${API}/supervisor/dashboard-stats`,{headers:{'Authorization':'Bearer '+TOKEN}});
+  const d=await r.json();if(d.success)statsData=d.data;}catch{}}
+
+async function loadTrends(){
+  try{const r=await fetch(`${API}/supervisor/daily-trends?days=7`,{headers:{'Authorization':'Bearer '+TOKEN}});
+  const d=await r.json();if(d.success)trendData=d.data;}catch{}}
+
+async function loadEquipment(){
+  try{const r=await fetch(`${API}/supervisor/equipment-summary`,{headers:{'Authorization':'Bearer '+TOKEN}});
+  const d=await r.json();if(d.success)eqData=d.data;}catch{}}
+
+async function loadUnits(){
+  try{const r=await fetch(`${API}/vehicles`,{headers:{'Authorization':'Bearer '+TOKEN}});
+  const d=await r.json();if(d.success)allUnits=d.data;}catch{}}
+
+// ── KPI ──
+function renderKPI(){
+  if(!statsData)return;
+  const s=statsData;
+  const totalUnits=allUnits.length||1;
+  const readyUnits=allUnits.filter(u=>u.status_unit==='Ready').length;
+
+  // P2H Compliance: drivers who reported / total ready units
+  const p2h=totalUnits>0?Math.round(s.total_reports/totalUnits*100):0;
+  document.getElementById('kP2h').textContent=p2h+'%';
+  document.getElementById('kP2hSub').textContent=`${s.total_reports} lapor dari ${totalUnits} unit`;
+
+  // FTW Pass Rate
+  const ftwRate=s.total_reports>0?Math.round(s.active_drivers/s.total_reports*100):0;
+  document.getElementById('kFtw').textContent=ftwRate+'%';
+  document.getElementById('kFtwSub').textContent=`${s.active_drivers} fit dari ${s.total_reports} lapor`;
+
+  // Fleet Readiness
+  const fleet=Math.round(readyUnits/totalUnits*100);
+  document.getElementById('kFleet').textContent=fleet+'%';
+  document.getElementById('kFleetSub').textContent=`${readyUnits} ready, ${s.unit_breakdown} BD`;
+
+  // Driver Coverage
+  document.getElementById('kDriver').textContent=s.active_drivers;
+  document.getElementById('kDriverSub').textContent=`dari ${s.total_reports} yang melapor hari ini`;
+}
+
+// ── Trend Chart ──
+function renderTrendChart(){
+  if(!trendData.length)return;
+  const labels=trendData.map(t=>{const d=new Date(t.date);return d.toLocaleDateString('id-ID',{day:'2-digit',month:'short'});});
+  new Chart(document.getElementById('trendChart'),{
+    type:'line',
+    data:{
+      labels,
+      datasets:[
+        {label:'Total Lapor',data:trendData.map(t=>t.total_reports),borderColor:'#00C853',backgroundColor:'rgba(0,200,83,.1)',fill:true,tension:.4,borderWidth:2.5,pointRadius:4,pointBackgroundColor:'#00C853'},
+        {label:'Ready to Work',data:trendData.map(t=>t.rtw),borderColor:'#00B0FF',backgroundColor:'rgba(0,176,255,.1)',fill:true,tension:.4,borderWidth:2,pointRadius:3,pointBackgroundColor:'#00B0FF'},
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11,family:'Plus Jakarta Sans'},usePointStyle:true,padding:14}}},scales:{y:{beginAtZero:true,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:10}}},x:{grid:{display:false},ticks:{font:{size:10}}}}}
+  });
+}
+
+// ── BD Chart ──
+function renderBDChart(){
+  if(!trendData.length)return;
+  const labels=trendData.map(t=>{const d=new Date(t.date);return d.toLocaleDateString('id-ID',{day:'2-digit',month:'short'});});
+  new Chart(document.getElementById('bdChart'),{
+    type:'bar',
+    data:{
+      labels,
+      datasets:[
+        {label:'Unit Breakdown',data:trendData.map(t=>t.breakdown),backgroundColor:'rgba(239,68,68,.7)',borderRadius:6,barPercentage:.5},
+        {label:'Driver Unfit',data:trendData.map(t=>t.unfit),backgroundColor:'rgba(245,158,11,.7)',borderRadius:6,barPercentage:.5},
+        {label:'BD Reports',data:trendData.map(t=>t.bd_reports),backgroundColor:'rgba(59,130,246,.6)',borderRadius:6,barPercentage:.5},
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11,family:'Plus Jakarta Sans'},usePointStyle:true,padding:14}}},scales:{y:{beginAtZero:true,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:10},stepSize:1}},x:{grid:{display:false},ticks:{font:{size:10}}}}}
+  });
+}
+
+// ── Equipment Summary ──
+function renderEquipment(){
+  const body=document.getElementById('eqBody');
+  if(!eqData.length){body.innerHTML='<tr><td colspan="7" class="empty">Tidak ada data.</td></tr>';return;}
+  body.innerHTML=eqData.map(e=>{
+    const readyPct=e.total_units>0?Math.round(e.ready/e.total_units*100):0;
+    return `<tr>
+      <td style="font-weight:700">${e.equipment_class}</td>
+      <td class="num">${e.total_units}</td>
+      <td class="num" style="color:var(--success)">${e.ready}</td>
+      <td class="num" style="color:${e.bd>0?'var(--danger)':'var(--text-muted)'}">${e.bd}</td>
+      <td class="num" style="color:${e.mt>0?'var(--warning)':'var(--text-muted)'}">${e.mt}</td>
+      <td class="num">${e.drivers_reported}</td>
+      <td class="num">${e.avg_hm_per_shift||'—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Alerts ──
+function renderAlerts(){
+  const bdUnits=allUnits.filter(u=>u.status_unit!=='Ready');
+  const section=document.getElementById('alertSection');
+  if(!bdUnits.length){section.innerHTML='';return;}
+  let html='<div class="section-title" style="margin-top:4px">⚠️ Unit Tidak Ready</div>';
+  bdUnits.forEach(u=>{
+    html+=`<div class="alert-card"><span class="ac-ico">${u.status_unit==='Breakdown'?'🔴':'🟡'}</span><div class="ac-text"><span class="ac-unit">${u.unit_id}</span> — ${u.vehicle_type||''}<br>${u.notes||'Tidak ada keterangan'}</div></div>`;
+  });
+  section.innerHTML=html;
+}
+
+// ── PDF ──
+async function downloadPJOPDF(){
+  if(!window.jspdf){alert('Library PDF sedang dimuat.');return;}
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+  const pw=doc.internal.pageSize.getWidth(),ph=doc.internal.pageSize.getHeight();
+  const today=new Date().toISOString().slice(0,10);
+  const todayFmt=new Date().toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+
+  // Header
+  doc.setFillColor(0,200,83);doc.rect(0,0,pw*.55,24,'F');
+  doc.setFillColor(0,176,255);doc.rect(pw*.55,0,pw*.45,24,'F');
+  doc.setTextColor(255);doc.setFontSize(13);doc.setFont(undefined,'bold');
+  doc.text('PT HALMAHERA TRANSPORTASI ENERGI',14,10);
+  doc.setFontSize(9);doc.setFont(undefined,'normal');
+  doc.text('Laporan Eksekutif PJO — Starting Shift Web App',14,16);
+  doc.setFontSize(7);doc.text(todayFmt,14,21);
+  doc.setTextColor(30);
+
+  // KPI
+  doc.setFontSize(10);doc.setFont(undefined,'bold');doc.text('Key Performance Indicators',14,32);
+  const totalU=allUnits.length||1,readyU=allUnits.filter(u=>u.status_unit==='Ready').length;
+  const kpis=[
+    {label:'P2H Compliance',val:statsData?Math.round(statsData.total_reports/totalU*100)+'%':'—'},
+    {label:'FTW Pass Rate',val:statsData&&statsData.total_reports>0?Math.round(statsData.active_drivers/statsData.total_reports*100)+'%':'—'},
+    {label:'Fleet Readiness',val:Math.round(readyU/totalU*100)+'%'},
+    {label:'Driver Aktif',val:statsData?String(statsData.active_drivers):'—'},
+  ];
+  kpis.forEach((k,i)=>{
+    const x=14+i*65;
+    doc.setFillColor(240,244,248);doc.roundedRect(x,35,58,16,3,3,'F');
+    doc.setFontSize(16);doc.setFont(undefined,'bold');doc.setTextColor(0,160,70);
+    doc.text(k.val,x+29,45,{align:'center'});
+    doc.setFontSize(6);doc.setFont(undefined,'normal');doc.setTextColor(100);
+    doc.text(k.label,x+29,50,{align:'center'});
+  });
+  doc.setTextColor(30);
+
+  // Equipment table
+  if(eqData.length>0){
+    doc.setFontSize(10);doc.setFont(undefined,'bold');doc.text('Ringkasan per Jenis Unit',14,60);
+    doc.autoTable({startY:63,
+      head:[['Kelas Unit','Total','Ready','BD','MT','Driver Lapor','Avg HM/Shift']],
+      body:eqData.map(e=>[e.equipment_class,e.total_units,e.ready,e.bd,e.mt,e.drivers_reported,e.avg_hm_per_shift||'-']),
+      styles:{fontSize:7,cellPadding:2.5},headStyles:{fillColor:[0,200,83],textColor:255,fontStyle:'bold'},
+      alternateRowStyles:{fillColor:[245,247,250]},
+    });
+  }
+
+  // BD units
+  const bdU=allUnits.filter(u=>u.status_unit!=='Ready');
+  if(bdU.length>0){
+    let y=doc.lastAutoTable?doc.lastAutoTable.finalY+8:80;
+    if(y>ph-30){doc.addPage();y=14;}
+    doc.setFontSize(10);doc.setFont(undefined,'bold');doc.text('Unit Tidak Ready',14,y);
+    doc.autoTable({startY:y+3,
+      head:[['Unit','Tipe','Status','Keterangan']],
+      body:bdU.map(u=>[u.unit_id,u.vehicle_type||'',u.status_unit,u.notes||'-']),
+      styles:{fontSize:7,cellPadding:2},headStyles:{fillColor:[239,68,68],textColor:255},
+      alternateRowStyles:{fillColor:[254,242,242]},
+    });
+  }
+
+  const pages=doc.internal.getNumberOfPages();
+  for(let i=1;i<=pages;i++){doc.setPage(i);doc.setFontSize(6.5);doc.setTextColor(180);
+    doc.text('Starting Shift Web App — PT HTE',14,ph-5);doc.text(`Hal ${i}/${pages}`,pw-14,ph-5,{align:'right'});}
+  doc.save(`Laporan_PJO_${today}.pdf`);
+}
+
+function doLogout(){localStorage.removeItem('fms_token');localStorage.removeItem('fms_session');window.location.href='index.html';}
+</script>
+</body>
+</html>
