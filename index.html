@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <meta name="theme-color" content="#F0F4F8"/>
-<title>FMS Light — Login</title>
+<title>Starting Shift — Login</title>
 <link rel="stylesheet" href="style.css"/>
 <style>
   .login-wrap{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 16px;background:linear-gradient(135deg,rgba(0,200,83,.04),rgba(0,176,255,.04))}
@@ -17,7 +17,7 @@
   .login-card .card-header-gradient .ch-title{font-size:1rem;font-weight:700}
   .login-card .card-header-gradient .ch-ico{font-size:1.2rem}
 
-  .dashboard{display:none;width:100%;max-width:420px;animation:fadeUp .4s ease both}
+  .dashboard{display:none;min-height:100dvh;padding:0 16px 32px;max-width:480px;margin:0 auto}
   .profile-card{background:var(--grad);border-radius:var(--radius);padding:22px 20px;color:white;margin-bottom:14px;box-shadow:var(--shadow-btn);position:relative;overflow:hidden}
   .profile-card::after{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.1)}
   .profile-card .pc-hello{font-size:.7rem;opacity:.8;margin-bottom:2px}
@@ -52,7 +52,7 @@
 <div class="login-wrap" id="loginWrap">
   <div class="login-brand">
     <img src="logo-hte.png" alt="HTE"/>
-    <div class="brand-title">FMS Light</div>
+    <div class="brand-title">Starting Shift</div>
     <div class="brand-sub">PT Halmahera Transportasi Energi · Shift Starter System</div>
   </div>
 
@@ -92,7 +92,7 @@
     </div>
     <div class="card-footer">
       <span><span class="status-dot"></span> System Online</span>
-      <span>v2.0 · FMS Light</span>
+      <span>v2.0 · Starting Shift</span>
     </div>
   </div>
 </div>
@@ -103,7 +103,7 @@
     <div class="topnav">
       <div class="topnav-left">
         <img class="topnav-logo" src="logo-hte.png" alt="HTE"/>
-        <div class="topnav-text"><div class="tn-title">FMS Light</div><div class="tn-sub">Dashboard</div></div>
+        <div class="topnav-text"><div class="tn-title">Starting Shift</div><div class="tn-sub">Dashboard</div></div>
       </div>
       <button class="topnav-btn" onclick="doLogout()">Logout</button>
     </div>

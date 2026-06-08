@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>FMS Light — Shift Starter</title>
+<title>Starting Shift — P2H & FTW</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 :root{
@@ -148,7 +148,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 <body>
 <div class="app">
 
-<div style="display:flex;justify-content:space-between;align-items:center;padding:14px 0 10px"><div style="display:flex;align-items:center;gap:8px"><img src="logo-hte.png" alt="HTE" style="height:26px"/><div><div style="font-size:.82rem;font-weight:800;color:var(--text)">FMS Light</div><div style="font-size:.6rem;color:var(--muted)">Shift Starter</div></div></div><button onclick="backToLogin()" style="padding:7px 12px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--muted);font-size:.72rem;font-weight:600;cursor:pointer;font-family:inherit;box-shadow:0 1px 3px rgba(0,0,0,.06)">← Kembali</button></div>
+<div style="display:flex;justify-content:space-between;align-items:center;padding:14px 0 10px"><div style="display:flex;align-items:center;gap:8px"><img src="logo-hte.png" alt="HTE" style="height:26px"/><div><div style="font-size:.82rem;font-weight:800;color:var(--text)">Starting Shift</div><div style="font-size:.6rem;color:var(--muted)">Shift Starter</div></div></div><button onclick="backToLogin()" style="padding:7px 12px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--muted);font-size:.72rem;font-weight:600;cursor:pointer;font-family:inherit;box-shadow:0 1px 3px rgba(0,0,0,.06)">← Kembali</button></div>
 
 <!-- Progress bar -->
 <div class="progress" id="progBar">
@@ -332,6 +332,7 @@ function goToStep(n) {
   }
   state.currentStep = n;
   window.scrollTo(0, 0);
+  if (n === 4) resizeSigCanvas();
   if (n === 5) renderReview();
 }
 function nextStep(n) { goToStep(n); }
@@ -522,8 +523,8 @@ function resizeSigCanvas() {
   const rect = wrap.getBoundingClientRect();
   sigCanvas.width = rect.width;
   sigCanvas.height = 180;
-  sigCtx.strokeStyle = '#f0a500';
-  sigCtx.lineWidth = 2.5;
+  sigCtx.strokeStyle = '#1E293B';
+  sigCtx.lineWidth = 3;
   sigCtx.lineCap = 'round';
   sigCtx.lineJoin = 'round';
 }
