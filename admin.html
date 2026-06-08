@@ -4,8 +4,8 @@
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Starting Shift — Admin CCR</title>
 <link rel="stylesheet" href="style.css"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.4/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
 <style>
 .uc{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-md);margin-bottom:8px;overflow:hidden;box-shadow:var(--shadow-sm);transition:box-shadow .2s}
 .uc:hover{box-shadow:var(--shadow-md)}
@@ -112,6 +112,7 @@ async function downloadAll(){try{let c1='Unit ID,Tipe,Kelas,Status,Keterangan\n'
 function dl(c,f){const b=new Blob([c],{type:'text/csv;charset=utf-8;'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=f;document.body.appendChild(a);a.click();document.body.removeChild(a);}
 // ══ GENERATE PDF ══
 async function generatePDF(){
+  if(!window.jspdf){alert('Library PDF sedang dimuat. Tunggu beberapa detik lalu coba lagi.');return;}
   const today=new Date().toISOString().slice(0,10);
   const todayFmt=new Date().toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
 
