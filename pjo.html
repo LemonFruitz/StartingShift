@@ -2,6 +2,10 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="apple-touch-icon" href="icon-192.png"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
 <title>Starting Shift — Dashboard PJO</title>
 <link rel="stylesheet" href="style.css"/>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
@@ -30,6 +34,14 @@
 .alert-card{background:var(--danger-bg);border:1px solid rgba(239,68,68,.2);border-radius:var(--radius-md);padding:14px;margin-bottom:10px;display:flex;gap:10px;align-items:flex-start}
 .alert-card .ac-ico{font-size:1.2rem;flex-shrink:0}.alert-card .ac-text{font-size:.78rem;color:var(--danger);line-height:1.5}
 .alert-card .ac-unit{font-weight:700}
+
+/* Ranking */
+.score-bar{width:60px;height:6px;background:var(--border);border-radius:3px;display:inline-block;vertical-align:middle;margin-right:6px}
+.score-fill{height:100%;border-radius:3px}
+.grade{font-size:.6rem;font-weight:700;padding:3px 8px;border-radius:4px;text-align:center;display:inline-block;min-width:28px}
+.grade-a{background:#ECFDF5;color:#059669}.grade-b{background:#EFF6FF;color:#2563EB}
+.grade-c{background:#FFFBEB;color:#D97706}.grade-d{background:#FEF2F2;color:#DC2626}
+.rank-medal{font-size:1rem;margin-right:2px}
 
 .section-title{font-size:.92rem;font-weight:700;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:6px}
 </style>
@@ -79,6 +91,25 @@
 <!-- Alerts -->
 <div id="alertSection"></div>
 
+<!-- Driver Ranking -->
+<div class="chart-card">
+  <div class="section-title" style="justify-content:space-between">
+    <span>🏆 Driver Compliance Ranking (30 Hari)</span>
+    <select id="rankFilter" onchange="renderRanking()" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:var(--input-bg);color:var(--text);font-family:var(--font);font-size:.72rem">
+      <option value="">Semua Kelas</option>
+    </select>
+  </div>
+  <div style="overflow-x:auto">
+    <table class="eq-table" id="rankTable">
+      <thead><tr>
+        <th style="width:30px">#</th><th>Driver</th><th>Role</th><th class="num">Lapor</th>
+        <th class="num">FTW</th><th class="num">P2H</th><th class="num">HM</th><th class="num">Score</th><th style="width:80px">Grade</th>
+      </tr></thead>
+      <tbody id="rankBody"><tr><td colspan="9" style="text-align:center;color:var(--text-muted)">Memuat...</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
 </div>
 
 <script>
@@ -87,13 +118,13 @@ const TOKEN=localStorage.getItem('fms_token');
 const SESSION=JSON.parse(localStorage.getItem('fms_session')||'null');
 if(!SESSION||!TOKEN)window.location.href='index.html';
 
-let trendData=[],eqData=[],statsData=null,allUnits=[];
+let trendData=[],eqData=[],statsData=null,allUnits=[],rankData=[];
 
 document.addEventListener('DOMContentLoaded',()=>{ loadAll(); });
 
 async function loadAll(){
-  await Promise.all([loadStats(),loadTrends(),loadEquipment(),loadUnits()]);
-  renderKPI();renderTrendChart();renderBDChart();renderEquipment();renderAlerts();
+  await Promise.all([loadStats(),loadTrends(),loadEquipment(),loadUnits(),loadRanking()]);
+  renderKPI();renderTrendChart();renderBDChart();renderEquipment();renderAlerts();renderRanking();
 }
 
 async function loadStats(){
@@ -204,6 +235,52 @@ function renderAlerts(){
   section.innerHTML=html;
 }
 
+// ── Ranking ──
+async function loadRanking(){
+  try{const r=await fetch(`${API}/supervisor/driver-ranking?days=30`,{headers:{'Authorization':'Bearer '+TOKEN}});
+  const d=await r.json();if(d.success)rankData=d.data;
+  // Populate filter
+  const classes=[...new Set(rankData.map(r=>r.equipment_class).filter(Boolean))].sort();
+  const sel=document.getElementById('rankFilter');
+  sel.innerHTML='<option value="">Semua Kelas</option>'+classes.map(c=>`<option value="${c}">${c}</option>`).join('');
+  }catch{}}
+
+function renderRanking(){
+  const filter=document.getElementById('rankFilter').value;
+  let list=rankData;
+  if(filter) list=list.filter(r=>r.equipment_class===filter);
+  const body=document.getElementById('rankBody');
+  if(!list.length){body.innerHTML='<tr><td colspan="9" style="text-align:center;color:var(--text-muted)">Tidak ada data.</td></tr>';return;}
+
+  body.innerHTML=list.map((r,i)=>{
+    const rank=i+1;
+    let medal='';
+    if(rank===1)medal='<span class="rank-medal">🥇</span>';
+    else if(rank===2)medal='<span class="rank-medal">🥈</span>';
+    else if(rank===3)medal='<span class="rank-medal">🥉</span>';
+
+    let gradeClass,gradeLabel;
+    if(r.score>=85){gradeClass='grade-a';gradeLabel='A';}
+    else if(r.score>=70){gradeClass='grade-b';gradeLabel='B';}
+    else if(r.score>=50){gradeClass='grade-c';gradeLabel='C';}
+    else{gradeClass='grade-d';gradeLabel='D';}
+
+    const barColor=r.score>=85?'#10B981':r.score>=70?'#3B82F6':r.score>=50?'#F59E0B':'#EF4444';
+
+    return `<tr>
+      <td class="num">${medal}${rank}</td>
+      <td><div style="font-weight:700;font-size:.82rem">${r.driver_name||r.driver_id}</div><div style="font-size:.6rem;color:var(--text-muted)">${r.driver_id} · ${r.equipment_class||''}</div></td>
+      <td style="font-size:.72rem">${r.role||'Driver'}</td>
+      <td class="num">${r.total_reports}×<br><span style="font-size:.55rem;color:var(--text-muted)">${r.days_reported} hari</span></td>
+      <td class="num" style="color:${r.ftw_rate>=90?'var(--success)':r.ftw_rate>=70?'var(--warning)':'var(--danger)'}">${r.ftw_rate}%</td>
+      <td class="num" style="color:${r.p2h_rate>=90?'var(--success)':r.p2h_rate>=70?'var(--warning)':'var(--danger)'}">${r.p2h_rate}%</td>
+      <td class="num" style="color:${r.hm_rate>=80?'var(--success)':r.hm_rate>=50?'var(--warning)':'var(--danger)'}">${r.hm_rate}%</td>
+      <td class="num"><div class="score-bar"><div class="score-fill" style="width:${r.score}%;background:${barColor}"></div></div>${r.score}</td>
+      <td class="num"><span class="grade ${gradeClass}">${gradeLabel}</span></td>
+    </tr>`;
+  }).join('');
+}
+
 // ── PDF ──
 async function downloadPJOPDF(){
   if(!window.jspdf){alert('Library PDF sedang dimuat.');return;}
@@ -267,6 +344,39 @@ async function downloadPJOPDF(){
     });
   }
 
+  // Driver Ranking
+  if(rankData.length>0){
+    doc.addPage();
+    doc.setFillColor(0,200,83);doc.rect(0,0,pw*.55,22,'F');
+    doc.setFillColor(0,176,255);doc.rect(pw*.55,0,pw*.45,22,'F');
+    doc.setTextColor(255);doc.setFontSize(12);doc.setFont(undefined,'bold');
+    doc.text('PT HALMAHERA TRANSPORTASI ENERGI',14,10);
+    doc.setFontSize(8);doc.setFont(undefined,'normal');doc.text('Driver Compliance Ranking — 30 Hari Terakhir',14,17);
+    doc.setTextColor(30);
+
+    const top20=rankData.slice(0,20);
+    doc.autoTable({startY:26,
+      head:[['#','Driver ID','Nama','Role','Kelas','Lapor','FTW%','P2H%','HM%','Score','Grade']],
+      body:top20.map((r,i)=>{
+        let grade='D';if(r.score>=85)grade='A';else if(r.score>=70)grade='B';else if(r.score>=50)grade='C';
+        return [i+1,r.driver_id,r.driver_name||'',r.role||'',r.equipment_class||'',r.total_reports,r.ftw_rate+'%',r.p2h_rate+'%',r.hm_rate+'%',r.score,grade];
+      }),
+      styles:{fontSize:7,cellPadding:2},
+      headStyles:{fillColor:[0,200,83],textColor:255,fontStyle:'bold'},
+      alternateRowStyles:{fillColor:[245,247,250]},
+      didParseCell:function(d){
+        if(d.section==='body'&&d.column.index===10){
+          d.cell.styles.fontStyle='bold';
+          const v=d.cell.raw;
+          if(v==='A')d.cell.styles.textColor=[5,150,105];
+          else if(v==='B')d.cell.styles.textColor=[37,99,235];
+          else if(v==='C')d.cell.styles.textColor=[217,119,6];
+          else d.cell.styles.textColor=[220,38,38];
+        }
+      }
+    });
+  }
+
   const pages=doc.internal.getNumberOfPages();
   for(let i=1;i<=pages;i++){doc.setPage(i);doc.setFontSize(6.5);doc.setTextColor(180);
     doc.text('Starting Shift Web App — PT HTE',14,ph-5);doc.text(`Hal ${i}/${pages}`,pw-14,ph-5,{align:'right'});}
@@ -275,5 +385,6 @@ async function downloadPJOPDF(){
 
 function doLogout(){localStorage.removeItem('fms_token');localStorage.removeItem('fms_session');window.location.href='index.html';}
 </script>
+<script>if("serviceWorker"in navigator){navigator.serviceWorker.register("sw.js").catch(()=>{});}</script>
 </body>
 </html>

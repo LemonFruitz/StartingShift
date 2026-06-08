@@ -4,6 +4,10 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <meta name="theme-color" content="#F0F4F8"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="apple-touch-icon" href="icon-192.png"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
 <title>Starting Shift — Login</title>
 <link rel="stylesheet" href="style.css"/>
 <style>
@@ -91,7 +95,7 @@
       </div>
     </div>
     <div class="card-footer">
-      <span><span class="status-dot"></span> System Online</span>
+      <span id="connStatus"><span class="status-dot"></span> System Online</span>
       <span>v2.0 · Starting Shift Web App PT HTE</span>
     </div>
   </div>
@@ -137,6 +141,13 @@
       <span class="status-text">✅ Unit siap — sesi aktif</span>
     </div>
 
+    <!-- Offline Bar -->
+    <div id="offlineBar" style="display:none;background:var(--warning-bg,#FFFBEB);border:1px solid rgba(245,158,11,.25);border-radius:8px;padding:12px 14px;margin-bottom:10px;align-items:center;gap:8px">
+      <span style="font-size:1.1rem">📴</span>
+      <span class="ob-text" style="flex:1;font-size:.78rem;font-weight:600;color:var(--warning,#F59E0B)">—</span>
+      <button onclick="manualSync()" style="padding:6px 12px;border:none;border-radius:6px;background:var(--warning,#F59E0B);color:white;font-family:inherit;font-weight:700;font-size:.72rem;cursor:pointer">Sync</button>
+    </div>
+
     <button class="btn btn-primary mb-8" id="btnFTW" onclick="goToFTW()" disabled>▶ Mulai Fit-to-Work & P2H</button>
     <button class="btn btn-outline danger mb-8" id="btnBD" onclick="window.location.href='bd-report.html'" disabled>🔴 Lapor Breakdown</button>
 
@@ -153,6 +164,7 @@
   </div>
 </div>
 
+<script src="offline-sync.js"></script>
 <script>
 const API='https://fms-light-backend-production.up.railway.app/api/v1';
 const TOKEN_KEY='fms_token',SESSION_KEY='fms_session';
@@ -229,7 +241,18 @@ async function submitEndShift(){const val=parseInt(document.getElementById('hmEn
   try{const r=await fetch(`${API}/supervisor/shift-reports/${activeReportId}/end-shift`,{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+localStorage.getItem(TOKEN_KEY)},body:JSON.stringify({odometer_end:val})});
   const d=await r.json();if(d.success){msg.textContent='✅ Tersimpan!';msg.style.color='var(--success)';setTimeout(()=>checkActiveShift(),1000);}
   else{msg.textContent=d.message||'Gagal.';msg.style.color='var(--danger)';}}catch{msg.textContent='Gagal terhubung.';msg.style.color='var(--danger)';}}
+async function manualSync(){
+  const r=await OfflineSync.syncAll();
+  if(r.synced>0) OfflineSync.showToast(`✅ ${r.synced} laporan berhasil disinkronkan!`);
+  else if(r.failed>0) OfflineSync.showToast('⚠️ Gagal sync — cek koneksi internet.');
+  else OfflineSync.showToast('Tidak ada data pending.');
+}
+
 function doLogout(){localStorage.removeItem(TOKEN_KEY);localStorage.removeItem(SESSION_KEY);window.location.href='index.html';}
+
+// Init offline sync
+if(typeof OfflineSync!=='undefined') OfflineSync.init();
 </script>
+<script>if("serviceWorker"in navigator){navigator.serviceWorker.register("sw.js").catch(()=>{});}</script>
 </body>
 </html>

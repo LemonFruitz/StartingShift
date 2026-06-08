@@ -3,6 +3,10 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="apple-touch-icon" href="icon-192.png"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
 <title>Starting Shift — P2H & FTW</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
@@ -267,6 +271,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 </div><!-- /.app -->
 
 <script src="p2h-data.js"></script>
+<script src="offline-sync.js"></script>
 <script>
 // ══════════════════════════════════════════════════════════════
 //  CONFIG — GANTI DENGAN URL BACKEND KAMU (sama seperti di index.html)
@@ -684,7 +689,23 @@ async function submitReport() {
   } catch (e) {
     btn.classList.remove('loading');
     btn.disabled = false;
-    alert('⛔ Gagal terhubung ke server. Coba lagi.');
+    // Offline fallback — save to queue
+    if (!navigator.onLine || e.message === 'Failed to fetch') {
+      OfflineSync.addToQueue({
+        url: `${API}/shift-reports`,
+        method: 'POST',
+        body: body,
+        meta: { driver: SESSION.name, unit: SESSION.unit, time: new Date().toISOString() }
+      });
+      showResult({
+        overall_status: 'Saved Offline',
+        report_id: 'OFFLINE-' + Date.now(),
+        fit_status: FTW_QUESTIONS.every(q => state.ftw[q.question_id] === q.ideal) ? 'Fit' : 'Unfit',
+        p2h_status: P2H_ITEMS.some(it => it.hazard === 'AA' && state.p2h[it.item_id] && !state.p2h[it.item_id].is_ok) ? 'Failed' : 'Passed',
+      });
+    } else {
+      alert('⛔ Gagal terhubung ke server. Coba lagi.');
+    }
   }
 }
 
@@ -701,6 +722,10 @@ function showResult(d) {
     case 'Ready to Work':
       icon = '✅'; statusColor = 'var(--success)'; statusText = 'READY TO WORK';
       msg = 'Semua pengecekan lolos. Anda diizinkan mengoperasikan unit. Selamat bertugas dan utamakan keselamatan!';
+      break;
+    case 'Saved Offline':
+      icon = '📴'; statusColor = 'var(--warning,#F59E0B)'; statusText = 'TERSIMPAN OFFLINE';
+      msg = 'Laporan tersimpan di perangkat Anda. Data akan otomatis dikirim ke server saat koneksi internet tersedia. Anda boleh melanjutkan operasi.';
       break;
     case 'Driver Unfit':
       icon = '🚫'; statusColor = 'var(--danger)'; statusText = 'DRIVER UNFIT';
@@ -729,5 +754,6 @@ function showResult(d) {
   `;
 }
 </script>
+<script>if("serviceWorker"in navigator){navigator.serviceWorker.register("sw.js").catch(()=>{});}</script>
 </body>
 </html>
