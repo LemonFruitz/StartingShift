@@ -4,6 +4,8 @@
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Starting Shift — Admin CCR</title>
 <link rel="stylesheet" href="style.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.4/jspdf.plugin.autotable.min.js"></script>
 <style>
 .uc{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-md);margin-bottom:8px;overflow:hidden;box-shadow:var(--shadow-sm);transition:box-shadow .2s}
 .uc:hover{box-shadow:var(--shadow-md)}
@@ -37,7 +39,7 @@
 <div class="app app-wide">
 <div class="topnav">
   <div class="topnav-left"><img class="topnav-logo" src="logo-hte.png" alt="HTE"/><div class="topnav-text"><div class="tn-title">Starting Shift</div><div class="tn-sub">Super Admin CCR</div></div></div>
-  <div class="topnav-actions"><button class="topnav-btn" style="color:var(--success);border-color:rgba(16,185,129,.3)" onclick="downloadAll()">📥 Download</button><button class="topnav-btn" onclick="doLogout()">Logout</button></div>
+  <div class="topnav-actions"><button class="topnav-btn" style="color:var(--danger);border-color:rgba(239,68,68,.3)" onclick="generatePDF()">📄 PDF</button><button class="topnav-btn" style="color:var(--success);border-color:rgba(16,185,129,.3)" onclick="downloadAll()">📥 CSV</button><button class="topnav-btn" onclick="doLogout()">Logout</button></div>
 </div>
 <div class="stats-grid">
   <div class="stat-card"><div class="stat-val text-success" id="stReady">—</div><div class="stat-label">Unit Ready</div></div>
@@ -108,6 +110,129 @@ return `<div class="dr"><div class="dr-head"><div><div class="dr-name">${r.drive
 async function submitHM(rid){const v=parseInt(document.getElementById('hm-'+rid).value);if(!v||v<=0){alert('Masukkan HM akhir.');return;}try{const r=await fetch(`${API}/supervisor/shift-reports/${rid}/end-shift`,{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},body:JSON.stringify({odometer_end:v})});const d=await r.json();if(d.success)loadReports();else alert(d.message||'Gagal');}catch{alert('Gagal.');}}
 async function downloadAll(){try{let c1='Unit ID,Tipe,Kelas,Status,Keterangan\n';allUnits.forEach(u=>{c1+=`${u.unit_id},"${u.vehicle_type||''}",${u.equipment_class||''},${u.status_unit},"${(u.notes||'').replace(/"/g,'""')}"\n`;});const today=new Date().toISOString().slice(0,10);const sr=await fetch(`${API}/supervisor/shift-reports?date=${today}&limit=500`,{headers:{'Authorization':'Bearer '+TOKEN}});const sd=await sr.json();let c2='Driver ID,Nama,Unit,Tipe,FTW,P2H,Status,HM Awal,HM Akhir,Selisih,Waktu,Validasi\n';if(sd.success)sd.data.reports.forEach(r=>{const diff=r.odometer_end?(r.odometer_end-r.odometer_entered):'';c2+=`${r.driver_id},"${r.driver_name||''}",${r.unit_id},"${r.vehicle_type||''}",${r.fit_status},${r.p2h_status},"${r.overall_status}",${r.odometer_entered||''},${r.odometer_end||''},${diff},"${r.timestamp_filled?new Date(r.timestamp_filled).toLocaleString('id-ID'):''}",${r.validation_status||'Pending'}\n`;});const lr=await fetch(`${API}/vehicles/status-log?limit=1000`,{headers:{'Authorization':'Bearer '+TOKEN}});const ld=await lr.json();let c3='Unit,Dari,Ke,Keterangan,Diubah Oleh,Mulai,Selesai,Durasi (menit)\n';if(ld.success)ld.data.forEach(l=>{c3+=`${l.unit_id},${l.status_from},${l.status_to},"${(l.notes||'').replace(/"/g,'""')}",${l.changed_by_name||l.changed_by||''},"${l.time_start?new Date(l.time_start).toLocaleString('id-ID'):''}","${l.time_end?new Date(l.time_end).toLocaleString('id-ID'):''}",${l.duration_minutes||''}\n`;});const B='\uFEFF';dl(B+c1,`Unit_Status_${today}.csv`);setTimeout(()=>dl(B+c2,`Shift_Report_${today}.csv`),500);setTimeout(()=>dl(B+c3,`Status_Log_${today}.csv`),1000);}catch{alert('Gagal.');}}
 function dl(c,f){const b=new Blob([c],{type:'text/csv;charset=utf-8;'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=f;document.body.appendChild(a);a.click();document.body.removeChild(a);}
+// ══ GENERATE PDF ══
+async function generatePDF(){
+  const today=new Date().toISOString().slice(0,10);
+  const todayFmt=new Date().toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+
+  // Fetch shift reports
+  let reports=[];
+  try{const r=await fetch(`${API}/supervisor/shift-reports?date=${today}&limit=500`,{headers:{'Authorization':'Bearer '+TOKEN}});
+  const d=await r.json();if(d.success)reports=d.data.reports;}catch{}
+
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+  const pw=doc.internal.pageSize.getWidth();
+  const ph=doc.internal.pageSize.getHeight();
+
+  // ── Header ──
+  doc.setFillColor(0,200,83);
+  doc.rect(0,0,pw,28,  'F');
+  doc.setFillColor(0,176,255);
+  doc.rect(pw/2,0,pw/2,28,'F');
+  doc.setTextColor(255);
+  doc.setFontSize(18);doc.setFont(undefined,'bold');
+  doc.text('PT HALMAHERA TRANSPORTASI ENERGI',pw/2,12,{align:'center'});
+  doc.setFontSize(10);doc.setFont(undefined,'normal');
+  doc.text('Laporan Harian Starting Shift — FMS Light',pw/2,19,{align:'center'});
+  doc.setFontSize(8);
+  doc.text(`Tanggal: ${todayFmt}  |  Dicetak: ${new Date().toLocaleString('id-ID')}  |  Oleh: ${SESSION.name||SESSION.id}`,pw/2,25,{align:'center'});
+
+  // ── Stats summary ──
+  doc.setTextColor(30);
+  doc.setFontSize(11);doc.setFont(undefined,'bold');
+  doc.text('Ringkasan',14,36);
+  const readyC=allUnits.filter(u=>u.status_unit==='Ready').length;
+  const bdC=allUnits.filter(u=>u.status_unit==='Breakdown').length;
+  const mtC=allUnits.filter(u=>u.status_unit==='Maintenance').length;
+  const rtwC=reports.filter(r=>r.overall_status==='Ready to Work').length;
+  const unfitC=reports.filter(r=>r.overall_status==='Driver Unfit').length;
+
+  doc.setFontSize(8);doc.setFont(undefined,'normal');
+  doc.text(`Total Unit: ${allUnits.length}  |  Ready: ${readyC}  |  Breakdown: ${bdC}  |  Maintenance: ${mtC}  |  Driver Lapor: ${reports.length}  |  RTW: ${rtwC}  |  Unfit: ${unfitC}`,14,42);
+
+  // ── Table: Shift Reports ──
+  if(reports.length>0){
+    doc.setFontSize(11);doc.setFont(undefined,'bold');
+    doc.text('Laporan Shift Driver',14,50);
+
+    doc.autoTable({
+      startY:53,
+      head:[['No','Driver ID','Nama','Unit','Tipe Unit','FTW','P2H','Status','HM Awal','HM Akhir','Selisih','Waktu','Validasi']],
+      body:reports.map((r,i)=>[
+        i+1,
+        r.driver_id,
+        r.driver_name||'',
+        r.unit_id,
+        r.vehicle_type||'',
+        r.fit_status,
+        r.p2h_status,
+        r.overall_status,
+        r.odometer_entered||'',
+        r.odometer_end||'-',
+        r.odometer_end?(r.odometer_end-r.odometer_entered):'',
+        r.timestamp_filled?new Date(r.timestamp_filled).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}):'',
+        r.validation_status||'Pending'
+      ]),
+      styles:{fontSize:7,cellPadding:2,font:'helvetica'},
+      headStyles:{fillColor:[0,160,70],textColor:255,fontStyle:'bold',fontSize:7},
+      alternateRowStyles:{fillColor:[245,247,250]},
+      columnStyles:{
+        0:{cellWidth:8},
+        5:{fontStyle:'bold',halign:'center'},
+        6:{fontStyle:'bold',halign:'center'},
+        7:{fontStyle:'bold'},
+      },
+      didParseCell:function(data){
+        if(data.section==='body'){
+          if(data.column.index===5){data.cell.styles.textColor=data.cell.raw==='Fit'?[16,185,129]:[239,68,68];}
+          if(data.column.index===6){data.cell.styles.textColor=data.cell.raw==='Passed'?[16,185,129]:[239,68,68];}
+          if(data.column.index===7){
+            if(data.cell.raw==='Ready to Work')data.cell.styles.textColor=[16,185,129];
+            else data.cell.styles.textColor=[239,68,68];
+          }
+          if(data.column.index===12){
+            if(data.cell.raw==='Approved')data.cell.styles.textColor=[16,185,129];
+            else if(data.cell.raw==='Rejected')data.cell.styles.textColor=[239,68,68];
+            else data.cell.styles.textColor=[245,158,11];
+          }
+        }
+      }
+    });
+  }
+
+  // ── Table: Unit Status ──
+  let afterY=doc.lastAutoTable?doc.lastAutoTable.finalY+10:60;
+  if(afterY>ph-40){doc.addPage();afterY=14;}
+  doc.setFontSize(11);doc.setFont(undefined,'bold');
+  doc.text('Status Unit Armada',14,afterY);
+
+  const bdUnits=allUnits.filter(u=>u.status_unit!=='Ready');
+  if(bdUnits.length>0){
+    doc.autoTable({
+      startY:afterY+4,
+      head:[['Unit ID','Tipe','Kelas','Status','Keterangan']],
+      body:bdUnits.map(u=>[u.unit_id,u.vehicle_type||'',u.equipment_class||'',u.status_unit,u.notes||'-']),
+      styles:{fontSize:7,cellPadding:2},
+      headStyles:{fillColor:[239,68,68],textColor:255,fontStyle:'bold',fontSize:7},
+      alternateRowStyles:{fillColor:[254,242,242]},
+    });
+  } else {
+    doc.setFontSize(8);doc.setFont(undefined,'normal');
+    doc.text('Semua unit berstatus Ready.',14,afterY+6);
+  }
+
+  // ── Footer ──
+  const pages=doc.internal.getNumberOfPages();
+  for(let i=1;i<=pages;i++){
+    doc.setPage(i);
+    doc.setFontSize(7);doc.setTextColor(150);
+    doc.text(`FMS Light — PT HTE | Hal ${i}/${pages}`,pw/2,ph-5,{align:'center'});
+  }
+
+  doc.save(`Laporan_Shift_${today}.pdf`);
+}
+
 function doLogout(){localStorage.removeItem('fms_token');localStorage.removeItem('fms_session');window.location.href='index.html';}
 </script>
 </body>
