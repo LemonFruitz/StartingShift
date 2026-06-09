@@ -1,4 +1,4 @@
-const CACHE_NAME = 'starting-shift-v3';
+const CACHE_NAME = 'starting-shift-v4';
 const ASSETS = [
   '/', '/index.html', '/shift.html', '/bd-report.html',
   '/admin.html', '/supervisor.html', '/pjo.html', '/tv.html',
