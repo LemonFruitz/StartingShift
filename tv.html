@@ -148,7 +148,17 @@ async function loadAll(){
     ]);
     const uD=await uR.json(),dD=await dR.json(),sD=await sR.json();
     if(uD.success)allUnits=uD.data;
-    if(dD.success){driverMap={};dD.data.forEach(x=>{driverMap[x.unit_id]=x;});}
+    if(dD.success){
+      driverMap={};
+      // Filter drivers by current shift
+      const h=new Date().getHours();
+      const isS1=h>=7&&h<19;
+      dD.data.filter(x=>{
+        if(!x.timestamp_filled)return true;
+        const dh=new Date(x.timestamp_filled).getHours();
+        return isS1?(dh>=7&&dh<19):(dh>=19||dh<7);
+      }).forEach(x=>{driverMap[x.unit_id]=x;});
+    }
     renderKPI(sD.success?sD.data:null);
     renderUnits();
     renderDrivers(dD.success?dD.data:[]);

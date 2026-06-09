@@ -87,8 +87,9 @@
 <script>
 const API='https://fms-light-backend-production.up.railway.app/api/v1',TOKEN=localStorage.getItem('fms_token'),SESSION=JSON.parse(localStorage.getItem('fms_session')||'null');
 if(!SESSION||!TOKEN)window.location.href='index.html';
-let allUnits=[],driverMap={},allReports=[],uFilter='ALL',curShift='',pendingUnit='',pendingStatus='',editingUnit='';
-document.addEventListener('DOMContentLoaded',()=>{loadAll()});
+const _h=new Date().getHours(),_autoShift=(_h>=7&&_h<19)?'1':'2';
+let allUnits=[],driverMap={},allReports=[],uFilter='ALL',curShift=_autoShift,pendingUnit='',pendingStatus='',editingUnit='';
+document.addEventListener('DOMContentLoaded',()=>{['shAll','sh1','sh2'].forEach(id=>document.getElementById(id).classList.remove('active'));document.getElementById(curShift==='1'?'sh1':'sh2').classList.add('active');loadAll()});
 async function loadAll(){await Promise.all([loadUnits(),loadActiveDrivers(),loadStats()]);updateUnitStats();buildPills();renderUnits();}
 function switchTab(t){document.getElementById('pUnits').classList.toggle('active',t==='units');document.getElementById('pDrivers').classList.toggle('active',t==='drivers');document.getElementById('t1').classList.toggle('active',t==='units');document.getElementById('t2').classList.toggle('active',t==='drivers');if(t==='drivers')loadReports();}
 async function loadStats(){try{const r=await fetch(`${API}/supervisor/dashboard-stats`,{headers:{'Authorization':'Bearer '+TOKEN}});const d=await r.json();if(d.success)document.getElementById('stDrivers').textContent=d.data.active_drivers;}catch{}}
