@@ -60,6 +60,16 @@
     <div class="brand-sub">PT Halmahera Transportasi Energi · Shift Starter System</div>
   </div>
 
+  <!-- Safety Message Ticker -->
+  <div style="width:100%;max-width:400px;margin-bottom:16px">
+    <div style="background:linear-gradient(135deg,rgba(0,200,83,.06),rgba(0,176,255,.06));border:1px solid rgba(0,200,83,.15);border-radius:12px;padding:12px 18px;text-align:center;min-height:56px;display:flex;align-items:center;justify-content:center">
+      <div>
+        <div style="font-size:.55rem;font-weight:700;color:#00C853;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">⛑️ Pesan Keselamatan</div>
+        <div id="safetyMsg" style="font-size:.8rem;font-weight:600;color:#1E293B;line-height:1.4;opacity:1;transition:opacity .4s ease">Utamakan keselamatan di setiap langkah kerja Anda.</div>
+      </div>
+    </div>
+  </div>
+
   <div class="card login-card" id="authCard">
     <div class="card-header card-header-gradient">
       <span class="ch-title">🔐 Login Shift</span>
@@ -97,16 +107,6 @@
     <div class="card-footer">
       <span id="connStatus"><span class="status-dot"></span> System Online</span>
       <span>v2.0 · Starting Shift Web App PT HTE</span>
-    </div>
-  </div>
-
-  <!-- Safety Message Ticker -->
-  <div style="width:100%;max-width:400px;margin-top:16px;animation:fadeUp .6s ease both .3s">
-    <div style="background:linear-gradient(135deg,rgba(0,200,83,.06),rgba(0,176,255,.06));border:1px solid rgba(0,200,83,.15);border-radius:12px;padding:14px 18px;text-align:center;min-height:70px;display:flex;align-items:center;justify-content:center">
-      <div>
-        <div style="font-size:.6rem;font-weight:700;color:#00C853;text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px">⛑️ Pesan Keselamatan</div>
-        <div id="safetyMsg" style="font-size:.82rem;font-weight:600;color:#1E293B;line-height:1.4;transition:opacity .4s ease">—</div>
-      </div>
     </div>
   </div>
 </div>
@@ -196,14 +196,18 @@ const SAFETY_MSGS=[
   'Istirahat yang cukup adalah investasi keselamatan.',
   'Kenali bahaya di sekitar Anda sebelum memulai pekerjaan.',
 ];
-let safetyIdx=0;
+let safetyIdx=1;
 function rotateSafety(){
   const el=document.getElementById('safetyMsg');
   if(!el)return;
   el.style.opacity='0';
-  setTimeout(()=>{el.textContent=SAFETY_MSGS[safetyIdx];el.style.opacity='1';safetyIdx=(safetyIdx+1)%SAFETY_MSGS.length;},400);
+  setTimeout(()=>{
+    el.textContent=SAFETY_MSGS[safetyIdx];
+    el.style.opacity='1';
+    safetyIdx=(safetyIdx+1)%SAFETY_MSGS.length;
+  },500);
 }
-rotateSafety();setInterval(rotateSafety,5000);
+setTimeout(()=>setInterval(rotateSafety,5000),3000);
 
 // Role mapping based on equipment class
 const DRIVER_CLASSES=['Dump Truck','Light Vehicle','Manhaul','Tyre Truck','Lube Truck','Tire Truck','Water Truck','Crane Truck','Fuel Truck'];
