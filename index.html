@@ -309,7 +309,7 @@ async function submitHMFor(rid){const val=parseInt(document.getElementById('hmEn
   else{msg.textContent=d.message||'Gagal.';msg.style.color='var(--danger,#EF4444)';}}catch{msg.textContent='Gagal terhubung.';msg.style.color='var(--danger,#EF4444)';}}
 async function submitEndShift(){const val=parseInt(document.getElementById('hmEndInput')?.value),msg=document.getElementById('hmEndMsg');
   if(!val||val<=0){if(msg){msg.textContent='Masukkan angka HM akhir.';msg.style.color='var(--danger)';}return;}
-  if(activeReportId)submitHMFor(activeReportId);}}
+  if(activeReportId)submitHMFor(activeReportId);}
 async function manualSync(){
   const r=await OfflineSync.syncAll();
   if(r.synced>0) OfflineSync.showToast(`✅ ${r.synced} laporan berhasil disinkronkan!`);
