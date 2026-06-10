@@ -232,15 +232,43 @@ function goToFTW(){window.location.href='shift.html';}
 let activeReportId=null;
 async function checkActiveShift(){try{const token=localStorage.getItem(TOKEN_KEY),sess=JSON.parse(localStorage.getItem(SESSION_KEY));
   const today=new Date().toISOString().slice(0,10);
-  const r=await fetch(`${API}/supervisor/shift-reports?date=${today}&driver_id=${sess.id}&limit=1`,{headers:{'Authorization':'Bearer '+token}});
-  const d=await r.json();if(d.success&&d.data.reports.length>0){const rpt=d.data.reports[0];
-  if(rpt.overall_status==='Ready to Work'){activeReportId=rpt.report_id;const box=document.getElementById('endShiftBox');box.style.display='block';
-  if(rpt.odometer_end){box.innerHTML='<div style="font-size:.8rem;color:var(--success);padding:6px">✅ HM akhir: <strong>'+rpt.odometer_end+'</strong> (awal: '+rpt.odometer_entered+', selisih: +'+(rpt.odometer_end-rpt.odometer_entered)+')</div>';}}}}catch{}}
-async function submitEndShift(){const val=parseInt(document.getElementById('hmEndInput').value),msg=document.getElementById('hmEndMsg');
-  if(!val||val<=0){msg.textContent='Masukkan angka HM akhir.';msg.style.color='var(--danger)';return;}
-  try{const r=await fetch(`${API}/supervisor/shift-reports/${activeReportId}/end-shift`,{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+localStorage.getItem(TOKEN_KEY)},body:JSON.stringify({odometer_end:val})});
-  const d=await r.json();if(d.success){msg.textContent='✅ Tersimpan!';msg.style.color='var(--success)';setTimeout(()=>checkActiveShift(),1000);}
-  else{msg.textContent=d.message||'Gagal.';msg.style.color='var(--danger)';}}catch{msg.textContent='Gagal terhubung.';msg.style.color='var(--danger)';}}
+  const r=await fetch(`${API}/supervisor/shift-reports?date=${today}&driver_id=${sess.id}&limit=10`,{headers:{'Authorization':'Bearer '+token}});
+  const d=await r.json();if(!d.success||!d.data.reports.length)return;
+  const box=document.getElementById('endShiftBox');
+  // Filter: sesi yang belum diisi HM akhir
+  const open=d.data.reports.filter(r=>r.overall_status==='Ready to Work'&&!r.odometer_end);
+  const done=d.data.reports.filter(r=>r.overall_status==='Ready to Work'&&r.odometer_end);
+  if(open.length===0&&done.length>0){
+    box.style.display='block';
+    box.innerHTML=done.map(r=>`<div style="font-size:.78rem;color:var(--success,#10B981);padding:4px;margin-bottom:4px">✅ ${r.unit_id}: HM ${r.odometer_entered} → ${r.odometer_end} (+${r.odometer_end-r.odometer_entered})</div>`).join('');
+    return;
+  }
+  if(open.length>0){
+    box.style.display='block';
+    activeReportId=open[0].report_id;
+    let html=`<div class="es-title">⏱️ Akhiri Shift — Input HM Akhir</div>`;
+    open.forEach((rpt,i)=>{
+      const tag=rpt.shift_ended_at?'<span style="color:var(--warning,#F59E0B);font-size:.6rem;font-weight:600"> (auto-closed)</span>':'';
+      html+=`<div style="margin-bottom:8px;padding:8px;background:var(--input-bg,#F8FAFC);border:1px solid var(--border,#E2E8F0);border-radius:6px">
+        <div style="font-size:.72rem;font-weight:700;margin-bottom:4px">${rpt.unit_id} — HM Awal: ${rpt.odometer_entered}${tag}</div>
+        <div class="es-row"><input type="number" id="hmEnd-${rpt.report_id}" placeholder="HM Akhir" inputmode="numeric"/>
+        <button onclick="submitHMFor('${rpt.report_id}')">Simpan</button></div>
+        <div id="hmMsg-${rpt.report_id}" style="font-size:.68rem;margin-top:3px;min-height:14px"></div>
+      </div>`;
+    });
+    if(done.length>0){
+      html+=done.map(r=>`<div style="font-size:.72rem;color:var(--success,#10B981);padding:3px 0">✅ ${r.unit_id}: HM ${r.odometer_entered} → ${r.odometer_end} (+${r.odometer_end-r.odometer_entered})</div>`).join('');
+    }
+    box.innerHTML=html;
+  }}catch{}}
+async function submitHMFor(rid){const val=parseInt(document.getElementById('hmEnd-'+rid).value),msg=document.getElementById('hmMsg-'+rid);
+  if(!val||val<=0){msg.textContent='Masukkan angka HM akhir.';msg.style.color='var(--danger,#EF4444)';return;}
+  try{const r=await fetch(`${API}/supervisor/shift-reports/${rid}/end-shift`,{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+localStorage.getItem(TOKEN_KEY)},body:JSON.stringify({odometer_end:val})});
+  const d=await r.json();if(d.success){msg.textContent='✅ Tersimpan!';msg.style.color='var(--success,#10B981)';setTimeout(()=>checkActiveShift(),1000);}
+  else{msg.textContent=d.message||'Gagal.';msg.style.color='var(--danger,#EF4444)';}}catch{msg.textContent='Gagal terhubung.';msg.style.color='var(--danger,#EF4444)';}}
+async function submitEndShift(){const val=parseInt(document.getElementById('hmEndInput')?.value),msg=document.getElementById('hmEndMsg');
+  if(!val||val<=0){if(msg){msg.textContent='Masukkan angka HM akhir.';msg.style.color='var(--danger)';}return;}
+  if(activeReportId)submitHMFor(activeReportId);}}
 async function manualSync(){
   const r=await OfflineSync.syncAll();
   if(r.synced>0) OfflineSync.showToast(`✅ ${r.synced} laporan berhasil disinkronkan!`);
