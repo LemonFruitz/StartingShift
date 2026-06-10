@@ -198,7 +198,7 @@ const SAFETY_MSGS=[
   'Istirahat yang cukup adalah investasi keselamatan.',
   'Kenali bahaya di sekitar Anda sebelum memulai pekerjaan.',
 ];
-document.getElementById('safetyMsg').textContent=SAFETY_MSGS[Math.floor(Math.random()*SAFETY_MSGS.length)];
+document.addEventListener('DOMContentLoaded',function(){var el=document.getElementById('safetyMsg');if(el)el.textContent=SAFETY_MSGS[Math.floor(Math.random()*SAFETY_MSGS.length)];});
 
 // Role mapping based on equipment class
 const DRIVER_CLASSES=['Dump Truck','Light Vehicle','Manhaul','Tyre Truck','Lube Truck','Tire Truck','Water Truck','Crane Truck','Fuel Truck'];
