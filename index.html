@@ -67,7 +67,7 @@
     <div style="background:linear-gradient(135deg,rgba(0,200,83,.06),rgba(0,176,255,.06));border:1px solid rgba(0,200,83,.15);border-radius:12px;padding:12px 18px;text-align:center;min-height:56px;display:flex;align-items:center;justify-content:center">
       <div>
         <div style="font-size:.55rem;font-weight:700;color:#00C853;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">⛑️ Pesan Keselamatan</div>
-        <div id="safetyMsg" style="font-size:.8rem;font-weight:600;color:#1E293B;line-height:1.4;opacity:1;transition:opacity .4s ease">Utamakan keselamatan di setiap langkah kerja Anda.</div>
+        <div id="safetyMsg" style="font-size:.8rem;font-weight:600;color:#1E293B;line-height:1.4">Utamakan keselamatan di setiap langkah kerja Anda.</div>
       </div>
     </div>
   </div>
@@ -181,7 +181,7 @@
 const API='https://fms-light-backend-production.up.railway.app/api/v1';
 const TOKEN_KEY='fms_token',SESSION_KEY='fms_session';
 
-// Safety messages — rotate every 5 seconds
+// Safety message — random setiap buka halaman
 const SAFETY_MSGS=[
   'Utamakan keselamatan di setiap langkah kerja Anda.',
   'Pastikan unit dalam kondisi baik sebelum dioperasikan.',
@@ -198,18 +198,7 @@ const SAFETY_MSGS=[
   'Istirahat yang cukup adalah investasi keselamatan.',
   'Kenali bahaya di sekitar Anda sebelum memulai pekerjaan.',
 ];
-let safetyIdx=1;
-function rotateSafety(){
-  var el=document.getElementById('safetyMsg');
-  if(!el)return;
-  el.style.opacity='0';
-  setTimeout(function(){
-    el.textContent=SAFETY_MSGS[safetyIdx];
-    el.style.opacity='1';
-    safetyIdx=(safetyIdx+1)%SAFETY_MSGS.length;
-  },500);
-}
-setInterval(rotateSafety,5000);
+document.getElementById('safetyMsg').textContent=SAFETY_MSGS[Math.floor(Math.random()*SAFETY_MSGS.length)];
 
 // Role mapping based on equipment class
 const DRIVER_CLASSES=['Dump Truck','Light Vehicle','Manhaul','Tyre Truck','Lube Truck','Tire Truck','Water Truck','Crane Truck','Fuel Truck'];
