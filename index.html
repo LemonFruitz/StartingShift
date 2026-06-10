@@ -49,6 +49,8 @@
   .es-row input{flex:1;padding:11px;background:var(--input-bg);border:1.5px solid var(--input-border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--font);font-size:1rem;font-weight:700;text-align:center;outline:none}
   .es-row input:focus{border-color:var(--primary)}
   .es-row button{padding:11px 16px;background:var(--grad);color:white;border:none;border-radius:var(--radius-sm);font-family:var(--font);font-weight:700;font-size:.82rem;cursor:pointer;white-space:nowrap;min-height:44px;box-shadow:var(--shadow-btn)}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,.35)}50%{box-shadow:0 0 0 6px rgba(16,185,129,0)}}
+  .dot-online{width:7px;height:7px;border-radius:50%;background:#10B981;display:inline-block;animation:pulse 2.5s ease infinite}
 </style>
 </head>
 <body>
@@ -105,7 +107,7 @@
       </div>
     </div>
     <div class="card-footer">
-      <span id="connStatus"><span class="status-dot"></span> System Online</span>
+      <span id="connStatus"><span class="dot-online"></span> System Online</span>
       <span>v2.0 · Starting Shift Web App PT HTE</span>
     </div>
   </div>
@@ -198,7 +200,7 @@ const SAFETY_MSGS=[
 ];
 let safetyIdx=1;
 function rotateSafety(){
-  const el=document.getElementById('safetyMsg');
+  var el=document.getElementById('safetyMsg');
   if(!el)return;
   el.style.opacity='0';
   setTimeout(function(){
@@ -207,7 +209,7 @@ function rotateSafety(){
     safetyIdx=(safetyIdx+1)%SAFETY_MSGS.length;
   },500);
 }
-window.addEventListener('load',function(){setInterval(rotateSafety,5000);});
+setInterval(rotateSafety,5000);
 
 // Role mapping based on equipment class
 const DRIVER_CLASSES=['Dump Truck','Light Vehicle','Manhaul','Tyre Truck','Lube Truck','Tire Truck','Water Truck','Crane Truck','Fuel Truck'];

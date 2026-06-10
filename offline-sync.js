@@ -97,7 +97,7 @@ const OfflineSync = {
     const el = document.getElementById('connStatus');
     if (!el) return;
     if (navigator.onLine) {
-      el.innerHTML = '<span class="status-dot" style="width:7px;height:7px;border-radius:50%;background:#10B981;display:inline-block;animation:pulse 2.5s ease infinite"></span> System Online';
+      el.innerHTML = '<span class="dot-online"></span> System Online';
     } else {
       el.innerHTML = '<span style="width:7px;height:7px;border-radius:50%;background:#EF4444;display:inline-block"></span> Offline';
     }
