@@ -201,13 +201,13 @@ function rotateSafety(){
   const el=document.getElementById('safetyMsg');
   if(!el)return;
   el.style.opacity='0';
-  setTimeout(()=>{
+  setTimeout(function(){
     el.textContent=SAFETY_MSGS[safetyIdx];
     el.style.opacity='1';
     safetyIdx=(safetyIdx+1)%SAFETY_MSGS.length;
   },500);
 }
-setTimeout(()=>setInterval(rotateSafety,5000),3000);
+window.addEventListener('load',function(){setInterval(rotateSafety,5000);});
 
 // Role mapping based on equipment class
 const DRIVER_CLASSES=['Dump Truck','Light Vehicle','Manhaul','Tyre Truck','Lube Truck','Tire Truck','Water Truck','Crane Truck','Fuel Truck'];
