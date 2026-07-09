@@ -2,508 +2,151 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Starting Shift — Central Control Room</title>
 <link rel="manifest" href="manifest.json"/>
 <link rel="apple-touch-icon" href="icon-192.png"/>
-<meta name="apple-mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
-<title>Starting Shift — Admin CCR</title>
-<link rel="stylesheet" href="style.css"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
 <style>
-.uc{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-md);margin-bottom:8px;overflow:hidden;box-shadow:var(--shadow-sm);transition:box-shadow .2s}
-.uc:hover{box-shadow:var(--shadow-md)}
-.uc.st-Ready{border-left:3px solid var(--success)}.uc.st-Breakdown{border-left:3px solid var(--danger)}.uc.st-Maintenance{border-left:3px solid var(--warning)}
-.uc-top{padding:12px 14px;display:flex;justify-content:space-between;align-items:center}
-.uc-id{font-size:.92rem;font-weight:800;color:var(--text)}.uc-type{font-size:.68rem;color:var(--text-muted)}
-.uc-btns{display:flex;gap:4px}
-.sb{padding:5px 9px;border-radius:6px;font-size:.6rem;font-weight:700;cursor:pointer;border:1.5px solid;font-family:var(--font);min-height:30px;transition:all .15s}
-.sb:active{transform:scale(.95)}.sb:disabled{opacity:.25;cursor:not-allowed}
-.sb.r{border-color:var(--success);color:var(--success);background:transparent}.sb.r.c{background:var(--success);color:white;border-color:var(--success)}
-.sb.b{border-color:var(--danger);color:var(--danger);background:transparent}.sb.b.c{background:var(--danger);color:white;border-color:var(--danger)}
-.sb.m{border-color:var(--warning);color:var(--warning);background:transparent}.sb.m.c{background:var(--warning);color:white;border-color:var(--warning)}
-.uc-detail{padding:0 14px 10px;font-size:.7rem;color:var(--text-muted);line-height:1.6}
-.uc-notes{background:var(--danger-bg);border-radius:6px;padding:6px 10px;margin-top:4px;font-size:.7rem;color:var(--danger);cursor:pointer}
-.dr{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-md);margin-bottom:8px;padding:14px;box-shadow:var(--shadow-sm)}
-.dr-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-.dr-name{font-size:.9rem;font-weight:800;color:var(--text)}.dr-time{font-size:.62rem;color:var(--text-muted)}
-.dr-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:6px}
-.dr-cell{background:var(--input-bg);border:1px solid var(--border);border-radius:6px;padding:6px 8px;text-align:center}
-.dr-cell-label{font-size:.5rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em}
-.dr-cell-val{font-size:.78rem;font-weight:700;margin-top:2px}
-.dr-hm{display:flex;gap:6px;align-items:center;margin-top:6px}
-.dr-hm input{padding:7px;background:var(--input-bg);border:1px solid var(--input-border);border-radius:6px;color:var(--text);font-family:var(--font);font-size:.82rem;font-weight:700;width:90px;text-align:center;outline:none}
-.dr-hm button{padding:7px 12px;border:none;border-radius:6px;background:var(--grad);color:white;font-family:var(--font);font-size:.7rem;font-weight:700;cursor:pointer;white-space:nowrap}
-.shift-toggle{display:flex;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-md);padding:3px;margin-bottom:10px;box-shadow:var(--shadow-sm)}
-.shift-btn{flex:1;padding:8px;text-align:center;font-size:.7rem;font-weight:700;color:var(--text-muted);cursor:pointer;border:none;background:none;border-radius:var(--radius-sm);transition:all .2s}
-.shift-btn.active{background:var(--grad);color:white;box-shadow:var(--shadow-btn)}
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+:root{--bg:#F0F4F8;--card:#FFF;--border:#E5E9F0;--text:#1E293B;--muted:#94A3B8;--gray:#64748B;--green:#00C853;--blue:#00B0FF;--red:#EF4444;--amber:#F59E0B;--info:#3B82F6;--success:#10B981;--sidebar:#1E293B;--font:'Plus Jakarta Sans',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}html,body{height:100%;overflow:hidden}
+body{background:var(--bg);font-family:var(--font);color:var(--text);display:flex}
+.sidebar{width:220px;background:var(--sidebar);color:#FFF;display:flex;flex-direction:column;height:100vh;flex-shrink:0}
+.sb-brand{padding:18px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #2D3A4A}
+.sb-brand img{height:24px}.sb-brand-text .sbt-name{font-size:.85rem;font-weight:800}.sb-brand-text .sbt-sub{font-size:.55rem;color:var(--muted)}
+.sb-nav{flex:1;overflow-y:auto;padding:12px 0}
+.sb-section{padding:6px 16px;font-size:.55rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-top:8px}
+.sb-item{display:flex;align-items:center;gap:10px;padding:10px 16px;font-size:.78rem;font-weight:600;color:#94A3B8;cursor:pointer;transition:all .15s;border-left:3px solid transparent}
+.sb-item:hover{background:#2D3A4A;color:#FFF}.sb-item.active{background:rgba(0,200,83,.1);color:var(--green);border-left-color:var(--green)}
+.sb-item .sb-ico{width:18px;text-align:center;font-size:.85rem}
+.sb-user{padding:14px 16px;border-top:1px solid #2D3A4A;display:flex;align-items:center;gap:10px}
+.sb-avatar{width:32px;height:32px;border-radius:8px;background:var(--green);display:grid;place-items:center;font-size:.7rem;font-weight:800}
+.sb-uname{font-size:.78rem;font-weight:700}.sb-urole{font-size:.58rem;color:var(--muted)}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{display:flex;justify-content:space-between;align-items:center;padding:12px 20px;background:var(--card);border-bottom:1px solid var(--border)}
+.tb-title{font-size:1.15rem;font-weight:800}.tb-live{display:flex;align-items:center;gap:5px;font-size:.65rem;font-weight:700;color:var(--green)}
+.tb-live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s ease infinite}
+.tb-sub{font-size:.65rem;color:var(--muted)}.tb-clock{font-size:1.1rem;font-weight:800;font-variant-numeric:tabular-nums}
+.tb-shift{padding:6px 14px;border-radius:8px;font-size:.68rem;font-weight:700;display:flex;align-items:center;gap:8px}
+.tb-shift.s1{background:rgba(0,200,83,.08);color:var(--green);border:1px solid rgba(0,200,83,.2)}
+.tb-shift.s2{background:rgba(0,176,255,.08);color:var(--blue);border:1px solid rgba(0,176,255,.2)}
+.content{flex:1;overflow-y:auto;padding:16px 20px;display:flex;gap:16px}
+.col-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:14px}.col-right{width:300px;display:flex;flex-direction:column;gap:14px;flex-shrink:0}
+.kpi-row{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px}
+.kpi-icon{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;font-size:.85rem;margin-bottom:8px}
+.kpi-label{font-size:.62rem;color:var(--gray);font-weight:600;margin-bottom:4px}
+.kpi-val{font-size:1.5rem;font-weight:800;line-height:1}.kpi-val small{font-size:.75rem;font-weight:600;color:var(--muted)}
+.kpi-bar{height:3px;border-radius:2px;background:var(--border);margin-top:8px}.kpi-bar-fill{height:100%;border-radius:2px}
+.kpi-sub{font-size:.55rem;color:var(--muted);margin-top:4px}
+.kpi-highlight{background:linear-gradient(135deg,var(--green),var(--blue));color:#FFF;border:none}
+.kpi-highlight .kpi-label,.kpi-highlight .kpi-sub{color:rgba(255,255,255,.7)}.kpi-highlight .kpi-val{color:#FFF}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.panel-head{padding:14px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)}
+.panel-title{font-size:.88rem;font-weight:700}
+.pf-select{padding:5px 10px;border:1px solid var(--border);border-radius:6px;font-size:.68rem;font-family:var(--font);color:var(--gray);background:var(--bg);cursor:pointer}
+.panel-body{overflow-y:auto;max-height:380px}
+.panel-foot{padding:10px 16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;font-size:.65rem;color:var(--muted)}
+.panel-foot a{color:var(--green);font-weight:600;cursor:pointer;text-decoration:none}
+.op-row{display:flex;align-items:center;padding:10px 16px;border-bottom:1px solid var(--border);gap:12px;transition:background .15s}
+.op-row:hover{background:var(--bg)}
+.op-avatar{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;font-size:.6rem;font-weight:800;color:#FFF;flex-shrink:0}
+.op-info{min-width:0;width:120px;flex-shrink:0}.op-name{font-size:.78rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.op-dept{font-size:.58rem;color:var(--muted)}
+.op-unit{width:90px;flex-shrink:0}.op-unit-id{font-size:.75rem;font-weight:700}.op-unit-type{font-size:.55rem;color:var(--muted)}
+.op-cell{font-size:.7rem;font-weight:600;text-align:center;min-width:55px}
+.op-badge{display:inline-flex;padding:3px 8px;border-radius:5px;font-size:.6rem;font-weight:700}
+.badge-fit{background:rgba(0,200,83,.08);color:var(--green)}.badge-unfit{background:rgba(239,68,68,.08);color:var(--red)}
+.badge-lulus{background:rgba(16,185,129,.08);color:var(--success)}.badge-temuan{background:rgba(245,158,11,.08);color:var(--amber)}
+.status-dot{width:6px;height:6px;border-radius:50%;display:inline-block;margin-right:4px}
+.st-operasi{background:var(--green)}.st-siap{background:var(--blue)}.st-kendala{background:var(--red)}.st-standby{background:var(--amber)}
+.widget{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px}
+.widget-title{font-size:.82rem;font-weight:700;margin-bottom:4px}.widget-sub{font-size:.6rem;color:var(--muted);margin-bottom:12px}
+.donut-wrap{display:flex;align-items:center;gap:16px}
+.donut-pct{font-size:1.8rem;font-weight:800;color:var(--green)}.donut-label{font-size:.58rem;color:var(--muted);font-weight:600}
+.dl-item{display:flex;justify-content:space-between;padding:3px 0;font-size:.7rem}.dl-name{color:var(--gray)}.dl-val{font-weight:700}
+.fleet-bar{height:8px;border-radius:4px;background:var(--border);margin:8px 0 10px;display:flex;overflow:hidden}.fb-seg{height:100%}
+.fleet-legend{display:flex;flex-wrap:wrap;gap:10px;font-size:.6rem;color:var(--gray);margin-bottom:10px}
+.fl-dot{width:7px;height:7px;border-radius:50%;display:inline-block}
+.fleet-type{display:flex;justify-content:space-between;align-items:center;padding:3px 0;font-size:.7rem}
+.ft-bar{height:5px;border-radius:3px;background:var(--border);margin:0 8px;flex:1}.ft-fill{height:100%;border-radius:3px;background:var(--green)}
+.ft-count{font-weight:700;font-size:.68rem;min-width:30px;text-align:right}
+.log-item{display:flex;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);font-size:.68rem}
+.log-dot{width:7px;height:7px;border-radius:50%;margin-top:5px;flex-shrink:0}.log-text{color:var(--gray);line-height:1.4}.log-time{font-size:.55rem;color:var(--muted);margin-top:2px}
+.bd-section{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.bd-head{padding:12px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)}
+.bd-badge{padding:3px 8px;border-radius:5px;font-size:.6rem;font-weight:700;background:rgba(239,68,68,.08);color:var(--red)}
+.bd-item{display:flex;align-items:center;padding:10px 16px;border-bottom:1px solid var(--border);gap:12px}
+.bd-unit-badge{padding:6px 10px;border-radius:6px;font-size:.65rem;font-weight:800;min-width:50px;text-align:center}
+.bd-unit-badge.crit{background:rgba(239,68,68,.08);color:var(--red);border-left:3px solid var(--red)}
+.bd-unit-badge.med{background:rgba(245,158,11,.08);color:var(--amber);border-left:3px solid var(--amber)}
+.bd-unit-badge.low{background:rgba(59,130,246,.08);color:var(--info);border-left:3px solid var(--info)}
+.bd-info{flex:1;min-width:0}.bd-title{font-size:.78rem;font-weight:700}.bd-meta{font-size:.58rem;color:var(--muted)}
+.bd-tags{display:flex;gap:6px}
+.bd-sev{padding:3px 8px;border-radius:5px;font-size:.55rem;font-weight:700}
+.sev-kritis{background:rgba(239,68,68,.08);color:var(--red)}.sev-sedang{background:rgba(245,158,11,.08);color:var(--amber)}.sev-rendah{background:rgba(59,130,246,.08);color:var(--info)}
+.bd-status{padding:3px 8px;border-radius:5px;font-size:.55rem;font-weight:700}
+.bds-open{background:rgba(239,68,68,.08);color:var(--red)}.bds-progress{background:rgba(245,158,11,.08);color:var(--amber)}.bds-closed{background:rgba(16,185,129,.08);color:var(--success)}
+@media(max-width:900px){.sidebar{display:none}.col-right{display:none}.kpi-row{grid-template-columns:repeat(3,1fr)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(0,200,83,.3)}50%{box-shadow:0 0 0 5px rgba(0,200,83,0)}}
 </style>
 </head>
 <body>
-<div class="app app-wide">
-<div class="topnav">
-  <div class="topnav-left"><img class="topnav-logo" src="logo-hte.png" alt="HTE"/><div class="topnav-text"><div class="tn-title">Starting Shift</div><div class="tn-sub">Super Admin CCR</div></div></div>
-  <div class="topnav-actions"><button class="topnav-btn" style="color:var(--info);border-color:rgba(59,130,246,.3)" onclick="window.open('tv.html','_blank')">📺 TV</button><button class="topnav-btn" style="color:#8B5CF6;border-color:rgba(139,92,246,.3)" onclick="generateHandover()">📋 Handover</button><button class="topnav-btn" style="color:var(--danger);border-color:rgba(239,68,68,.3)" onclick="generatePDF()">📄 PDF</button><button class="topnav-btn" style="color:var(--success);border-color:rgba(16,185,129,.3)" onclick="downloadAll()">📥 CSV</button><button class="topnav-btn" onclick="doLogout()">Logout</button></div>
-</div>
-<div class="stats-grid">
-  <div class="stat-card"><div class="stat-val text-success" id="stReady">—</div><div class="stat-label">Unit Ready</div></div>
-  <div class="stat-card"><div class="stat-val text-primary" id="stDrivers">—</div><div class="stat-label">Driver Aktif</div></div>
-  <div class="stat-card"><div class="stat-val text-danger" id="stBD">—</div><div class="stat-label">BD / MT</div></div>
-</div>
-<div class="tabs">
-  <button class="tab active" id="t1" onclick="switchTab('units')">🚛 Unit</button>
-  <button class="tab" id="t2" onclick="switchTab('drivers')">👤 Driver Monitor</button>
-</div>
-<div class="tab-panel active" id="pUnits">
-  <input class="search-input" type="text" id="uSearch" placeholder="Cari unit..." oninput="renderUnits()"/>
-  <div class="pills" id="uPills"></div>
-  <div id="uList"></div>
-</div>
-<div class="tab-panel" id="pDrivers">
-  <div class="shift-toggle">
-    <button class="shift-btn active" id="shAll" onclick="setShift('')">Semua</button>
-    <button class="shift-btn" id="sh1" onclick="setShift('1')">Shift 1 (07-19)</button>
-    <button class="shift-btn" id="sh2" onclick="setShift('2')">Shift 2 (19-07)</button>
+<div class="sidebar">
+  <div class="sb-brand"><img src="logo-hte.png" alt="HTE"/><div class="sb-brand-text"><div class="sbt-name">Starting Shift</div><div class="sbt-sub">PT HTE · MINING OPS</div></div></div>
+  <div class="sb-nav">
+    <div class="sb-section">Monitoring</div>
+    <div class="sb-item active"><span class="sb-ico">📊</span> Dashboard CCR</div>
+    <div class="sb-item" onclick="window.open('tv.html','_blank')"><span class="sb-ico">📺</span> TV Monitor</div>
+    <div class="sb-section">Laporan</div>
+    <div class="sb-item" onclick="downloadAll()"><span class="sb-ico">📥</span> Download CSV</div>
+    <div class="sb-section">Sistem</div>
+    <div class="sb-item" onclick="doLogout()"><span class="sb-ico">🚪</span> Logout</div>
   </div>
-  <input class="search-input" type="text" id="dSearch" placeholder="Cari driver..." oninput="renderDrivers()"/>
-  <div id="dList" class="empty">⏳ Memuat...</div>
+  <div class="sb-user"><div class="sb-avatar" id="sbAvatar">—</div><div><div class="sb-uname" id="sbName">—</div><div class="sb-urole">Admin CCR</div></div></div>
 </div>
-</div>
-
-<div class="modal-overlay" id="modalBD"><div class="modal">
-  <div class="modal-head" id="mdTitle">🔴 Keterangan Breakdown</div>
-  <div class="modal-body">
-    <div class="mf"><label>Deskripsi</label><textarea id="mdDesc" placeholder="Jelaskan kerusakan..."></textarea></div>
-    <div class="mf"><label>Lokasi Unit</label><input type="text" id="mdLoc" placeholder="Contoh: Pit Cendana Ext"/></div>
+<div class="main">
+  <div class="topbar">
+    <div><div style="display:flex;align-items:center;gap:8px"><span class="tb-title">Central Control Room</span><span class="tb-live"><span class="tb-live-dot"></span> LIVE</span></div><div class="tb-sub" id="tbDate">—</div></div>
+    <div style="display:flex;align-items:center;gap:14px"><div style="text-align:right"><div class="tb-clock" id="clock">--:--:--</div><div style="font-size:.55rem;color:var(--muted)">WITA</div></div><div id="shiftBadge" class="tb-shift s1">Shift 1</div></div>
   </div>
-  <div class="modal-footer"><button class="mbtn-cancel" onclick="closeModal()">Batal</button><button class="mbtn-ok" id="mdOk" onclick="confirmBD()">Konfirmasi</button></div>
-</div></div>
-<div class="modal-overlay" id="modalEdit"><div class="modal">
-  <div class="modal-head">✏️ Edit Keterangan</div>
-  <div class="modal-body"><div class="mf"><label>Keterangan</label><textarea id="edNotes"></textarea></div></div>
-  <div class="modal-footer"><button class="mbtn-cancel" onclick="closeEdit()">Batal</button><button class="mbtn-ok" onclick="saveNotes()">💾 Simpan</button></div>
-</div></div>
-
+  <div class="content">
+    <div class="col-main">
+      <div class="kpi-row">
+        <div class="kpi"><div class="kpi-icon" style="background:rgba(0,200,83,.08)">👤</div><div class="kpi-label">Operator Hadir</div><div class="kpi-val" id="kDrivers">—</div><div class="kpi-bar"><div class="kpi-bar-fill" id="kDriversBar" style="width:0%;background:var(--green)"></div></div><div class="kpi-sub" id="kDriversSub">—</div></div>
+        <div class="kpi"><div class="kpi-icon" style="background:rgba(239,68,68,.08)">💪</div><div class="kpi-label">FTW / Fit To Work</div><div class="kpi-val" style="color:var(--green)" id="kFit">—</div><div class="kpi-bar"><div class="kpi-bar-fill" id="kFitBar" style="width:0%;background:var(--green)"></div></div><div class="kpi-sub" id="kFitSub">—</div></div>
+        <div class="kpi"><div class="kpi-icon" style="background:rgba(59,130,246,.08)">📋</div><div class="kpi-label">P2H Selesai</div><div class="kpi-val" id="kP2H">—</div><div class="kpi-bar"><div class="kpi-bar-fill" id="kP2HBar" style="width:0%;background:var(--info)"></div></div><div class="kpi-sub" id="kP2HSub">—</div></div>
+        <div class="kpi"><div class="kpi-icon" style="background:rgba(0,200,83,.08)">🚛</div><div class="kpi-label">Unit Ready</div><div class="kpi-val" id="kReady">—</div><div class="kpi-bar"><div class="kpi-bar-fill" id="kReadyBar" style="width:0%;background:var(--green)"></div></div><div class="kpi-sub" id="kReadySub">—</div></div>
+        <div class="kpi"><div class="kpi-icon" style="background:rgba(239,68,68,.08)">⚠️</div><div class="kpi-label">Breakdown</div><div class="kpi-val" style="color:var(--red)" id="kBD">—</div><div class="kpi-bar"><div class="kpi-bar-fill" id="kBDBar" style="width:0%;background:var(--red)"></div></div><div class="kpi-sub" id="kBDSub">—</div></div>
+        <div class="kpi kpi-highlight"><div class="kpi-icon" style="background:rgba(255,255,255,.15)">🎯</div><div class="kpi-label">Kesiapan Shift</div><div class="kpi-val" id="kScore">—%</div><div class="kpi-sub">Skor gabungan · target 95%</div></div>
+      </div>
+      <div class="panel"><div class="panel-head"><div><div class="panel-title">Operator Aktif — <span id="shiftLabel">Shift 1</span></div></div><div style="display:flex;gap:6px"><select class="pf-select" id="filterDept" onchange="renderOps()"><option value="">Semua Dept</option></select></div></div><div class="panel-body" id="opTable"></div><div class="panel-foot"><span id="opCount">—</span><a>Lihat Semua →</a></div></div>
+      <div class="bd-section"><div class="bd-head"><div style="display:flex;align-items:center;gap:8px"><span class="panel-title">Breakdown Report</span><span class="bd-badge" id="bdActiveCount">0</span></div></div><div id="bdList"></div></div>
+    </div>
+    <div class="col-right">
+      <div class="widget"><div class="widget-title">Kesiapan Shift</div><div class="widget-sub">Skor gabungan kesiapan operasi</div><div class="donut-wrap"><div><canvas id="donutChart" width="110" height="110"></canvas></div><div style="flex:1"><div class="dl-item"><span class="dl-name">Kehadiran</span><span class="dl-val" id="dlA">—</span></div><div class="dl-item"><span class="dl-name">FTW Fit</span><span class="dl-val" id="dlF">—</span></div><div class="dl-item"><span class="dl-name">P2H</span><span class="dl-val" id="dlP">—</span></div><div class="dl-item"><span class="dl-name">Unit Ready</span><span class="dl-val" id="dlR">—</span></div></div></div></div>
+      <div class="widget"><div style="display:flex;justify-content:space-between"><div class="widget-title">Fleet Availability</div><span style="font-size:.72rem;font-weight:700" id="fleetTotal">—</span></div><div class="fleet-bar" id="fleetBar"></div><div class="fleet-legend"><span><span class="fl-dot" style="background:var(--green)"></span> Ready</span><span><span class="fl-dot" style="background:var(--muted)"></span> MT</span><span><span class="fl-dot" style="background:var(--red)"></span> BD</span></div><div id="fleetTypes"></div></div>
+      <div class="widget"><div style="display:flex;justify-content:space-between;align-items:center"><div class="widget-title">Log Aktivitas CCR</div><span style="display:flex;align-items:center;gap:4px;font-size:.6rem;font-weight:700;color:var(--red)"><span class="tb-live-dot" style="background:var(--red)"></span> REALTIME</span></div><div id="logList" style="max-height:200px;overflow-y:auto;margin-top:8px"></div></div>
+    </div>
+  </div>
+</div>
 <script>
 const API='https://fms-light-backend-production.up.railway.app/api/v1',TOKEN=localStorage.getItem('fms_token'),SESSION=JSON.parse(localStorage.getItem('fms_session')||'null');
 if(!SESSION||!TOKEN)window.location.href='index.html';
-const _h=new Date().getHours(),_autoShift=(_h>=7&&_h<19)?'1':'2';
-let allUnits=[],driverMap={},allReports=[],uFilter='ALL',curShift=_autoShift,pendingUnit='',pendingStatus='',editingUnit='';
-document.addEventListener('DOMContentLoaded',()=>{['shAll','sh1','sh2'].forEach(id=>document.getElementById(id).classList.remove('active'));document.getElementById(curShift==='1'?'sh1':'sh2').classList.add('active');loadAll()});
-async function loadAll(){await Promise.all([loadUnits(),loadActiveDrivers(),loadStats()]);updateUnitStats();buildPills();renderUnits();}
-function switchTab(t){document.getElementById('pUnits').classList.toggle('active',t==='units');document.getElementById('pDrivers').classList.toggle('active',t==='drivers');document.getElementById('t1').classList.toggle('active',t==='units');document.getElementById('t2').classList.toggle('active',t==='drivers');if(t==='drivers')loadReports();}
-async function loadStats(){try{const r=await fetch(`${API}/supervisor/dashboard-stats`,{headers:{'Authorization':'Bearer '+TOKEN}});const d=await r.json();if(d.success)document.getElementById('stDrivers').textContent=d.data.active_drivers;}catch{}}
-function updateUnitStats(){document.getElementById('stReady').textContent=allUnits.filter(u=>u.status_unit==='Ready').length;document.getElementById('stBD').textContent=allUnits.filter(u=>u.status_unit!=='Ready').length;}
-async function loadUnits(){try{const r=await fetch(`${API}/vehicles`,{headers:{'Authorization':'Bearer '+TOKEN}});const d=await r.json();if(d.success)allUnits=d.data;}catch{}}
-async function loadActiveDrivers(){try{const r=await fetch(`${API}/vehicles/active-drivers`,{headers:{'Authorization':'Bearer '+TOKEN}});const d=await r.json();if(d.success){driverMap={};d.data.forEach(x=>{driverMap[x.unit_id]=x;});}}catch{}}
-function buildPills(){const cls=[...new Set(allUnits.map(u=>u.equipment_class||'Other'))].sort();let h=`<button class="pill ${uFilter==='ALL'?'active':''}" onclick="setUFilter('ALL')">Semua (${allUnits.length})</button>`;cls.forEach(c=>{const n=allUnits.filter(u=>(u.equipment_class||'Other')===c).length;h+=`<button class="pill ${uFilter===c?'active':''}" onclick="setUFilter('${c}')">${c} (${n})</button>`;});document.getElementById('uPills').innerHTML=h;}
-function setUFilter(f){uFilter=f;buildPills();renderUnits();}
-function renderUnits(){const q=(document.getElementById('uSearch').value||'').toUpperCase();let list=allUnits;if(uFilter!=='ALL')list=list.filter(u=>(u.equipment_class||'Other')===uFilter);if(q)list=list.filter(u=>u.unit_id.toUpperCase().includes(q)||(u.vehicle_type||'').toUpperCase().includes(q));if(!list.length){document.getElementById('uList').innerHTML='<div class="empty">Tidak ada unit.</div>';return;}
-document.getElementById('uList').innerHTML=list.map(u=>{const s=u.status_unit,drv=driverMap[u.unit_id];let det='';if(drv)det+=`<div>👤 <span style="color:var(--success);font-weight:600">${drv.driver_name}</span> (${drv.driver_id})</div>`;if(u.notes&&s!=='Ready')det+=`<div class="uc-notes" onclick="openEdit('${u.unit_id}')">📝 ${u.notes} <span style="opacity:.4">(edit)</span></div>`;return `<div class="uc st-${s}"><div class="uc-top"><div style="flex:1;min-width:0"><div class="uc-id">${u.unit_id}</div><div class="uc-type">${u.vehicle_type||'—'}</div></div><div class="uc-btns"><button class="sb r ${s==='Ready'?'c':''}" onclick="clickSt('${u.unit_id}','Ready')" ${s==='Ready'?'disabled':''}>✅</button><button class="sb b ${s==='Breakdown'?'c':''}" onclick="clickSt('${u.unit_id}','Breakdown')" ${s==='Breakdown'?'disabled':''}>BD</button><button class="sb m ${s==='Maintenance'?'c':''}" onclick="clickSt('${u.unit_id}','Maintenance')" ${s==='Maintenance'?'disabled':''}>MT</button></div></div>${det?`<div class="uc-detail">${det}</div>`:''}</div>`;}).join('');}
-function clickSt(uid,st){if(st==='Ready'){setSt(uid,'Ready',null);return;}pendingUnit=uid;pendingStatus=st;document.getElementById('mdTitle').textContent=st==='Breakdown'?'🔴 Keterangan Breakdown':'🟡 Keterangan Maintenance';document.getElementById('mdDesc').value='';document.getElementById('mdLoc').value='';document.getElementById('modalBD').classList.add('show');}
-function closeModal(){document.getElementById('modalBD').classList.remove('show');}
-function confirmBD(){const d=document.getElementById('mdDesc').value.trim(),l=document.getElementById('mdLoc').value.trim();const notes=[d,l?'Lokasi: '+l:''].filter(Boolean).join(' | ');closeModal();setSt(pendingUnit,pendingStatus,notes);}
-async function setSt(uid,st,notes){try{const body={status_unit:st,changed_by:SESSION.id};if(notes)body.notes=notes;const r=await fetch(`${API}/vehicles/${uid}/status`,{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},body:JSON.stringify(body)});const d=await r.json();if(d.success){const u=allUnits.find(x=>x.unit_id===uid);if(u){u.status_unit=st;u.notes=st==='Ready'?null:(notes||u.notes);}updateUnitStats();renderUnits();loadStats();}}catch{alert('Gagal.');}}
-function openEdit(uid){editingUnit=uid;const u=allUnits.find(x=>x.unit_id===uid);document.getElementById('edNotes').value=u?.notes||'';document.getElementById('modalEdit').classList.add('show');}
-function closeEdit(){document.getElementById('modalEdit').classList.remove('show');}
-async function saveNotes(){const notes=document.getElementById('edNotes').value.trim();try{await fetch(`${API}/vehicles/${editingUnit}/notes`,{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},body:JSON.stringify({notes})});const u=allUnits.find(x=>x.unit_id===editingUnit);if(u)u.notes=notes;closeEdit();renderUnits();}catch{alert('Gagal.');}}
-function setShift(s){curShift=s;['shAll','sh1','sh2'].forEach(id=>document.getElementById(id).classList.remove('active'));document.getElementById(s===''?'shAll':s==='1'?'sh1':'sh2').classList.add('active');loadReports();}
-async function loadReports(){const c=document.getElementById('dList');c.innerHTML='<div class="empty">⏳ Memuat...</div>';const today=new Date().toISOString().slice(0,10);let url=`${API}/supervisor/shift-reports?date=${today}`;if(curShift)url+=`&shift=${curShift}`;try{const r=await fetch(url,{headers:{'Authorization':'Bearer '+TOKEN}});const d=await r.json();if(!d.success||!d.data.reports.length){c.innerHTML='<div class="empty">Belum ada laporan.</div>';allReports=[];return;}allReports=d.data.reports;renderDrivers();}catch{c.innerHTML='<div class="empty">⛔ Gagal memuat.</div>';}}
-function renderDrivers(){const q=(document.getElementById('dSearch').value||'').toUpperCase();let list=allReports;if(q)list=list.filter(r=>(r.driver_name||'').toUpperCase().includes(q)||r.driver_id.toUpperCase().includes(q)||r.unit_id.toUpperCase().includes(q));if(!list.length){document.getElementById('dList').innerHTML='<div class="empty">Tidak ada data.</div>';return;}
-document.getElementById('dList').innerHTML=list.map(r=>{const t=new Date(r.timestamp_filled).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});const oc=r.overall_status==='Ready to Work'?'success':'danger';const fc=r.fit_status==='Fit'?'success':'danger';const pc=r.p2h_status==='Passed'?'success':'danger';const vc=r.validation_status==='Approved'?'success':r.validation_status==='Rejected'?'danger':'warning';let hm='';if(r.odometer_end){const diff=r.odometer_end-r.odometer_entered;hm=`<div style="font-size:.7rem;color:var(--text-muted);margin-top:4px">HM: ${r.odometer_entered} → ${r.odometer_end} <span style="color:var(--success);font-weight:700">(+${diff})</span></div>`;}else{hm=`<div class="dr-hm"><span style="font-size:.62rem;color:var(--text-muted)">HM ${r.odometer_entered} →</span><input type="number" id="hm-${r.report_id}" placeholder="Akhir" inputmode="numeric"/><button onclick="submitHM('${r.report_id}')">Simpan</button></div>`;}
-return `<div class="dr"><div class="dr-head"><div><div class="dr-name">${r.driver_name||r.driver_id}</div><div class="dr-time">${r.driver_id} · ${r.unit_id} · ${t}</div></div><span class="badge badge-${oc}">${r.overall_status==='Ready to Work'?'✅ RTW':'⛔ '+r.overall_status}</span></div><div class="dr-grid"><div class="dr-cell"><div class="dr-cell-label">FTW</div><div class="dr-cell-val" style="color:var(--${fc})">${r.fit_status}</div></div><div class="dr-cell"><div class="dr-cell-label">P2H</div><div class="dr-cell-val" style="color:var(--${pc})">${r.p2h_status}</div></div><div class="dr-cell"><div class="dr-cell-label">Validasi</div><div class="dr-cell-val" style="color:var(--${vc})">${r.validation_status||'Pending'}</div></div></div>${hm}</div>`;}).join('');}
-async function submitHM(rid){const v=parseInt(document.getElementById('hm-'+rid).value);if(!v||v<=0){alert('Masukkan HM akhir.');return;}try{const r=await fetch(`${API}/supervisor/shift-reports/${rid}/end-shift`,{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},body:JSON.stringify({odometer_end:v})});const d=await r.json();if(d.success)loadReports();else alert(d.message||'Gagal');}catch{alert('Gagal.');}}
-async function downloadAll(){try{let c1='Unit ID,Tipe,Kelas,Status,Keterangan\n';allUnits.forEach(u=>{c1+=`${u.unit_id},"${u.vehicle_type||''}",${u.equipment_class||''},${u.status_unit},"${(u.notes||'').replace(/"/g,'""')}"\n`;});const today=new Date().toISOString().slice(0,10);const sr=await fetch(`${API}/supervisor/shift-reports?date=${today}&limit=500`,{headers:{'Authorization':'Bearer '+TOKEN}});const sd=await sr.json();let c2='Driver ID,Nama,Unit,Tipe,FTW,P2H,Status,HM Awal,HM Akhir,Selisih,Waktu,Validasi\n';if(sd.success)sd.data.reports.forEach(r=>{const diff=r.odometer_end?(r.odometer_end-r.odometer_entered):'';c2+=`${r.driver_id},"${r.driver_name||''}",${r.unit_id},"${r.vehicle_type||''}",${r.fit_status},${r.p2h_status},"${r.overall_status}",${r.odometer_entered||''},${r.odometer_end||''},${diff},"${r.timestamp_filled?new Date(r.timestamp_filled).toLocaleString('id-ID'):''}",${r.validation_status||'Pending'}\n`;});const lr=await fetch(`${API}/vehicles/status-log?limit=1000`,{headers:{'Authorization':'Bearer '+TOKEN}});const ld=await lr.json();let c3='Unit,Dari,Ke,Keterangan,Diubah Oleh,Mulai,Selesai,Durasi (menit)\n';if(ld.success)ld.data.forEach(l=>{c3+=`${l.unit_id},${l.status_from},${l.status_to},"${(l.notes||'').replace(/"/g,'""')}",${l.changed_by_name||l.changed_by||''},"${l.time_start?new Date(l.time_start).toLocaleString('id-ID'):''}","${l.time_end?new Date(l.time_end).toLocaleString('id-ID'):''}",${l.duration_minutes||''}\n`;});const B='\uFEFF';dl(B+c1,`Unit_Status_${today}.csv`);setTimeout(()=>dl(B+c2,`Shift_Report_${today}.csv`),500);setTimeout(()=>dl(B+c3,`Status_Log_${today}.csv`),1000);}catch{alert('Gagal.');}}
-function dl(c,f){const b=new Blob([c],{type:'text/csv;charset=utf-8;'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=f;document.body.appendChild(a);a.click();document.body.removeChild(a);}
-// ══ SHIFT HANDOVER REPORT ══
-async function generateHandover(){
-  if(!window.jspdf){alert('Library PDF sedang dimuat.');return;}
-
-  // Detect current shift
-  const now=new Date();
-  const h=now.getHours();
-  const isShift1=h>=7&&h<19;
-  const shiftNum=isShift1?1:2;
-  const shiftLabel=isShift1?'Shift 1 (07:00 — 19:00)':'Shift 2 (19:00 — 07:00)';
-  const today=now.toISOString().slice(0,10);
-  const todayFmt=now.toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
-  const timeFmt=now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
-
-  // Fetch shift-specific data
-  let reports=[],bdReports=[];
-  try{
-    const [sr,br,lr]=await Promise.all([
-      fetch(`${API}/supervisor/shift-reports?date=${today}&shift=${shiftNum}&limit=500`,{headers:{'Authorization':'Bearer '+TOKEN}}),
-      fetch(`${API}/bd-reports?limit=50`,{headers:{'Authorization':'Bearer '+TOKEN}}),
-      fetch(`${API}/vehicles/status-log?limit=200`,{headers:{'Authorization':'Bearer '+TOKEN}}),
-    ]);
-    const sd=await sr.json(),bd=await br.json(),ld=await lr.json();
-    if(sd.success) reports=sd.data.reports;
-    if(bd.success) bdReports=bd.data.reports||[];
-  }catch{}
-
-  const {jsPDF}=window.jspdf;
-  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-  const pw=doc.internal.pageSize.getWidth();
-  const ph=doc.internal.pageSize.getHeight();
-  const green=[0,200,83],blue=[0,176,255],dark=[30,41,59],gray=[130,140,155],red=[239,68,68],amber=[245,158,11];
-
-  // ── Header ──
-  doc.setFillColor(...green);doc.rect(0,0,pw*0.55,22,'F');
-  doc.setFillColor(...blue);doc.rect(pw*0.55,0,pw*0.45,22,'F');
-  doc.setTextColor(255);doc.setFontSize(12);doc.setFont(undefined,'bold');
-  doc.text('PT HALMAHERA TRANSPORTASI ENERGI',14,9);
-  doc.setFontSize(8);doc.setFont(undefined,'normal');
-  doc.text('Starting Shift Web App — Laporan Serah Terima Shift',14,15);
-  doc.setFontSize(7);doc.text('Site HSM · Pit Cendana Extend',14,20);
-  doc.setTextColor(...dark);
-
-  // ── Shift Info Box ──
-  doc.setFillColor(240,244,248);doc.roundedRect(14,26,pw-28,18,3,3,'F');
-  doc.setFontSize(14);doc.setFont(undefined,'bold');doc.setTextColor(...green);
-  doc.text(shiftLabel,20,36);
-  doc.setFontSize(8);doc.setFont(undefined,'normal');doc.setTextColor(...dark);
-  doc.text(`Tanggal: ${todayFmt}`,20,41);
-  doc.text(`Waktu Cetak: ${timeFmt}  |  Dicetak oleh: ${SESSION.name||SESSION.id}`,pw/2,41);
-
-  // ── Section 1: Ringkasan ──
-  let y=50;
-  doc.setFontSize(11);doc.setFont(undefined,'bold');doc.setTextColor(...dark);
-  doc.text('1. Ringkasan Shift',14,y);y+=5;
-
-  const rtw=reports.filter(r=>r.overall_status==='Ready to Work').length;
-  const unfit=reports.filter(r=>r.overall_status==='Driver Unfit').length;
-  const unitBD=reports.filter(r=>r.overall_status==='Unit Breakdown').length;
-  const validated=reports.filter(r=>r.validation_status==='Approved').length;
-  const hmDone=reports.filter(r=>r.odometer_end).length;
-
-  const s1=[
-    ['Total Driver Lapor','FTW Fit (RTW)','FTW Unfit','Unit BD (P2H)','Sudah Divalidasi','HM Akhir Terisi'],
-    [String(reports.length),String(rtw),String(unfit),String(unitBD),String(validated),String(hmDone)],
-  ];
-  doc.autoTable({startY:y,body:s1,styles:{fontSize:8,cellPadding:3,halign:'center'},
-    didParseCell:function(d){
-      if(d.row.index===0){d.cell.styles.fontStyle='bold';d.cell.styles.textColor=[100,116,139];d.cell.styles.fontSize=6.5;}
-      if(d.row.index===1){d.cell.styles.fontStyle='bold';d.cell.styles.fontSize=16;d.cell.styles.textColor=green;}
-      d.cell.styles.fillColor=[240,244,248];
-    },
-    tableLineWidth:0.3,tableLineColor:[226,232,240],
-  });
-  y=doc.lastAutoTable.finalY+6;
-
-  // ── Section 2: HM Report ──
-  const hmReports=reports.filter(r=>r.odometer_entered);
-  if(hmReports.length>0){
-    doc.setFontSize(11);doc.setFont(undefined,'bold');doc.text('2. Laporan Hour Meter (HM)',14,y);y+=4;
-    doc.autoTable({startY:y,
-      head:[['No','Unit','Driver','HM Awal','HM Akhir','Selisih','Status']],
-      body:hmReports.map((r,i)=>{
-        const diff=r.odometer_end?(r.odometer_end-r.odometer_entered):'—';
-        const st=r.odometer_end?'Lengkap':'Belum diisi';
-        return [i+1,r.unit_id,r.driver_name||r.driver_id,r.odometer_entered,r.odometer_end||'—',diff,st];
-      }),
-      styles:{fontSize:7.5,cellPadding:2.5},
-      headStyles:{fillColor:green,textColor:[255,255,255],fontStyle:'bold'},
-      alternateRowStyles:{fillColor:[245,247,250]},
-      didParseCell:function(d){
-        if(d.section==='body'&&d.column.index===6){
-          d.cell.styles.fontStyle='bold';
-          d.cell.styles.textColor=d.cell.raw==='Lengkap'?[16,185,129]:[245,158,11];
-        }
-      }
-    });
-    y=doc.lastAutoTable.finalY+6;
-  }
-
-  // ── Section 3: Unit Carryover ──
-  if(y>ph-60){doc.addPage();y=14;}
-  const bdUnits=allUnits.filter(u=>u.status_unit!=='Ready');
-  doc.setFontSize(11);doc.setFont(undefined,'bold');
-  doc.text(`3. Unit Carryover ke Shift Berikutnya (${bdUnits.length} unit)`,14,y);y+=4;
-
-  if(bdUnits.length>0){
-    doc.autoTable({startY:y,
-      head:[['Unit ID','Tipe','Status','Keterangan (untuk shift berikutnya)']],
-      body:bdUnits.map(u=>[u.unit_id,u.vehicle_type||'',u.status_unit,u.notes||'Tidak ada keterangan']),
-      styles:{fontSize:7.5,cellPadding:2.5},
-      headStyles:{fillColor:red,textColor:[255,255,255],fontStyle:'bold'},
-      alternateRowStyles:{fillColor:[254,242,242]},
-    });
-    y=doc.lastAutoTable.finalY+6;
-  } else {
-    doc.setFontSize(8);doc.setFont(undefined,'normal');doc.setTextColor(...gray);
-    doc.text('Semua unit berstatus Ready. Tidak ada carryover.',14,y+2);
-    doc.setTextColor(...dark);y+=8;
-  }
-
-  // ── Section 4: BD Reports ──
-  if(y>ph-60){doc.addPage();y=14;}
-  const openBD=bdReports.filter(r=>r.status==='Open'||r.status==='In Progress');
-  doc.setFontSize(11);doc.setFont(undefined,'bold');
-  doc.text(`4. BD Reports Belum Resolved (${openBD.length})`,14,y);y+=4;
-
-  if(openBD.length>0){
-    doc.autoTable({startY:y,
-      head:[['Unit','Komponen','Severity','Deskripsi','Lokasi','Status']],
-      body:openBD.map(r=>[r.unit_id,r.component,r.severity,r.description||'',r.location||'',r.status]),
-      styles:{fontSize:7,cellPadding:2},
-      headStyles:{fillColor:amber,textColor:[255,255,255],fontStyle:'bold'},
-      alternateRowStyles:{fillColor:[255,251,235]},
-      columnStyles:{3:{cellWidth:40}},
-      didParseCell:function(d){
-        if(d.section==='body'&&d.column.index===2){
-          d.cell.styles.fontStyle='bold';
-          if(d.cell.raw==='Critical')d.cell.styles.textColor=red;
-          else if(d.cell.raw==='Major')d.cell.styles.textColor=amber;
-        }
-      }
-    });
-    y=doc.lastAutoTable.finalY+6;
-  } else {
-    doc.setFontSize(8);doc.setFont(undefined,'normal');doc.setTextColor(...gray);
-    doc.text('Tidak ada BD report open. Semua sudah resolved.',14,y+2);
-    doc.setTextColor(...dark);y+=8;
-  }
-
-  // ── Section 5: Catatan & Tanda Tangan ──
-  if(y>ph-70){doc.addPage();y=14;}
-  doc.setFontSize(11);doc.setFont(undefined,'bold');doc.setTextColor(...dark);
-  doc.text('5. Catatan Serah Terima',14,y);y+=5;
-  doc.setFontSize(8);doc.setFont(undefined,'normal');doc.setTextColor(...gray);
-  doc.text('Catatan khusus dari shift yang berakhir untuk diperhatikan shift berikutnya:',14,y);y+=5;
-
-  // Empty lines for handwritten notes
-  for(let i=0;i<4;i++){
-    doc.setDrawColor(200,210,220);doc.line(14,y,pw-14,y);y+=8;
-  }
-  y+=6;
-
-  // Sign-off boxes
-  doc.setFontSize(10);doc.setFont(undefined,'bold');doc.setTextColor(...dark);
-  doc.text('Serah Terima:',14,y);y+=8;
-
-  const sigW=(pw-28-20)/2;
-  // Left box
-  doc.setDrawColor(180,190,200);
-  doc.roundedRect(14,y,sigW,40,2,2);
-  doc.setFontSize(7);doc.setFont(undefined,'bold');doc.setTextColor(...gray);
-  doc.text('DISERAHKAN OLEH',14+sigW/2,y+5,{align:'center'});
-  doc.text(`(${shiftLabel})`,14+sigW/2,y+9,{align:'center'});
-  doc.setFont(undefined,'normal');
-  doc.text('Nama: ___________________________',20,y+25);
-  doc.text('Tanda Tangan:',20,y+32);
-
-  // Right box
-  const nextShift=shiftNum===1?'Shift 2 (19:00 — 07:00)':'Shift 1 (07:00 — 19:00)';
-  doc.roundedRect(14+sigW+20,y,sigW,40,2,2);
-  doc.setFont(undefined,'bold');
-  doc.text('DITERIMA OLEH',14+sigW+20+sigW/2,y+5,{align:'center'});
-  doc.text(`(${nextShift})`,14+sigW+20+sigW/2,y+9,{align:'center'});
-  doc.setFont(undefined,'normal');
-  doc.text('Nama: ___________________________',14+sigW+26,y+25);
-  doc.text('Tanda Tangan:',14+sigW+26,y+32);
-
-  // ── Footer ──
-  const pages=doc.internal.getNumberOfPages();
-  for(let i=1;i<=pages;i++){
-    doc.setPage(i);doc.setFontSize(6.5);doc.setTextColor(180,180,180);
-    doc.text('Starting Shift Web App — PT HTE — Laporan Serah Terima',14,ph-5);
-    doc.text(`Hal ${i}/${pages}`,pw-14,ph-5,{align:'right'});
-  }
-
-  doc.save(`Handover_${shiftLabel.replace(/[^a-zA-Z0-9]/g,'_')}_${today}.pdf`);
-}
-
-// ══ GENERATE PDF ══
-async function generatePDF(){
-  if(!window.jspdf){alert('Library PDF sedang dimuat. Tunggu beberapa detik lalu coba lagi.');return;}
-  const today=new Date().toISOString().slice(0,10);
-  const todayFmt=new Date().toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
-  const timeFmt=new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
-
-  let reports=[];
-  try{const r=await fetch(`${API}/supervisor/shift-reports?date=${today}&limit=500`,{headers:{'Authorization':'Bearer '+TOKEN}});
-  const d=await r.json();if(d.success)reports=d.data.reports;}catch{}
-
-  const {jsPDF}=window.jspdf;
-  const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
-  const pw=doc.internal.pageSize.getWidth();
-  const ph=doc.internal.pageSize.getHeight();
-  const green=[0,200,83],blue=[0,176,255],dark=[30,41,59],gray=[100,116,139],light=[240,244,248];
-
-  // ═══ HELPER FUNCTIONS ═══
-  function addHeader(title){
-    doc.setFillColor(...green);doc.rect(0,0,pw*0.55,26,'F');
-    doc.setFillColor(...blue);doc.rect(pw*0.55,0,pw*0.45,26,'F');
-    doc.setTextColor(255,255,255);doc.setFontSize(14);doc.setFont(undefined,'bold');
-    doc.text('PT HALMAHERA TRANSPORTASI ENERGI',14,11);
-    doc.setFontSize(9);doc.setFont(undefined,'normal');
-    doc.text('Starting Shift Web App — '+title,14,18);
-    doc.setFontSize(7);doc.text(todayFmt+'  |  '+timeFmt+'  |  '+SESSION.name,14,23);
-    doc.setTextColor(...dark);
-  }
-  function addFooter(page,total){
-    doc.setFontSize(6.5);doc.setTextColor(180,180,180);
-    doc.text('Starting Shift Web App — PT Halmahera Transportasi Energi',14,ph-5);
-    doc.text(`Halaman ${page} / ${total}`,pw-14,ph-5,{align:'right'});
-    doc.setTextColor(...dark);
-  }
-  function drawBar(x,y,w,h,segments){
-    let cx=x;
-    segments.forEach(s=>{
-      const sw=w*(s.pct/100);
-      if(sw>0){doc.setFillColor(...s.color);doc.roundedRect(cx,y,sw,h,1,1,'F');cx+=sw;}
-    });
-    // Labels
-    let lx=x;
-    doc.setFontSize(6);
-    segments.forEach(s=>{
-      const sw=w*(s.pct/100);
-      if(sw>12){doc.setTextColor(255);doc.text(`${s.label} (${s.count})`,lx+sw/2,y+h/2+2,{align:'center'});}
-      lx+=sw;
-    });
-    doc.setTextColor(...dark);
-  }
-  function drawBarChart(x,y,w,h,data,maxVal){
-    const barW=Math.min(20,w/data.length-4);
-    const gap=(w-barW*data.length)/(data.length+1);
-    data.forEach((d,i)=>{
-      const bx=x+gap+(barW+gap)*i;
-      const bh=maxVal>0?(d.value/maxVal)*h:0;
-      const by=y+h-bh;
-      // Gradient bar
-      doc.setFillColor(...green);doc.roundedRect(bx,by,barW,bh,2,2,'F');
-      // Value on top
-      doc.setFontSize(7);doc.setFont(undefined,'bold');doc.setTextColor(...dark);
-      doc.text(String(d.value),bx+barW/2,by-2,{align:'center'});
-      // Label below
-      doc.setFontSize(5.5);doc.setFont(undefined,'normal');doc.setTextColor(...gray);
-      const label=d.label.length>12?d.label.slice(0,11)+'…':d.label;
-      doc.text(label,bx+barW/2,y+h+5,{align:'center'});
-    });
-    doc.setTextColor(...dark);
-  }
-
-  // ═══ PAGE 1: COVER & SUMMARY ═══
-  addHeader('Laporan Harian Shift');
-
-  // Stats boxes
-  const readyC=allUnits.filter(u=>u.status_unit==='Ready').length;
-  const bdC=allUnits.filter(u=>u.status_unit==='Breakdown').length;
-  const mtC=allUnits.filter(u=>u.status_unit==='Maintenance').length;
-  const totalU=allUnits.length;
-  const rtwC=reports.filter(r=>r.overall_status==='Ready to Work').length;
-  const unfitC=reports.filter(r=>r.overall_status==='Driver Unfit').length;
-  const bdRepC=reports.filter(r=>r.overall_status==='Unit Breakdown').length;
-
-  doc.setFontSize(10);doc.setFont(undefined,'bold');doc.text('Ringkasan Hari Ini',14,35);
-
-  // Stat cards
-  const stats=[
-    {label:'Total Unit',val:totalU,color:dark},
-    {label:'Unit Ready',val:readyC,color:green},
-    {label:'Breakdown',val:bdC,color:[239,68,68]},
-    {label:'Maintenance',val:mtC,color:[245,158,11]},
-    {label:'Driver Lapor',val:reports.length,color:dark},
-    {label:'Ready to Work',val:rtwC,color:green},
-    {label:'Driver Unfit',val:unfitC,color:[239,68,68]},
-  ];
-  stats.forEach((s,i)=>{
-    const sx=14+(i%7)*39;
-    doc.setFillColor(248,250,252);doc.roundedRect(sx,38,36,18,2,2,'F');
-    doc.setFontSize(14);doc.setFont(undefined,'bold');doc.setTextColor(...s.color);
-    doc.text(String(s.val),sx+18,49,{align:'center'});
-    doc.setFontSize(5.5);doc.setFont(undefined,'normal');doc.setTextColor(...gray);
-    doc.text(s.label,sx+18,55,{align:'center'});
-  });
-  doc.setTextColor(...dark);
-
-  // Status distribution bar
-  doc.setFontSize(9);doc.setFont(undefined,'bold');doc.text('Distribusi Status Unit',14,66);
-  const rPct=totalU>0?readyC/totalU*100:0,bPct=totalU>0?bdC/totalU*100:0,mPct=totalU>0?mtC/totalU*100:0;
-  drawBar(14,69,pw-28,8,[{label:'Ready',count:readyC,pct:rPct,color:green},{label:'BD',count:bdC,pct:bPct,color:[239,68,68]},{label:'MT',count:mtC,pct:mPct,color:[245,158,11]}]);
-
-  // Equipment class distribution chart
-  const classes=[...new Set(allUnits.map(u=>u.equipment_class||'Other'))].sort();
-  const classData=classes.map(c=>({label:c,value:reports.filter(r=>r.equipment_class===c).length})).filter(d=>d.value>0);
-  const maxVal=Math.max(...classData.map(d=>d.value),1);
-
-  if(classData.length>0){
-    doc.setFontSize(9);doc.setFont(undefined,'bold');doc.text('Jumlah Laporan per Jenis Unit',14,86);
-    drawBarChart(14,90,pw-28,40,classData,maxVal);
-  }
-
-  // ═══ PER UNIT TYPE PAGES ═══
-  const usedClasses=classes.filter(c=>reports.some(r=>r.equipment_class===c)||allUnits.some(u=>u.equipment_class===c&&u.status_unit!=='Ready'));
-
-  usedClasses.forEach(cls=>{
-    doc.addPage();
-    addHeader(cls);
-
-    const clsReports=reports.filter(r=>r.equipment_class===cls);
-    const clsUnits=allUnits.filter(u=>u.equipment_class===cls);
-    const clsReady=clsUnits.filter(u=>u.status_unit==='Ready').length;
-    const clsBD=clsUnits.filter(u=>u.status_unit!=='Ready');
-
-    // Class stats
-    doc.setFontSize(10);doc.setFont(undefined,'bold');doc.text(`${cls}  —  ${clsUnits.length} unit  |  ${clsReady} ready  |  ${clsBD.length} BD/MT  |  ${clsReports.length} driver lapor`,14,35);
-
-    // Shift reports table
-    if(clsReports.length>0){
-      doc.autoTable({
-        startY:39,
-        head:[['No','Driver ID','Nama','Unit','FTW','P2H','Status','HM Awal','HM Akhir','Selisih','Waktu','Validasi']],
-        body:clsReports.map((r,i)=>[
-          i+1,r.driver_id,r.driver_name||'',r.unit_id,r.fit_status,r.p2h_status,
-          r.overall_status==='Ready to Work'?'RTW':r.overall_status,
-          r.odometer_entered||'',r.odometer_end||'-',
-          r.odometer_end?(r.odometer_end-r.odometer_entered):'',
-          r.timestamp_filled?new Date(r.timestamp_filled).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}):'',
-          r.validation_status||'Pending'
-        ]),
-        styles:{fontSize:6.5,cellPadding:2,font:'helvetica'},
-        headStyles:{fillColor:green,textColor:[255,255,255],fontStyle:'bold',fontSize:6.5},
-        alternateRowStyles:{fillColor:[245,247,250]},
-        didParseCell:function(data){
-          if(data.section==='body'){
-            if(data.column.index===4)data.cell.styles.textColor=data.cell.raw==='Fit'?[16,185,129]:[239,68,68];
-            if(data.column.index===5)data.cell.styles.textColor=data.cell.raw==='Passed'?[16,185,129]:[239,68,68];
-            if(data.column.index===6)data.cell.styles.textColor=data.cell.raw==='RTW'?[16,185,129]:[239,68,68];
-            if(data.column.index===11){
-              if(data.cell.raw==='Approved')data.cell.styles.textColor=[16,185,129];
-              else if(data.cell.raw==='Rejected')data.cell.styles.textColor=[239,68,68];
-              else data.cell.styles.textColor=[245,158,11];}
-          }
-        }
-      });
-    } else {
-      doc.setFontSize(8);doc.setFont(undefined,'normal');doc.setTextColor(...gray);
-      doc.text('Belum ada laporan shift untuk kelas ini hari ini.',14,44);doc.setTextColor(...dark);
-    }
-
-    // BD/MT units
-    if(clsBD.length>0){
-      const afterY=doc.lastAutoTable?doc.lastAutoTable.finalY+8:55;
-      doc.setFontSize(9);doc.setFont(undefined,'bold');doc.setTextColor([239,68,68]);
-      doc.text(`Unit Tidak Ready — ${cls}`,14,afterY);doc.setTextColor(...dark);
-      doc.autoTable({
-        startY:afterY+3,
-        head:[['Unit ID','Status','Keterangan']],
-        body:clsBD.map(u=>[u.unit_id,u.status_unit,u.notes||'-']),
-        styles:{fontSize:7,cellPadding:2},
-        headStyles:{fillColor:[239,68,68],textColor:[255,255,255],fontStyle:'bold',fontSize:7},
-        alternateRowStyles:{fillColor:[254,242,242]},
-      });
-    }
-  });
-
-  // ═══ ADD PAGE NUMBERS ═══
-  const pages=doc.internal.getNumberOfPages();
-  for(let i=1;i<=pages;i++){doc.setPage(i);addFooter(i,pages);}
-
-  doc.save(`Laporan_Starting_Shift_${today}.pdf`);
-}
-
+let allUnits=[],allReports=[],driverMap={},bdReports=[];
+const _h=new Date().getHours(),curShift=(_h>=7&&_h<19)?'1':'2';
+document.addEventListener('DOMContentLoaded',()=>{const i=(SESSION.name||'??').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();document.getElementById('sbAvatar').textContent=i;document.getElementById('sbName').textContent=SESSION.name||SESSION.id;updateClock();setInterval(updateClock,1000);loadAll();});
+function updateClock(){const n=new Date();document.getElementById('clock').textContent=n.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',second:'2-digit'});document.getElementById('tbDate').textContent='Pemantauan kesiapan shift real-time · '+n.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});const h=n.getHours(),s1=h>=7&&h<19;const b=document.getElementById('shiftBadge');b.className='tb-shift '+(s1?'s1':'s2');b.innerHTML=`<div><div style="font-size:.55rem;opacity:.7">SHIFT AKTIF</div><div>Shift ${s1?'1 · Siang':'2 · Malam'}</div></div><div style="font-size:.72rem;opacity:.8">${s1?'07:00–19:00':'19:00–07:00'}</div>`;document.getElementById('shiftLabel').textContent=`Shift ${s1?'1 · Siang':'2 · Malam'}`;}
+async function loadAll(){const today=new Date().toISOString().slice(0,10);try{const[uR,dR,sR,srR,brR]=await Promise.all([fetch(`${API}/vehicles`,{headers:{'Authorization':'Bearer '+TOKEN}}),fetch(`${API}/vehicles/active-drivers`,{headers:{'Authorization':'Bearer '+TOKEN}}),fetch(`${API}/supervisor/dashboard-stats`,{headers:{'Authorization':'Bearer '+TOKEN}}),fetch(`${API}/supervisor/shift-reports?date=${today}&shift=${curShift}&limit=500`,{headers:{'Authorization':'Bearer '+TOKEN}}),fetch(`${API}/bd-reports?limit=20`,{headers:{'Authorization':'Bearer '+TOKEN}})]);const uD=await uR.json(),dD=await dR.json(),sD=await sR.json(),srD=await srR.json(),brD=await brR.json();if(uD.success)allUnits=uD.data;if(dD.success){driverMap={};dD.data.forEach(x=>{driverMap[x.unit_id]=x;});}if(srD.success)allReports=srD.data.reports||[];if(brD.success)bdReports=brD.data.reports||brD.data||[];renderKPI();renderOps();renderFleet();renderBD();renderLog();renderDonut();populateFilter();}catch(e){console.error(e);}}
+function renderKPI(){const t=allUnits.length||1,r=allUnits.filter(u=>u.status_unit==='Ready').length,bd=allUnits.filter(u=>u.status_unit==='Breakdown').length,mt=allUnits.filter(u=>u.status_unit==='Maintenance').length,td=allReports.length,fc=allReports.filter(r=>r.fit_status==='Fit').length,pp=allReports.filter(r=>r.p2h_status==='Passed').length,tm=Math.max(td,t);document.getElementById('kDrivers').innerHTML=`${td}<small>/${tm}</small>`;document.getElementById('kDriversBar').style.width=`${td/tm*100}%`;document.getElementById('kDriversSub').textContent=`${Math.round(td/tm*100)}% kehadiran`;document.getElementById('kFit').innerHTML=`${fc}<small style="color:var(--green)"> Fit</small>`;document.getElementById('kFitBar').style.width=`${td?fc/td*100:0}%`;document.getElementById('kFitSub').textContent=(td-fc)>0?`${td-fc} Unfit ditindaklanjuti`:'Semua fit';document.getElementById('kP2H').innerHTML=`${pp}<small>/${td}</small>`;document.getElementById('kP2HBar').style.width=`${td?pp/td*100:0}%`;document.getElementById('kP2HSub').textContent=`${td-pp} dalam proses`;document.getElementById('kReady').innerHTML=`${r}<small>/${t}</small>`;document.getElementById('kReadyBar').style.width=`${r/t*100}%`;document.getElementById('kReadySub').textContent=`${(r/t*100).toFixed(1)}% availability`;document.getElementById('kBD').innerHTML=`${bd+mt}<small style="color:var(--red)"> unit</small>`;document.getElementById('kBDBar').style.width=`${(bd+mt)/t*100}%`;document.getElementById('kBDSub').textContent=`${bd} BD · ${mt} MT`;const aP=Math.round(td/tm*100),fP=td?Math.round(fc/td*100):0,pP=td?Math.round(pp/td*100):0,rP=Math.round(r/t*100),sc=Math.round((aP+fP+pP+rP)/4);document.getElementById('kScore').textContent=sc+'%';document.getElementById('dlA').textContent=aP+'%';document.getElementById('dlF').textContent=fP+'%';document.getElementById('dlP').textContent=pP+'%';document.getElementById('dlR').textContent=rP+'%';}
+function renderDonut(){const t=allUnits.length||1,r=allUnits.filter(u=>u.status_unit==='Ready').length,td=allReports.length||1,fc=allReports.filter(r=>r.fit_status==='Fit').length,pp=allReports.filter(r=>r.p2h_status==='Passed').length,sc=Math.round(((td/Math.max(td,t)*100)+(fc/td*100)+(pp/td*100)+(r/t*100))/4);const ctx=document.getElementById('donutChart');if(ctx._c)ctx._c.destroy();ctx._c=new Chart(ctx,{type:'doughnut',data:{datasets:[{data:[sc,100-sc],backgroundColor:[sc>=90?'#00C853':sc>=70?'#F59E0B':'#EF4444','#E5E9F0'],borderWidth:0}]},options:{cutout:'78%',responsive:false,plugins:{legend:{display:false},tooltip:{enabled:false}}}});}
+function renderOps(){const df=document.getElementById('filterDept').value;let list=allReports;if(df)list=list.filter(r=>(r.equipment_class||'')==df);const c=document.getElementById('opTable');if(!list.length){c.innerHTML='<div style="padding:20px;text-align:center;color:var(--muted);font-size:.8rem">Belum ada operator.</div>';document.getElementById('opCount').textContent='0 operator';return;}const cols=['#00C853','#00B0FF','#F59E0B','#EF4444','#8B5CF6','#EC4899','#14B8A6','#F97316'];c.innerHTML=list.map((r,i)=>{const ini=(r.driver_name||'??').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();const tm=r.timestamp_filled?new Date(r.timestamp_filled).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}):'—';let st='Siap',sc='st-siap';if(r.overall_status==='Ready to Work'&&r.validation_status==='Approved'){st='Beroperasi';sc='st-operasi';}else if(r.overall_status==='Driver Unfit'){st='Kendala';sc='st-kendala';}return`<div class="op-row"><div class="op-avatar" style="background:${cols[i%8]}">${ini}</div><div class="op-info"><div class="op-name">${r.driver_name||r.driver_id}</div><div class="op-dept">${r.equipment_class||'—'}</div></div><div class="op-unit"><div class="op-unit-id">${r.unit_id}</div><div class="op-unit-type">${r.vehicle_type||''}</div></div><div class="op-cell"><span class="op-badge ${r.fit_status==='Fit'?'badge-fit':'badge-unfit'}">${r.fit_status}</span></div><div class="op-cell"><span class="op-badge ${r.p2h_status==='Passed'?'badge-lulus':'badge-temuan'}">${r.p2h_status||'—'}</span></div><div class="op-cell" style="color:var(--muted)">${tm}</div><div class="op-cell"><span class="status-dot ${sc}"></span>${st}</div></div>`;}).join('');document.getElementById('opCount').textContent=`${list.length} dari ${allReports.length} operator`;}
+function populateFilter(){const d=[...new Set(allReports.map(r=>r.equipment_class).filter(Boolean))].sort();document.getElementById('filterDept').innerHTML='<option value="">Semua Dept</option>'+d.map(x=>`<option>${x}</option>`).join('');}
+function renderFleet(){const r=allUnits.filter(u=>u.status_unit==='Ready').length,bd=allUnits.filter(u=>u.status_unit==='Breakdown').length,mt=allUnits.filter(u=>u.status_unit==='Maintenance').length,t=allUnits.length;document.getElementById('fleetTotal').textContent=t+' unit';document.getElementById('fleetBar').innerHTML=`<div class="fb-seg" style="width:${r/t*100}%;background:var(--green)"></div><div class="fb-seg" style="width:${mt/t*100}%;background:var(--muted)"></div><div class="fb-seg" style="width:${bd/t*100}%;background:var(--red)"></div>`;const cls=[...new Set(allUnits.map(u=>u.equipment_class||'Other'))].sort();document.getElementById('fleetTypes').innerHTML=cls.map(c=>{const u=allUnits.filter(x=>(x.equipment_class||'Other')===c),rv=u.filter(x=>x.status_unit==='Ready').length;return`<div class="fleet-type"><span>${c}</span><div class="ft-bar"><div class="ft-fill" style="width:${rv/u.length*100}%"></div></div><span class="ft-count">${rv}/${u.length}</span></div>`;}).join('');}
+function renderBD(){const open=(Array.isArray(bdReports)?bdReports:[]).filter(r=>r.status==='Open'||r.status==='In Progress');document.getElementById('bdActiveCount').textContent=open.length+' AKTIF';if(!open.length){document.getElementById('bdList').innerHTML='<div style="padding:16px;text-align:center;color:var(--muted)">✅ Tidak ada breakdown aktif</div>';return;}document.getElementById('bdList').innerHTML=open.map(r=>{const sc=r.severity==='Critical'?'crit':r.severity==='Major'?'med':'low';const sl=r.severity==='Critical'?'Kritis':r.severity==='Major'?'Sedang':'Rendah';const sb=r.severity==='Critical'?'sev-kritis':r.severity==='Major'?'sev-sedang':'sev-rendah';const ss=r.status==='Open'?'bds-open':'bds-progress';return`<div class="bd-item"><div class="bd-unit-badge ${sc}">${r.unit_id}</div><div class="bd-info"><div class="bd-title">${r.component||''} · ${r.description||''}</div><div class="bd-meta">Dilaporkan ${r.driver_name||r.driver_id||''}</div></div><div class="bd-tags"><span class="bd-sev ${sb}">${sl}</span><span class="bd-status ${ss}">${r.status}</span></div></div>`;}).join('');}
+function renderLog(){const logs=[];allReports.slice(0,5).forEach(r=>{const t=r.timestamp_filled?new Date(r.timestamp_filled).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}):'';if(r.overall_status==='Driver Unfit')logs.push({c:'var(--red)',t:`FTW Unfit: ${r.driver_name} — ditindaklanjuti`,tm:t});else if(r.p2h_status!=='Passed')logs.push({c:'var(--amber)',t:`P2H temuan: ${r.unit_id} (${r.driver_name})`,tm:t});else logs.push({c:'var(--green)',t:`Verifikasi P2H ${r.unit_id} (${r.driver_name}) — Lulus`,tm:t});});if(!logs.length)logs.push({c:'var(--muted)',t:'Menunggu aktivitas...',tm:''});document.getElementById('logList').innerHTML=logs.map(l=>`<div class="log-item"><div class="log-dot" style="background:${l.c}"></div><div><div class="log-text">${l.t}</div><div class="log-time">${l.tm} WITA</div></div></div>`).join('');}
+function downloadAll(){alert('Download CSV...');}
 function doLogout(){localStorage.removeItem('fms_token');localStorage.removeItem('fms_session');window.location.href='index.html';}
 </script>
 <script>if("serviceWorker"in navigator){navigator.serviceWorker.register("sw.js").catch(()=>{});}</script>
