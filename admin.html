@@ -178,37 +178,57 @@ body{background:var(--bg);font-family:var(--font);color:var(--text);display:flex
 
   <!-- VIEW: HM UPDATE -->
   <div class="content view" id="v-hm" style="flex-direction:column;gap:14px">
-    <div class="panel-title">⏱️ Update Hour Meter & Absensi</div>
-    <!-- Tab toggle -->
-    <div style="display:flex;gap:6px">
-      <button class="pfsel" style="cursor:pointer;font-weight:700" id="hmTab1" onclick="switchHmTab(1)">Manual Input HM</button>
-      <button class="pfsel" style="cursor:pointer" id="hmTab2" onclick="switchHmTab(2)">Upload Excel</button>
-      <button class="pfsel" style="cursor:pointer" id="hmTab3" onclick="switchHmTab(3)">Absensi Manual</button>
+    <div style="display:flex;justify-content:space-between;align-items:center"><div class="panel-title">⏱️ Update HM & Absensi</div><span class="badge-s" style="background:rgba(0,200,83,.08);color:var(--green)" id="hmShiftBadge">Shift 1</span></div>
+
+    <!-- Summary Cards -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+      <div class="kpi" style="padding:10px"><div class="kpi-val" style="font-size:1.2rem;color:var(--green)" id="hmTotal">—</div><div class="kpi-sub">Total Lapor</div></div>
+      <div class="kpi" style="padding:10px"><div class="kpi-val" style="font-size:1.2rem;color:var(--blue)" id="hmWeb">—</div><div class="kpi-sub">Via Web</div></div>
+      <div class="kpi" style="padding:10px"><div class="kpi-val" style="font-size:1.2rem;color:var(--amber)" id="hmManual">—</div><div class="kpi-sub">Manual CCR</div></div>
+      <div class="kpi" style="padding:10px"><div class="kpi-val" style="font-size:1.2rem;color:var(--info)" id="hmDone">—</div><div class="kpi-sub">HM Terisi</div></div>
     </div>
+    <!-- HM Progress -->
+    <div style="display:flex;align-items:center;gap:8px;font-size:.68rem;color:var(--gray)"><span>HM Progress</span><div style="flex:1;height:6px;border-radius:3px;background:var(--border)"><div id="hmProgBar" style="height:100%;border-radius:3px;background:var(--green);transition:width .3s"></div></div><span id="hmProgPct" style="font-weight:700">—</span></div>
+
+    <!-- Tabs -->
+    <div style="display:flex;gap:6px">
+      <button class="pfsel" style="cursor:pointer;font-weight:700" id="hmTab1" onclick="switchHmTab(1)">⏱️ Input HM</button>
+      <button class="pfsel" style="cursor:pointer" id="hmTab2" onclick="switchHmTab(2)">📁 Upload CSV</button>
+      <button class="pfsel" style="cursor:pointer" id="hmTab3" onclick="switchHmTab(3)">👤 Absensi Manual</button>
+    </div>
+
     <!-- Tab 1: Manual HM -->
     <div id="hmPane1" class="panel" style="flex:1;overflow-y:auto">
       <div class="panel-head"><div class="panel-title">Input HM Akhir per Unit</div><select class="pfsel" id="hmFilter" onchange="renderHmTable()"><option value="">Semua</option></select></div>
       <div class="panel-body" id="hmTableBody" style="max-height:none"></div>
     </div>
-    <!-- Tab 2: Excel Upload -->
+
+    <!-- Tab 2: Upload CSV -->
     <div id="hmPane2" class="panel" style="display:none;padding:24px;text-align:center">
       <div style="border:2px dashed var(--border);border-radius:12px;padding:40px 20px;background:var(--bg)">
         <div style="font-size:2rem;margin-bottom:8px">📁</div>
-        <div style="font-size:.88rem;font-weight:700;margin-bottom:4px">Upload File Excel HM</div>
-        <div style="font-size:.68rem;color:var(--muted);margin-bottom:16px">Format: Unit ID | HM Akhir (kolom A & B, mulai baris 2)</div>
-        <input type="file" id="hmFile" accept=".xlsx,.xls,.csv" onchange="processHmFile()" style="display:none"/>
+        <div style="font-size:.88rem;font-weight:700;margin-bottom:4px">Upload File CSV HM</div>
+        <div style="font-size:.68rem;color:var(--muted);margin-bottom:16px">Format: Unit ID, HM Akhir (kolom A & B, mulai baris 2)</div>
+        <input type="file" id="hmFile" accept=".csv" onchange="processHmFile()" style="display:none"/>
         <button onclick="document.getElementById('hmFile').click()" style="padding:10px 20px;background:linear-gradient(135deg,var(--green),var(--blue));color:#FFF;border:none;border-radius:8px;font-family:var(--font);font-weight:700;cursor:pointer">Pilih File</button>
         <div id="hmFileStatus" style="margin-top:12px;font-size:.72rem"></div>
       </div>
     </div>
+
     <!-- Tab 3: Absensi Manual -->
     <div id="hmPane3" class="panel" style="display:none;flex:1;overflow-y:auto">
       <div class="panel-head"><div class="panel-title">Absensi Manual — Driver Belum Lapor di Web</div></div>
-      <div style="padding:12px 16px;display:flex;gap:8px;border-bottom:1px solid var(--border)">
-        <input type="text" id="absDriverId" placeholder="ID Karyawan" style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-family:var(--font);font-size:.8rem"/>
-        <input type="text" id="absUnit" placeholder="Unit ID" style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-family:var(--font);font-size:.8rem"/>
-        <select id="absFtw" style="padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-family:var(--font);font-size:.78rem"><option value="Fit">Fit</option><option value="Unfit">Unfit</option></select>
-        <button onclick="addAbsensi()" style="padding:8px 14px;background:var(--green);color:#FFF;border:none;border-radius:6px;font-family:var(--font);font-weight:700;font-size:.78rem;cursor:pointer;white-space:nowrap">+ Tambah</button>
+      <div style="padding:12px 16px;display:flex;flex-direction:column;gap:8px;border-bottom:1px solid var(--border)">
+        <div style="display:flex;gap:6px">
+          <input type="text" id="absDriverId" placeholder="ID Karyawan" style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-family:var(--font);font-size:.8rem"/>
+          <input type="text" id="absUnit" placeholder="Unit ID" style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-family:var(--font);font-size:.8rem"/>
+        </div>
+        <div style="display:flex;gap:6px">
+          <select id="absFtw" style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-family:var(--font);font-size:.78rem"><option value="Fit">Fit</option><option value="Unfit">Unfit</option></select>
+          <select id="absReason" style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-family:var(--font);font-size:.78rem"><option value="Tidak ada HP">Tidak ada HP</option><option value="HP rusak">HP rusak</option><option value="Tidak ada sinyal">Tidak ada sinyal</option><option value="Tidak bisa akses web">Tidak bisa akses web</option><option value="Lainnya">Lainnya</option></select>
+          <input type="time" id="absTime" style="padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-family:var(--font);font-size:.78rem;width:100px"/>
+        </div>
+        <button onclick="addAbsensi()" style="padding:10px;background:var(--green);color:#FFF;border:none;border-radius:6px;font-family:var(--font);font-weight:700;font-size:.78rem;cursor:pointer;min-height:40px">+ Tambah Absensi</button>
       </div>
       <div id="absStatus" style="padding:8px 16px;font-size:.72rem;min-height:20px"></div>
       <div id="absListBody" style="max-height:300px;overflow-y:auto"></div>
@@ -276,31 +296,46 @@ async function saveNotes(){const notes=$('edNotes').value.trim();try{await fetch
 function renderBD2(){const open=(Array.isArray(bdReports)?bdReports:[]).filter(r=>r.status!=='Resolved');$('bdCnt2').textContent=open.length+' aktif';const c=$('bdList2');if(!open.length){c.innerHTML='<div style="padding:24px;text-align:center;color:var(--muted)">✅ Semua resolved</div>';return;}c.innerHTML=open.map(r=>{const sc=r.severity==='Critical'?'crit':r.severity==='Major'?'med':'low';const sl=r.severity==='Critical'?'Kritis':r.severity==='Major'?'Sedang':'Rendah';const sb='sev-'+(r.severity==='Critical'?'kritis':r.severity==='Major'?'sedang':'rendah');const ss=r.status==='Open'?'background:rgba(239,68,68,.08);color:var(--red)':'background:rgba(245,158,11,.08);color:var(--amber)';const tm=r.created_at?new Date(r.created_at).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}):'';return`<div class="bd-item"><div class="bd-badge ${sc}">${r.unit_id}</div><div class="bd-inf"><div class="bd-tt">${r.component||''} · ${r.description||''}</div><div class="bd-mt">Dilaporkan ${r.driver_name||r.driver_id||''} · ${tm}</div></div><div class="bd-tags"><span class="bd-sev" style="background:rgba(${r.severity==='Critical'?'239,68,68':r.severity==='Major'?'245,158,11':'59,130,246'},.08);color:var(--${r.severity==='Critical'?'red':r.severity==='Major'?'amber':'info'})">${sl}</span><span class="bd-st" style="${ss}">${r.status}</span></div></div>`;}).join('');}
 
 // HM TAB
-function switchHmTab(n){[1,2,3].forEach(i=>{$('hmPane'+i).style.display=i===n?'':'none';$('hmTab'+i).style.fontWeight=i===n?'700':'400';});if(n===1)renderHmTable();if(n===3)renderAbsList();}
+function switchHmTab(n){[1,2,3].forEach(i=>{$('hmPane'+i).style.display=i===n?'':'none';$('hmTab'+i).style.fontWeight=i===n?'700':'400';});if(n===1)renderHmTable();if(n===3){renderAbsList();const now=new Date();$('absTime').value=now.toTimeString().slice(0,5);}}
+function updateHmSummary(){
+  const total=allReports.length,web=allReports.filter(r=>r.submitted_by!=='CCR-Manual').length,manual=manualAbs.length;
+  const done=allReports.filter(r=>r.odometer_end).length;
+  $('hmTotal').textContent=total+manual;$('hmWeb').textContent=web;$('hmManual').textContent=manual;$('hmDone').textContent=done;
+  const pct=total?Math.round(done/total*100):0;$('hmProgBar').style.width=pct+'%';$('hmProgPct').textContent=pct+'%';
+  const s1=curShift==='1';$('hmShiftBadge').textContent=s1?'Shift 1 · Siang':'Shift 2 · Malam';
+  $('hmShiftBadge').style.background=s1?'rgba(0,200,83,.08)':'rgba(0,176,255,.08)';
+  $('hmShiftBadge').style.color=s1?'var(--green)':'var(--blue)';
+}
 function renderHmTable(){const f=$('hmFilter')?.value||'';let list=allReports.filter(r=>r.overall_status==='Ready to Work');if(f)list=list.filter(r=>(r.equipment_class||'')===f);
-const body=$('hmTableBody');if(!list.length){body.innerHTML='<div style="padding:20px;text-align:center;color:var(--muted)">Tidak ada data shift.</div>';return;}
-body.innerHTML=list.map(r=>{const done=r.odometer_end?true:false;return`<div class="op-row"><div class="op-info" style="width:130px"><div class="op-name">${r.driver_name||r.driver_id}</div><div class="op-dept">${r.driver_id}</div></div><div class="op-unit"><div class="op-uid">${r.unit_id}</div></div><div class="op-cell">HM: ${r.odometer_entered||'—'}</div><div class="op-cell" style="color:${done?'var(--green)':'var(--amber)'}">${done?r.odometer_end:'—'}</div><div style="display:flex;gap:4px;align-items:center">${done?'<span style="color:var(--green);font-size:.7rem;font-weight:700">✅ Done</span>':`<input type="number" id="hm-${r.report_id}" placeholder="HM Akhir" style="width:80px;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:.78rem;font-family:var(--font)"/><button onclick="saveHm('${r.report_id}')" style="padding:6px 10px;background:var(--green);color:#FFF;border:none;border-radius:6px;font-size:.68rem;font-weight:700;cursor:pointer">Save</button>`}</div></div>`;}).join('');
+const body=$('hmTableBody');updateHmSummary();if(!list.length){body.innerHTML='<div style="padding:20px;text-align:center;color:var(--muted)">Tidak ada data shift.</div>';return;}
+body.innerHTML=list.map(r=>{const done=r.odometer_end?true:false;const src=r.submitted_by==='CCR-Manual';const srcBadge=src?'<span class="badge-s" style="background:rgba(245,158,11,.08);color:var(--amber);margin-left:4px">MANUAL</span>':'<span class="badge-s" style="background:rgba(0,200,83,.08);color:var(--green);margin-left:4px">WEB</span>';
+return`<div class="op-row"><div class="op-info" style="width:130px"><div class="op-name">${r.driver_name||r.driver_id}${srcBadge}</div><div class="op-dept">${r.driver_id}</div></div><div class="op-unit"><div class="op-uid">${r.unit_id}</div></div><div class="op-cell">HM: ${r.odometer_entered||'—'}</div><div class="op-cell" style="color:${done?'var(--green)':'var(--amber)'}">${done?r.odometer_end:'—'}</div><div style="display:flex;gap:4px;align-items:center">${done?'<span style="color:var(--green);font-size:.7rem;font-weight:700">✅</span>':`<input type="number" id="hm-${r.report_id}" placeholder="HM Akhir" min="${r.odometer_entered||0}" style="width:80px;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:.78rem;font-family:var(--font)"/><button onclick="saveHm('${r.report_id}',${r.odometer_entered||0})" style="padding:6px 10px;background:var(--green);color:#FFF;border:none;border-radius:6px;font-size:.68rem;font-weight:700;cursor:pointer">Save</button>`}</div></div>`;}).join('');
 const fil=$('hmFilter');if(fil.options.length<=1){const d=[...new Set(allReports.map(r=>r.equipment_class).filter(Boolean))].sort();fil.innerHTML='<option value="">Semua</option>'+d.map(x=>`<option>${x}</option>`).join('');}}
-async function saveHm(rid){const v=parseInt(document.getElementById('hm-'+rid)?.value);if(!v||v<=0){alert('Masukkan angka HM.');return;}
+async function saveHm(rid,hmAwal){const el=document.getElementById('hm-'+rid);const v=parseInt(el?.value);if(!v||v<=0){alert('Masukkan angka HM.');return;}
+if(hmAwal&&v<hmAwal){alert(`HM akhir (${v}) tidak boleh lebih kecil dari HM awal (${hmAwal}).`);el.style.borderColor='var(--red)';return;}
 try{const r=await fetch(`${API}/supervisor/shift-reports/${rid}/end-shift`,{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},body:JSON.stringify({odometer_end:v})});const d=await r.json();if(d.success){const rp=allReports.find(x=>x.report_id===rid);if(rp)rp.odometer_end=v;renderHmTable();}else{alert(d.message||'Gagal');}}catch{alert('Error koneksi');}}
 // Excel upload
 async function processHmFile(){const file=$('hmFile').files[0];if(!file)return;const st=$('hmFileStatus');st.textContent='Memproses...';st.style.color='var(--info)';
 try{const data=await file.arrayBuffer();let rows=[];
 if(file.name.endsWith('.csv')){const text=new TextDecoder().decode(data);const lines=text.split('\n').slice(1);lines.forEach(l=>{const cols=l.split(',');if(cols.length>=2&&cols[0].trim()&&cols[1].trim())rows.push({unit:cols[0].trim(),hm:parseInt(cols[1].trim())});});}
-else{st.textContent='Format .xlsx memerlukan library tambahan. Gunakan CSV (Unit ID, HM Akhir).';st.style.color='var(--amber)';return;}
-if(!rows.length){st.textContent='Tidak ada data valid ditemukan.';st.style.color='var(--red)';return;}
-let ok=0,fail=0;for(const row of rows){const rpt=allReports.find(r=>r.unit_id===row.unit&&!r.odometer_end);if(rpt&&row.hm>0){try{const r=await fetch(`${API}/supervisor/shift-reports/${rpt.report_id}/end-shift`,{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},body:JSON.stringify({odometer_end:row.hm})});const d=await r.json();if(d.success){rpt.odometer_end=row.hm;ok++;}else fail++;}catch{fail++;}}else fail++;}
-st.innerHTML=`<span style="color:var(--green)">✅ ${ok} berhasil</span>${fail?` · <span style="color:var(--red)">${fail} gagal</span>`:''}`;renderHmTable();}catch(e){st.textContent='Error: '+e.message;st.style.color='var(--red)';}}
+else{st.textContent='Gunakan format CSV.';st.style.color='var(--amber)';return;}
+if(!rows.length){st.textContent='Tidak ada data valid.';st.style.color='var(--red)';return;}
+let ok=0,fail=0;for(const row of rows){const rpt=allReports.find(r=>r.unit_id===row.unit&&!r.odometer_end);if(rpt&&row.hm>0&&(!rpt.odometer_entered||row.hm>=rpt.odometer_entered)){try{const r=await fetch(`${API}/supervisor/shift-reports/${rpt.report_id}/end-shift`,{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},body:JSON.stringify({odometer_end:row.hm})});const d=await r.json();if(d.success){rpt.odometer_end=row.hm;ok++;}else fail++;}catch{fail++;}}else fail++;}
+st.innerHTML=`<span style="color:var(--green)">✅ ${ok} berhasil</span>${fail?` · <span style="color:var(--red)">${fail} gagal/skip</span>`:''}`;renderHmTable();}catch(e){st.textContent='Error: '+e.message;st.style.color='var(--red)';}}
 
 // ABSENSI MANUAL
 let manualAbs=[];
-async function addAbsensi(){const did=$('absDriverId').value.trim(),uid=$('absUnit').value.trim(),ftw=$('absFtw').value;const st=$('absStatus');
+async function addAbsensi(){const did=$('absDriverId').value.trim(),uid=$('absUnit').value.trim(),ftw=$('absFtw').value,reason=$('absReason').value,timeVal=$('absTime').value;const st=$('absStatus');
 if(!did||!uid){st.textContent='ID dan Unit wajib diisi.';st.style.color='var(--red)';return;}
-st.textContent='Mengirim...';st.style.color='var(--info)';
+// Cek unit sudah dipakai driver lain
+const existing=allReports.find(r=>r.unit_id===uid);
+if(existing){st.innerHTML=`<span style="color:var(--amber)">⚠️ Unit ${uid} sudah dipakai oleh ${existing.driver_name||existing.driver_id}. Lanjutkan?</span> <button onclick="confirmAbsensi('${did}','${uid}','${ftw}','${reason}','${timeVal}')" style="padding:3px 8px;background:var(--amber);color:#FFF;border:none;border-radius:4px;font-size:.68rem;font-weight:700;cursor:pointer;margin-left:4px">Ya, Lanjut</button>`;return;}
+confirmAbsensi(did,uid,ftw,reason,timeVal);}
+async function confirmAbsensi(did,uid,ftw,reason,timeVal){const st=$('absStatus');st.textContent='Mengirim...';st.style.color='var(--info)';
 try{const r=await fetch(`${API}/shift-reports`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},body:JSON.stringify({driver_id:did,unit_id:uid,fit_status:ftw,p2h_status:'Passed',overall_status:ftw==='Fit'?'Ready to Work':'Driver Unfit',odometer_entered:0,submitted_by:'CCR-Manual'})});
-const d=await r.json();if(d.success){manualAbs.push({did,uid,ftw,time:new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})});st.innerHTML=`<span style="color:var(--green)">✅ ${did} tercatat hadir (${uid})</span>`;$('absDriverId').value='';$('absUnit').value='';renderAbsList();}else{st.textContent=d.message||'Gagal.';st.style.color='var(--red)';}}catch{st.textContent='Error koneksi.';st.style.color='var(--red)';}}
-function renderAbsList(){const c=$('absListBody');if(!manualAbs.length){c.innerHTML='<div style="padding:16px;text-align:center;color:var(--muted);font-size:.78rem">Belum ada absensi manual hari ini.</div>';return;}
-c.innerHTML=manualAbs.map(a=>`<div class="op-row"><div class="op-info"><div class="op-name">${a.did}</div></div><div class="op-uid">${a.uid}</div><div class="op-cell"><span class="badge-s ${a.ftw==='Fit'?'bg-fit':'bg-unfit'}">${a.ftw}</span></div><div class="op-cell" style="color:var(--muted)">${a.time}</div><div class="op-cell" style="color:var(--green)">✅ CCR</div></div>`).join('');}
+const d=await r.json();if(d.success){manualAbs.push({did,uid,ftw,reason,time:timeVal||new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})});st.innerHTML=`<span style="color:var(--green)">✅ ${did} tercatat hadir (${uid}) — ${reason}</span>`;$('absDriverId').value='';$('absUnit').value='';updateHmSummary();renderAbsList();}else{st.textContent=d.message||'Gagal.';st.style.color='var(--red)';}}catch{st.textContent='Error koneksi.';st.style.color='var(--red)';}}
+function renderAbsList(){const c=$('absListBody');if(!manualAbs.length){c.innerHTML='<div style="padding:16px;text-align:center;color:var(--muted);font-size:.78rem">Belum ada absensi manual.</div>';return;}
+c.innerHTML=manualAbs.map(a=>`<div class="op-row"><div class="op-info"><div class="op-name">${a.did}</div><div class="op-dept" style="color:var(--amber)">${a.reason||'—'}</div></div><div class="op-uid">${a.uid}</div><div class="op-cell"><span class="badge-s ${a.ftw==='Fit'?'bg-fit':'bg-unfit'}">${a.ftw}</span></div><div class="op-cell" style="color:var(--muted)">${a.time}</div><div class="op-cell"><span class="badge-s" style="background:rgba(245,158,11,.08);color:var(--amber)">MANUAL</span></div></div>`).join('');}
 
 // SHIFT PDF REPORT
 async function genShiftPDF(){if(!window.jspdf){alert('Library PDF sedang dimuat, coba lagi.');return;}
