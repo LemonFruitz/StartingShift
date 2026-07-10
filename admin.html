@@ -334,7 +334,7 @@ let manualAbs=[];let allDriversList=[];let driversLoaded=false;
 async function loadDriverList(){if(driversLoaded)return;try{
 const r=await fetch(`${API}/manpower`,{headers:{'Authorization':'Bearer '+TOKEN}});
 const d=await r.json();
-if(d.success){allDriversList=d.data.map(m=>({name:m.name||'',id:m.driver_id,cls:m.equipment_class||'',role:m.role||''}));driversLoaded=true;}
+if(d.success){allDriversList=d.data.map(m=>({name:m.name||'',id:m.driver_id,cls:m.equipment_class||'',dept:m.department||''}));driversLoaded=true;}
 }catch(e){console.log('Manpower load error, fallback to reports');
 // Fallback: pakai allReports kalau endpoint belum ada
 const map={};allReports.forEach(r=>{if(r.driver_id&&!map[r.driver_id])map[r.driver_id]={name:r.driver_name||'',id:r.driver_id,cls:r.equipment_class||''};});
