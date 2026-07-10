@@ -644,10 +644,28 @@ function renderReview() {
 // ══════════════════════════════════
 //  SUBMIT
 // ══════════════════════════════════
-async function submitReport() {
+async function getGPS() {
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) {
+      resolve({ latitude: null, longitude: null });
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => resolve({
+        latitude: pos.coords.latitude,
+        longitude: pos.coords.longitude
+      }),
+      () => resolve({ latitude: null, longitude: null }),
+      { timeout: 5000, enableHighAccuracy: false }
+    );
+  });
+}
+
+  async function submitReport() {
   const btn = document.getElementById('btnSubmit');
   btn.disabled = true;
   btn.classList.add('loading');
+  const gps = await getGPS();
 
   const body = {
     driver_id: SESSION.id,
@@ -665,6 +683,9 @@ async function submitReport() {
     photo_odometer_url: state.photoDataUri,
     signature_data_uri: state.signatureDataUri,
     device_timestamp: new Date().toISOString(),
+    latitude: gps.latitude,
+    longitude: gps.longitude,
+  };
   };
 
   try {
