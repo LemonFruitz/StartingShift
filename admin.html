@@ -4,7 +4,6 @@
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Starting Shift — Central Control Room</title>
 <link rel="manifest" href="manifest.json"/>
-<link rel="apple-touch-icon" href="icon-192.png"/>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
@@ -15,139 +14,369 @@
 body{background:var(--bg);font-family:var(--font);color:var(--text);display:flex}
 .sidebar{width:220px;background:var(--sidebar);color:#FFF;display:flex;flex-direction:column;height:100vh;flex-shrink:0}
 .sb-brand{padding:18px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #2D3A4A}
-.sb-brand img{height:24px}.sb-brand-text .sbt-name{font-size:.85rem;font-weight:800}.sb-brand-text .sbt-sub{font-size:.55rem;color:var(--muted)}
+.sb-brand img{height:24px}.sbt-name{font-size:.85rem;font-weight:800}.sbt-sub{font-size:.55rem;color:var(--muted)}
 .sb-nav{flex:1;overflow-y:auto;padding:12px 0}
 .sb-section{padding:6px 16px;font-size:.55rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-top:8px}
 .sb-item{display:flex;align-items:center;gap:10px;padding:10px 16px;font-size:.78rem;font-weight:600;color:#94A3B8;cursor:pointer;transition:all .15s;border-left:3px solid transparent}
 .sb-item:hover{background:#2D3A4A;color:#FFF}.sb-item.active{background:rgba(0,200,83,.1);color:var(--green);border-left-color:var(--green)}
-.sb-item .sb-ico{width:18px;text-align:center;font-size:.85rem}
+.sb-ico{width:18px;text-align:center;font-size:.85rem}
 .sb-user{padding:14px 16px;border-top:1px solid #2D3A4A;display:flex;align-items:center;gap:10px}
 .sb-avatar{width:32px;height:32px;border-radius:8px;background:var(--green);display:grid;place-items:center;font-size:.7rem;font-weight:800}
 .sb-uname{font-size:.78rem;font-weight:700}.sb-urole{font-size:.58rem;color:var(--muted)}
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden}
 .topbar{display:flex;justify-content:space-between;align-items:center;padding:12px 20px;background:var(--card);border-bottom:1px solid var(--border)}
-.tb-title{font-size:1.15rem;font-weight:800}.tb-live{display:flex;align-items:center;gap:5px;font-size:.65rem;font-weight:700;color:var(--green)}
-.tb-live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s ease infinite}
-.tb-sub{font-size:.65rem;color:var(--muted)}.tb-clock{font-size:1.1rem;font-weight:800;font-variant-numeric:tabular-nums}
-.tb-shift{padding:6px 14px;border-radius:8px;font-size:.68rem;font-weight:700;display:flex;align-items:center;gap:8px}
+.tb-title{font-size:1.15rem;font-weight:800}
+.tb-live{display:inline-flex;align-items:center;gap:5px;font-size:.65rem;font-weight:700;color:var(--green)}
+.tb-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s ease infinite}
+.tb-sub{font-size:.65rem;color:var(--muted)}
+.tb-clock{font-size:1.1rem;font-weight:800;font-variant-numeric:tabular-nums}
+.tb-shift{padding:6px 14px;border-radius:8px;font-size:.68rem;font-weight:700}
 .tb-shift.s1{background:rgba(0,200,83,.08);color:var(--green);border:1px solid rgba(0,200,83,.2)}
 .tb-shift.s2{background:rgba(0,176,255,.08);color:var(--blue);border:1px solid rgba(0,176,255,.2)}
 .content{flex:1;overflow-y:auto;padding:16px 20px;display:flex;gap:16px}
-.col-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:14px}.col-right{width:300px;display:flex;flex-direction:column;gap:14px;flex-shrink:0}
+.content::-webkit-scrollbar{width:5px}.content::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.col-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:14px}
+.col-right{width:300px;display:flex;flex-direction:column;gap:14px;flex-shrink:0}
+.view{display:none}.view.active{display:flex}
+/* KPI */
 .kpi-row{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
 .kpi{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px}
 .kpi-icon{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;font-size:.85rem;margin-bottom:8px}
 .kpi-label{font-size:.62rem;color:var(--gray);font-weight:600;margin-bottom:4px}
 .kpi-val{font-size:1.5rem;font-weight:800;line-height:1}.kpi-val small{font-size:.75rem;font-weight:600;color:var(--muted)}
-.kpi-bar{height:3px;border-radius:2px;background:var(--border);margin-top:8px}.kpi-bar-fill{height:100%;border-radius:2px}
+.kpi-bar{height:3px;border-radius:2px;background:var(--border);margin-top:8px}.kpi-fill{height:100%;border-radius:2px}
 .kpi-sub{font-size:.55rem;color:var(--muted);margin-top:4px}
-.kpi-highlight{background:linear-gradient(135deg,var(--green),var(--blue));color:#FFF;border:none}
-.kpi-highlight .kpi-label,.kpi-highlight .kpi-sub{color:rgba(255,255,255,.7)}.kpi-highlight .kpi-val{color:#FFF}
+.kpi-hl{background:linear-gradient(135deg,var(--green),var(--blue));color:#FFF;border:none}.kpi-hl .kpi-label,.kpi-hl .kpi-sub{color:rgba(255,255,255,.7)}.kpi-hl .kpi-val{color:#FFF}
+/* Panel */
 .panel{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
 .panel-head{padding:14px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)}
 .panel-title{font-size:.88rem;font-weight:700}
-.pf-select{padding:5px 10px;border:1px solid var(--border);border-radius:6px;font-size:.68rem;font-family:var(--font);color:var(--gray);background:var(--bg);cursor:pointer}
-.panel-body{overflow-y:auto;max-height:380px}
-.panel-foot{padding:10px 16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;font-size:.65rem;color:var(--muted)}
-.panel-foot a{color:var(--green);font-weight:600;cursor:pointer;text-decoration:none}
-.op-row{display:flex;align-items:center;padding:10px 16px;border-bottom:1px solid var(--border);gap:12px;transition:background .15s}
+.pfsel{padding:5px 10px;border:1px solid var(--border);border-radius:6px;font-size:.68rem;font-family:var(--font);color:var(--gray);background:var(--bg)}
+.panel-body{overflow-y:auto;max-height:400px}
+.panel-foot{padding:10px 16px;border-top:1px solid var(--border);font-size:.65rem;color:var(--muted)}
+/* Op row */
+.op-row{display:flex;align-items:center;padding:10px 16px;border-bottom:1px solid var(--border);gap:10px;transition:background .15s}
 .op-row:hover{background:var(--bg)}
-.op-avatar{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;font-size:.6rem;font-weight:800;color:#FFF;flex-shrink:0}
-.op-info{min-width:0;width:120px;flex-shrink:0}.op-name{font-size:.78rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.op-dept{font-size:.58rem;color:var(--muted)}
-.op-unit{width:90px;flex-shrink:0}.op-unit-id{font-size:.75rem;font-weight:700}.op-unit-type{font-size:.55rem;color:var(--muted)}
-.op-cell{font-size:.7rem;font-weight:600;text-align:center;min-width:55px}
-.op-badge{display:inline-flex;padding:3px 8px;border-radius:5px;font-size:.6rem;font-weight:700}
-.badge-fit{background:rgba(0,200,83,.08);color:var(--green)}.badge-unfit{background:rgba(239,68,68,.08);color:var(--red)}
-.badge-lulus{background:rgba(16,185,129,.08);color:var(--success)}.badge-temuan{background:rgba(245,158,11,.08);color:var(--amber)}
-.status-dot{width:6px;height:6px;border-radius:50%;display:inline-block;margin-right:4px}
-.st-operasi{background:var(--green)}.st-siap{background:var(--blue)}.st-kendala{background:var(--red)}.st-standby{background:var(--amber)}
+.op-av{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;font-size:.6rem;font-weight:800;color:#FFF;flex-shrink:0}
+.op-info{min-width:0;width:110px;flex-shrink:0}.op-name{font-size:.78rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.op-dept{font-size:.55rem;color:var(--muted)}
+.op-unit{width:85px;flex-shrink:0}.op-uid{font-size:.75rem;font-weight:700}.op-utype{font-size:.55rem;color:var(--muted)}
+.op-cell{font-size:.68rem;font-weight:600;text-align:center;min-width:50px}
+.badge-s{display:inline-flex;padding:3px 8px;border-radius:5px;font-size:.58rem;font-weight:700}
+.bg-fit{background:rgba(0,200,83,.08);color:var(--green)}.bg-unfit{background:rgba(239,68,68,.08);color:var(--red)}
+.bg-pass{background:rgba(16,185,129,.08);color:var(--success)}.bg-find{background:rgba(245,158,11,.08);color:var(--amber)}
+.sdot{width:6px;height:6px;border-radius:50%;display:inline-block;margin-right:4px}
+/* Widget */
 .widget{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px}
-.widget-title{font-size:.82rem;font-weight:700;margin-bottom:4px}.widget-sub{font-size:.6rem;color:var(--muted);margin-bottom:12px}
-.donut-wrap{display:flex;align-items:center;gap:16px}
-.donut-pct{font-size:1.8rem;font-weight:800;color:var(--green)}.donut-label{font-size:.58rem;color:var(--muted);font-weight:600}
-.dl-item{display:flex;justify-content:space-between;padding:3px 0;font-size:.7rem}.dl-name{color:var(--gray)}.dl-val{font-weight:700}
-.fleet-bar{height:8px;border-radius:4px;background:var(--border);margin:8px 0 10px;display:flex;overflow:hidden}.fb-seg{height:100%}
-.fleet-legend{display:flex;flex-wrap:wrap;gap:10px;font-size:.6rem;color:var(--gray);margin-bottom:10px}
-.fl-dot{width:7px;height:7px;border-radius:50%;display:inline-block}
-.fleet-type{display:flex;justify-content:space-between;align-items:center;padding:3px 0;font-size:.7rem}
-.ft-bar{height:5px;border-radius:3px;background:var(--border);margin:0 8px;flex:1}.ft-fill{height:100%;border-radius:3px;background:var(--green)}
-.ft-count{font-weight:700;font-size:.68rem;min-width:30px;text-align:right}
-.log-item{display:flex;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);font-size:.68rem}
-.log-dot{width:7px;height:7px;border-radius:50%;margin-top:5px;flex-shrink:0}.log-text{color:var(--gray);line-height:1.4}.log-time{font-size:.55rem;color:var(--muted);margin-top:2px}
-.bd-section{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
-.bd-head{padding:12px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)}
-.bd-badge{padding:3px 8px;border-radius:5px;font-size:.6rem;font-weight:700;background:rgba(239,68,68,.08);color:var(--red)}
+.wt{font-size:.82rem;font-weight:700;margin-bottom:4px}.ws{font-size:.6rem;color:var(--muted);margin-bottom:10px}
+.dl-i{display:flex;justify-content:space-between;padding:3px 0;font-size:.7rem}.dl-n{color:var(--gray)}.dl-v{font-weight:700}
+.fbar{height:8px;border-radius:4px;background:var(--border);margin:8px 0 10px;display:flex;overflow:hidden}.fseg{height:100%}
+.fleg{display:flex;flex-wrap:wrap;gap:8px;font-size:.58rem;color:var(--gray);margin-bottom:8px}
+.fdot{width:7px;height:7px;border-radius:50%;display:inline-block}
+.ftype{display:flex;align-items:center;padding:2px 0;font-size:.68rem}
+.ftbar{height:5px;border-radius:3px;background:var(--border);margin:0 6px;flex:1}.ftfill{height:100%;border-radius:3px;background:var(--green)}
+.ftc{font-weight:700;min-width:30px;text-align:right}
+.log-i{display:flex;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);font-size:.65rem}
+.log-d{width:7px;height:7px;border-radius:50%;margin-top:4px;flex-shrink:0}.log-t{color:var(--gray);line-height:1.3}.log-tm{font-size:.52rem;color:var(--muted);margin-top:1px}
+/* BD */
 .bd-item{display:flex;align-items:center;padding:10px 16px;border-bottom:1px solid var(--border);gap:12px}
-.bd-unit-badge{padding:6px 10px;border-radius:6px;font-size:.65rem;font-weight:800;min-width:50px;text-align:center}
-.bd-unit-badge.crit{background:rgba(239,68,68,.08);color:var(--red);border-left:3px solid var(--red)}
-.bd-unit-badge.med{background:rgba(245,158,11,.08);color:var(--amber);border-left:3px solid var(--amber)}
-.bd-unit-badge.low{background:rgba(59,130,246,.08);color:var(--info);border-left:3px solid var(--info)}
-.bd-info{flex:1;min-width:0}.bd-title{font-size:.78rem;font-weight:700}.bd-meta{font-size:.58rem;color:var(--muted)}
-.bd-tags{display:flex;gap:6px}
-.bd-sev{padding:3px 8px;border-radius:5px;font-size:.55rem;font-weight:700}
-.sev-kritis{background:rgba(239,68,68,.08);color:var(--red)}.sev-sedang{background:rgba(245,158,11,.08);color:var(--amber)}.sev-rendah{background:rgba(59,130,246,.08);color:var(--info)}
-.bd-status{padding:3px 8px;border-radius:5px;font-size:.55rem;font-weight:700}
-.bds-open{background:rgba(239,68,68,.08);color:var(--red)}.bds-progress{background:rgba(245,158,11,.08);color:var(--amber)}.bds-closed{background:rgba(16,185,129,.08);color:var(--success)}
+.bd-badge{padding:6px 10px;border-radius:6px;font-size:.65rem;font-weight:800;min-width:50px;text-align:center}
+.bd-badge.crit{background:rgba(239,68,68,.08);color:var(--red);border-left:3px solid var(--red)}
+.bd-badge.med{background:rgba(245,158,11,.08);color:var(--amber);border-left:3px solid var(--amber)}
+.bd-badge.low{background:rgba(59,130,246,.08);color:var(--info);border-left:3px solid var(--info)}
+.bd-inf{flex:1;min-width:0}.bd-tt{font-size:.78rem;font-weight:700}.bd-mt{font-size:.55rem;color:var(--muted)}
+.bd-tags{display:flex;gap:6px}.bd-sev,.bd-st{padding:3px 8px;border-radius:5px;font-size:.55rem;font-weight:700}
+/* Fleet view */
+.unit-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;padding:16px}
+.uc{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;transition:all .2s;cursor:pointer}
+.uc:hover{box-shadow:0 4px 12px rgba(0,0,0,.08)}
+.uc.st-Ready{border-left:3px solid var(--green)}.uc.st-Breakdown{border-left:3px solid var(--red)}.uc.st-Maintenance{border-left:3px solid var(--amber)}
+.uc-id{font-size:.82rem;font-weight:800}.uc-type{font-size:.58rem;color:var(--muted);margin-top:2px}
+.uc-btns{display:flex;gap:3px;justify-content:center;margin-top:8px}
+.sb-btn{padding:4px 8px;border-radius:5px;font-size:.55rem;font-weight:700;cursor:pointer;border:1.5px solid;font-family:var(--font)}
+.sb-btn:disabled{opacity:.2;cursor:not-allowed}
+.sb-btn.r{border-color:var(--green);color:var(--green);background:transparent}.sb-btn.r.c{background:var(--green);color:#FFF}
+.sb-btn.b{border-color:var(--red);color:var(--red);background:transparent}.sb-btn.b.c{background:var(--red);color:#FFF}
+.sb-btn.m{border-color:var(--amber);color:var(--amber);background:transparent}.sb-btn.m.c{background:var(--amber);color:#FFF}
+.uc-notes{font-size:.55rem;color:var(--red);margin-top:4px;cursor:pointer}
+.uc-driver{font-size:.52rem;color:var(--green);margin-top:2px;font-weight:600}
+.cat-hdr{font-size:.65rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:12px 16px 4px;display:flex;justify-content:space-between}
+.search-in{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:.82rem;font-family:var(--font);background:var(--bg);outline:none;margin:12px 16px;width:calc(100% - 32px)}
+.search-in:focus{border-color:var(--green)}
+/* Modal */
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(4px);z-index:100;align-items:center;justify-content:center;padding:16px}
+.modal-ov.show{display:flex}
+.modal{background:var(--card);border-radius:12px;width:100%;max-width:400px;box-shadow:0 8px 30px rgba(0,0,0,.15);overflow:hidden}
+.modal-h{padding:16px 20px;background:linear-gradient(135deg,var(--green),var(--blue));color:#FFF;font-size:.95rem;font-weight:700}
+.modal-b{padding:20px}.modal-b .mf{margin-bottom:10px}
+.modal-b .mf label{display:block;font-size:.68rem;font-weight:600;color:var(--gray);margin-bottom:4px}
+.modal-b .mf input,.modal-b .mf textarea{width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-size:.82rem;font-family:var(--font);outline:none}
+.modal-b .mf input:focus,.modal-b .mf textarea:focus{border-color:var(--green)}
+.modal-b .mf textarea{resize:none;min-height:60px}
+.modal-f{padding:12px 20px;display:flex;gap:8px;justify-content:flex-end;border-top:1px solid var(--border)}
+.modal-f button{padding:10px 16px;border-radius:8px;font-family:var(--font);font-size:.78rem;font-weight:700;cursor:pointer;border:none}
+.mbtn-c{background:var(--bg);color:var(--gray)}.mbtn-o{background:linear-gradient(135deg,var(--green),var(--blue));color:#FFF}
 @media(max-width:900px){.sidebar{display:none}.col-right{display:none}.kpi-row{grid-template-columns:repeat(3,1fr)}}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(0,200,83,.3)}50%{box-shadow:0 0 0 5px rgba(0,200,83,0)}}
 </style>
 </head>
 <body>
 <div class="sidebar">
-  <div class="sb-brand"><img src="logo-hte.png" alt="HTE"/><div class="sb-brand-text"><div class="sbt-name">Starting Shift</div><div class="sbt-sub">PT HTE · MINING OPS</div></div></div>
+  <div class="sb-brand"><img src="logo-hte.png" alt="HTE"/><div><div class="sbt-name">Starting Shift</div><div class="sbt-sub">PT HTE · MINING OPS</div></div></div>
   <div class="sb-nav">
     <div class="sb-section">Monitoring</div>
-    <div class="sb-item active"><span class="sb-ico">📊</span> Dashboard CCR</div>
-    <div class="sb-item" onclick="window.open('tv.html','_blank')"><span class="sb-ico">📺</span> TV Monitor</div>
+    <div class="sb-item active" data-view="dashboard"><span class="sb-ico">📊</span> Dashboard CCR</div>
+    <div class="sb-item" data-view="hm"><span class="sb-ico">⏱️</span> Update HM</div>
+    <div class="sb-item" data-view="fleet"><span class="sb-ico">🚛</span> Fleet & Alat</div>
+    <div class="sb-item" data-view="bd"><span class="sb-ico">⚠️</span> Breakdown Report</div>
     <div class="sb-section">Laporan</div>
+    <div class="sb-item" onclick="genShiftPDF()"><span class="sb-ico">📄</span> PDF Shift Report</div>
     <div class="sb-item" onclick="downloadAll()"><span class="sb-ico">📥</span> Download CSV</div>
     <div class="sb-section">Sistem</div>
+    <div class="sb-item" onclick="window.open('tv.html','_blank')"><span class="sb-ico">📺</span> TV Monitor</div>
     <div class="sb-item" onclick="doLogout()"><span class="sb-ico">🚪</span> Logout</div>
   </div>
-  <div class="sb-user"><div class="sb-avatar" id="sbAvatar">—</div><div><div class="sb-uname" id="sbName">—</div><div class="sb-urole">Admin CCR</div></div></div>
+  <div class="sb-user"><div class="sb-avatar" id="sbAv">—</div><div><div class="sb-uname" id="sbNm">—</div><div class="sb-urole">Admin CCR</div></div></div>
 </div>
 <div class="main">
   <div class="topbar">
-    <div><div style="display:flex;align-items:center;gap:8px"><span class="tb-title">Central Control Room</span><span class="tb-live"><span class="tb-live-dot"></span> LIVE</span></div><div class="tb-sub" id="tbDate">—</div></div>
+    <div><div style="display:flex;align-items:center;gap:8px"><span class="tb-title">Central Control Room</span><span class="tb-live"><span class="tb-dot"></span> LIVE</span></div><div class="tb-sub" id="tbDate">—</div></div>
     <div style="display:flex;align-items:center;gap:14px"><div style="text-align:right"><div class="tb-clock" id="clock">--:--:--</div><div style="font-size:.55rem;color:var(--muted)">WITA</div></div><div id="shiftBadge" class="tb-shift s1">Shift 1</div></div>
   </div>
-  <div class="content">
+
+  <!-- VIEW: DASHBOARD -->
+  <div class="content view active" id="v-dashboard">
     <div class="col-main">
       <div class="kpi-row">
-        <div class="kpi"><div class="kpi-icon" style="background:rgba(0,200,83,.08)">👤</div><div class="kpi-label">Operator Hadir</div><div class="kpi-val" id="kDrivers">—</div><div class="kpi-bar"><div class="kpi-bar-fill" id="kDriversBar" style="width:0%;background:var(--green)"></div></div><div class="kpi-sub" id="kDriversSub">—</div></div>
-        <div class="kpi"><div class="kpi-icon" style="background:rgba(239,68,68,.08)">💪</div><div class="kpi-label">FTW / Fit To Work</div><div class="kpi-val" style="color:var(--green)" id="kFit">—</div><div class="kpi-bar"><div class="kpi-bar-fill" id="kFitBar" style="width:0%;background:var(--green)"></div></div><div class="kpi-sub" id="kFitSub">—</div></div>
-        <div class="kpi"><div class="kpi-icon" style="background:rgba(59,130,246,.08)">📋</div><div class="kpi-label">P2H Selesai</div><div class="kpi-val" id="kP2H">—</div><div class="kpi-bar"><div class="kpi-bar-fill" id="kP2HBar" style="width:0%;background:var(--info)"></div></div><div class="kpi-sub" id="kP2HSub">—</div></div>
-        <div class="kpi"><div class="kpi-icon" style="background:rgba(0,200,83,.08)">🚛</div><div class="kpi-label">Unit Ready</div><div class="kpi-val" id="kReady">—</div><div class="kpi-bar"><div class="kpi-bar-fill" id="kReadyBar" style="width:0%;background:var(--green)"></div></div><div class="kpi-sub" id="kReadySub">—</div></div>
-        <div class="kpi"><div class="kpi-icon" style="background:rgba(239,68,68,.08)">⚠️</div><div class="kpi-label">Breakdown</div><div class="kpi-val" style="color:var(--red)" id="kBD">—</div><div class="kpi-bar"><div class="kpi-bar-fill" id="kBDBar" style="width:0%;background:var(--red)"></div></div><div class="kpi-sub" id="kBDSub">—</div></div>
-        <div class="kpi kpi-highlight"><div class="kpi-icon" style="background:rgba(255,255,255,.15)">🎯</div><div class="kpi-label">Kesiapan Shift</div><div class="kpi-val" id="kScore">—%</div><div class="kpi-sub">Skor gabungan · target 95%</div></div>
+        <div class="kpi"><div class="kpi-icon" style="background:rgba(0,200,83,.08)">👤</div><div class="kpi-label">Operator Hadir</div><div class="kpi-val" id="kD">—</div><div class="kpi-bar"><div class="kpi-fill" id="kDB" style="width:0;background:var(--green)"></div></div><div class="kpi-sub" id="kDS">—</div></div>
+        <div class="kpi"><div class="kpi-icon" style="background:rgba(239,68,68,.08)">💪</div><div class="kpi-label">FTW Fit</div><div class="kpi-val" style="color:var(--green)" id="kF">—</div><div class="kpi-bar"><div class="kpi-fill" id="kFB" style="width:0;background:var(--green)"></div></div><div class="kpi-sub" id="kFS">—</div></div>
+        <div class="kpi"><div class="kpi-icon" style="background:rgba(59,130,246,.08)">📋</div><div class="kpi-label">P2H Selesai</div><div class="kpi-val" id="kP">—</div><div class="kpi-bar"><div class="kpi-fill" id="kPB" style="width:0;background:var(--info)"></div></div><div class="kpi-sub" id="kPS">—</div></div>
+        <div class="kpi"><div class="kpi-icon" style="background:rgba(0,200,83,.08)">🚛</div><div class="kpi-label">Unit Ready</div><div class="kpi-val" id="kR">—</div><div class="kpi-bar"><div class="kpi-fill" id="kRB" style="width:0;background:var(--green)"></div></div><div class="kpi-sub" id="kRS">—</div></div>
+        <div class="kpi"><div class="kpi-icon" style="background:rgba(239,68,68,.08)">⚠️</div><div class="kpi-label">Breakdown</div><div class="kpi-val" style="color:var(--red)" id="kB">—</div><div class="kpi-bar"><div class="kpi-fill" id="kBB" style="width:0;background:var(--red)"></div></div><div class="kpi-sub" id="kBS">—</div></div>
+        <div class="kpi kpi-hl"><div class="kpi-icon" style="background:rgba(255,255,255,.15)">🎯</div><div class="kpi-label">Kesiapan Shift</div><div class="kpi-val" id="kSc">—%</div><div class="kpi-sub">Skor gabungan</div></div>
       </div>
-      <div class="panel"><div class="panel-head"><div><div class="panel-title">Operator Aktif — <span id="shiftLabel">Shift 1</span></div></div><div style="display:flex;gap:6px"><select class="pf-select" id="filterDept" onchange="renderOps()"><option value="">Semua Dept</option></select></div></div><div class="panel-body" id="opTable"></div><div class="panel-foot"><span id="opCount">—</span><a>Lihat Semua →</a></div></div>
-      <div class="bd-section"><div class="bd-head"><div style="display:flex;align-items:center;gap:8px"><span class="panel-title">Breakdown Report</span><span class="bd-badge" id="bdActiveCount">0</span></div></div><div id="bdList"></div></div>
+      <div class="panel"><div class="panel-head"><div><div class="panel-title">Operator Aktif — <span id="shLbl">Shift 1</span></div></div><select class="pfsel" id="fDept" onchange="renderOps()"><option value="">Semua</option></select></div><div class="panel-body" id="opTbl"></div><div class="panel-foot"><span id="opCnt">—</span></div></div>
     </div>
     <div class="col-right">
-      <div class="widget"><div class="widget-title">Kesiapan Shift</div><div class="widget-sub">Skor gabungan kesiapan operasi</div><div class="donut-wrap"><div><canvas id="donutChart" width="110" height="110"></canvas></div><div style="flex:1"><div class="dl-item"><span class="dl-name">Kehadiran</span><span class="dl-val" id="dlA">—</span></div><div class="dl-item"><span class="dl-name">FTW Fit</span><span class="dl-val" id="dlF">—</span></div><div class="dl-item"><span class="dl-name">P2H</span><span class="dl-val" id="dlP">—</span></div><div class="dl-item"><span class="dl-name">Unit Ready</span><span class="dl-val" id="dlR">—</span></div></div></div></div>
-      <div class="widget"><div style="display:flex;justify-content:space-between"><div class="widget-title">Fleet Availability</div><span style="font-size:.72rem;font-weight:700" id="fleetTotal">—</span></div><div class="fleet-bar" id="fleetBar"></div><div class="fleet-legend"><span><span class="fl-dot" style="background:var(--green)"></span> Ready</span><span><span class="fl-dot" style="background:var(--muted)"></span> MT</span><span><span class="fl-dot" style="background:var(--red)"></span> BD</span></div><div id="fleetTypes"></div></div>
-      <div class="widget"><div style="display:flex;justify-content:space-between;align-items:center"><div class="widget-title">Log Aktivitas CCR</div><span style="display:flex;align-items:center;gap:4px;font-size:.6rem;font-weight:700;color:var(--red)"><span class="tb-live-dot" style="background:var(--red)"></span> REALTIME</span></div><div id="logList" style="max-height:200px;overflow-y:auto;margin-top:8px"></div></div>
+      <div class="widget"><div class="wt">Kesiapan Shift</div><div class="ws">Skor gabungan operasi</div><div class="donut-wrap" style="display:flex;align-items:center;gap:16px"><div><canvas id="donut" width="110" height="110"></canvas></div><div style="flex:1"><div class="dl-i"><span class="dl-n">Kehadiran</span><span class="dl-v" id="dA">—</span></div><div class="dl-i"><span class="dl-n">FTW</span><span class="dl-v" id="dF">—</span></div><div class="dl-i"><span class="dl-n">P2H</span><span class="dl-v" id="dP">—</span></div><div class="dl-i"><span class="dl-n">Unit Ready</span><span class="dl-v" id="dR">—</span></div></div></div></div>
+      <div class="widget"><div style="display:flex;justify-content:space-between"><div class="wt">Fleet Availability</div><span style="font-size:.72rem;font-weight:700" id="fTot">—</span></div><div class="fbar" id="fBar"></div><div class="fleg"><span><span class="fdot" style="background:var(--green)"></span> Ready</span><span><span class="fdot" style="background:var(--muted)"></span> MT</span><span><span class="fdot" style="background:var(--red)"></span> BD</span></div><div id="fTypes"></div></div>
+      <div class="widget"><div style="display:flex;justify-content:space-between;align-items:center"><div class="wt">Log Aktivitas</div><span style="font-size:.58rem;font-weight:700;color:var(--red)"><span class="tb-dot" style="background:var(--red)"></span> REALTIME</span></div><div id="logL" style="max-height:180px;overflow-y:auto;margin-top:8px"></div></div>
+    </div>
+  </div>
+
+  <!-- VIEW: FLEET -->
+  <div class="content view" id="v-fleet" style="flex-direction:column">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:8px"><div class="panel-title">🚛 Fleet & Status Unit</div></div>
+    <input class="search-in" type="text" placeholder="Cari unit..." id="uSearch" oninput="renderFleet()" style="margin:0 0 10px"/>
+    <div style="flex:1;overflow-y:auto" id="fleetGrid"></div>
+  </div>
+
+  <!-- VIEW: BD -->
+  <div class="content view" id="v-bd" style="flex-direction:column">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:8px"><div class="panel-title">⚠️ Breakdown Reports</div><span class="badge-s" style="background:rgba(239,68,68,.08);color:var(--red)" id="bdCnt2">0 aktif</span></div>
+    <div style="flex:1;overflow-y:auto;background:var(--card);border:1px solid var(--border);border-radius:12px" id="bdList2"></div>
+  </div>
+
+  <!-- VIEW: HM UPDATE -->
+  <div class="content view" id="v-hm" style="flex-direction:column;gap:14px">
+    <div class="panel-title">⏱️ Update Hour Meter & Absensi</div>
+    <!-- Tab toggle -->
+    <div style="display:flex;gap:6px">
+      <button class="pfsel" style="cursor:pointer;font-weight:700" id="hmTab1" onclick="switchHmTab(1)">Manual Input HM</button>
+      <button class="pfsel" style="cursor:pointer" id="hmTab2" onclick="switchHmTab(2)">Upload Excel</button>
+      <button class="pfsel" style="cursor:pointer" id="hmTab3" onclick="switchHmTab(3)">Absensi Manual</button>
+    </div>
+    <!-- Tab 1: Manual HM -->
+    <div id="hmPane1" class="panel" style="flex:1;overflow-y:auto">
+      <div class="panel-head"><div class="panel-title">Input HM Akhir per Unit</div><select class="pfsel" id="hmFilter" onchange="renderHmTable()"><option value="">Semua</option></select></div>
+      <div class="panel-body" id="hmTableBody" style="max-height:none"></div>
+    </div>
+    <!-- Tab 2: Excel Upload -->
+    <div id="hmPane2" class="panel" style="display:none;padding:24px;text-align:center">
+      <div style="border:2px dashed var(--border);border-radius:12px;padding:40px 20px;background:var(--bg)">
+        <div style="font-size:2rem;margin-bottom:8px">📁</div>
+        <div style="font-size:.88rem;font-weight:700;margin-bottom:4px">Upload File Excel HM</div>
+        <div style="font-size:.68rem;color:var(--muted);margin-bottom:16px">Format: Unit ID | HM Akhir (kolom A & B, mulai baris 2)</div>
+        <input type="file" id="hmFile" accept=".xlsx,.xls,.csv" onchange="processHmFile()" style="display:none"/>
+        <button onclick="document.getElementById('hmFile').click()" style="padding:10px 20px;background:linear-gradient(135deg,var(--green),var(--blue));color:#FFF;border:none;border-radius:8px;font-family:var(--font);font-weight:700;cursor:pointer">Pilih File</button>
+        <div id="hmFileStatus" style="margin-top:12px;font-size:.72rem"></div>
+      </div>
+    </div>
+    <!-- Tab 3: Absensi Manual -->
+    <div id="hmPane3" class="panel" style="display:none;flex:1;overflow-y:auto">
+      <div class="panel-head"><div class="panel-title">Absensi Manual — Driver Belum Lapor di Web</div></div>
+      <div style="padding:12px 16px;display:flex;gap:8px;border-bottom:1px solid var(--border)">
+        <input type="text" id="absDriverId" placeholder="ID Karyawan" style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-family:var(--font);font-size:.8rem"/>
+        <input type="text" id="absUnit" placeholder="Unit ID" style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-family:var(--font);font-size:.8rem"/>
+        <select id="absFtw" style="padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-family:var(--font);font-size:.78rem"><option value="Fit">Fit</option><option value="Unfit">Unfit</option></select>
+        <button onclick="addAbsensi()" style="padding:8px 14px;background:var(--green);color:#FFF;border:none;border-radius:6px;font-family:var(--font);font-weight:700;font-size:.78rem;cursor:pointer;white-space:nowrap">+ Tambah</button>
+      </div>
+      <div id="absStatus" style="padding:8px 16px;font-size:.72rem;min-height:20px"></div>
+      <div id="absListBody" style="max-height:300px;overflow-y:auto"></div>
     </div>
   </div>
 </div>
+
+<!-- MODALS -->
+<div class="modal-ov" id="modalBD"><div class="modal"><div class="modal-h" id="mdTt">🔴 Keterangan Breakdown</div><div class="modal-b"><div class="mf"><label>Deskripsi</label><textarea id="mdDesc" placeholder="Jelaskan kerusakan..."></textarea></div><div class="mf"><label>Lokasi Unit</label><input type="text" id="mdLoc" placeholder="Contoh: Hauling Road KM 3"/></div></div><div class="modal-f"><button class="mbtn-c" onclick="closeMd()">Batal</button><button class="mbtn-o" onclick="confirmBD()">Konfirmasi</button></div></div></div>
+<div class="modal-ov" id="modalEdit"><div class="modal"><div class="modal-h">✏️ Edit Keterangan</div><div class="modal-b"><div class="mf"><label>Keterangan</label><textarea id="edNotes"></textarea></div></div><div class="modal-f"><button class="mbtn-c" onclick="closeEd()">Batal</button><button class="mbtn-o" onclick="saveNotes()">Simpan</button></div></div></div>
+
 <script>
 const API='https://fms-light-backend-production.up.railway.app/api/v1',TOKEN=localStorage.getItem('fms_token'),SESSION=JSON.parse(localStorage.getItem('fms_session')||'null');
 if(!SESSION||!TOKEN)window.location.href='index.html';
-let allUnits=[],allReports=[],driverMap={},bdReports=[];
+let allUnits=[],allReports=[],driverMap={},bdReports=[],pendingUnit='',pendingStatus='',editingUnit='';
 const _h=new Date().getHours(),curShift=(_h>=7&&_h<19)?'1':'2';
-document.addEventListener('DOMContentLoaded',()=>{const i=(SESSION.name||'??').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();document.getElementById('sbAvatar').textContent=i;document.getElementById('sbName').textContent=SESSION.name||SESSION.id;updateClock();setInterval(updateClock,1000);loadAll();});
-function updateClock(){const n=new Date();document.getElementById('clock').textContent=n.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',second:'2-digit'});document.getElementById('tbDate').textContent='Pemantauan kesiapan shift real-time · '+n.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});const h=n.getHours(),s1=h>=7&&h<19;const b=document.getElementById('shiftBadge');b.className='tb-shift '+(s1?'s1':'s2');b.innerHTML=`<div><div style="font-size:.55rem;opacity:.7">SHIFT AKTIF</div><div>Shift ${s1?'1 · Siang':'2 · Malam'}</div></div><div style="font-size:.72rem;opacity:.8">${s1?'07:00–19:00':'19:00–07:00'}</div>`;document.getElementById('shiftLabel').textContent=`Shift ${s1?'1 · Siang':'2 · Malam'}`;}
-async function loadAll(){const today=new Date().toISOString().slice(0,10);try{const[uR,dR,sR,srR,brR]=await Promise.all([fetch(`${API}/vehicles`,{headers:{'Authorization':'Bearer '+TOKEN}}),fetch(`${API}/vehicles/active-drivers`,{headers:{'Authorization':'Bearer '+TOKEN}}),fetch(`${API}/supervisor/dashboard-stats`,{headers:{'Authorization':'Bearer '+TOKEN}}),fetch(`${API}/supervisor/shift-reports?date=${today}&shift=${curShift}&limit=500`,{headers:{'Authorization':'Bearer '+TOKEN}}),fetch(`${API}/bd-reports?limit=20`,{headers:{'Authorization':'Bearer '+TOKEN}})]);const uD=await uR.json(),dD=await dR.json(),sD=await sR.json(),srD=await srR.json(),brD=await brR.json();if(uD.success)allUnits=uD.data;if(dD.success){driverMap={};dD.data.forEach(x=>{driverMap[x.unit_id]=x;});}if(srD.success)allReports=srD.data.reports||[];if(brD.success)bdReports=brD.data.reports||brD.data||[];renderKPI();renderOps();renderFleet();renderBD();renderLog();renderDonut();populateFilter();}catch(e){console.error(e);}}
-function renderKPI(){const t=allUnits.length||1,r=allUnits.filter(u=>u.status_unit==='Ready').length,bd=allUnits.filter(u=>u.status_unit==='Breakdown').length,mt=allUnits.filter(u=>u.status_unit==='Maintenance').length,td=allReports.length,fc=allReports.filter(r=>r.fit_status==='Fit').length,pp=allReports.filter(r=>r.p2h_status==='Passed').length,tm=Math.max(td,t);document.getElementById('kDrivers').innerHTML=`${td}<small>/${tm}</small>`;document.getElementById('kDriversBar').style.width=`${td/tm*100}%`;document.getElementById('kDriversSub').textContent=`${Math.round(td/tm*100)}% kehadiran`;document.getElementById('kFit').innerHTML=`${fc}<small style="color:var(--green)"> Fit</small>`;document.getElementById('kFitBar').style.width=`${td?fc/td*100:0}%`;document.getElementById('kFitSub').textContent=(td-fc)>0?`${td-fc} Unfit ditindaklanjuti`:'Semua fit';document.getElementById('kP2H').innerHTML=`${pp}<small>/${td}</small>`;document.getElementById('kP2HBar').style.width=`${td?pp/td*100:0}%`;document.getElementById('kP2HSub').textContent=`${td-pp} dalam proses`;document.getElementById('kReady').innerHTML=`${r}<small>/${t}</small>`;document.getElementById('kReadyBar').style.width=`${r/t*100}%`;document.getElementById('kReadySub').textContent=`${(r/t*100).toFixed(1)}% availability`;document.getElementById('kBD').innerHTML=`${bd+mt}<small style="color:var(--red)"> unit</small>`;document.getElementById('kBDBar').style.width=`${(bd+mt)/t*100}%`;document.getElementById('kBDSub').textContent=`${bd} BD · ${mt} MT`;const aP=Math.round(td/tm*100),fP=td?Math.round(fc/td*100):0,pP=td?Math.round(pp/td*100):0,rP=Math.round(r/t*100),sc=Math.round((aP+fP+pP+rP)/4);document.getElementById('kScore').textContent=sc+'%';document.getElementById('dlA').textContent=aP+'%';document.getElementById('dlF').textContent=fP+'%';document.getElementById('dlP').textContent=pP+'%';document.getElementById('dlR').textContent=rP+'%';}
-function renderDonut(){const t=allUnits.length||1,r=allUnits.filter(u=>u.status_unit==='Ready').length,td=allReports.length||1,fc=allReports.filter(r=>r.fit_status==='Fit').length,pp=allReports.filter(r=>r.p2h_status==='Passed').length,sc=Math.round(((td/Math.max(td,t)*100)+(fc/td*100)+(pp/td*100)+(r/t*100))/4);const ctx=document.getElementById('donutChart');if(ctx._c)ctx._c.destroy();ctx._c=new Chart(ctx,{type:'doughnut',data:{datasets:[{data:[sc,100-sc],backgroundColor:[sc>=90?'#00C853':sc>=70?'#F59E0B':'#EF4444','#E5E9F0'],borderWidth:0}]},options:{cutout:'78%',responsive:false,plugins:{legend:{display:false},tooltip:{enabled:false}}}});}
-function renderOps(){const df=document.getElementById('filterDept').value;let list=allReports;if(df)list=list.filter(r=>(r.equipment_class||'')==df);const c=document.getElementById('opTable');if(!list.length){c.innerHTML='<div style="padding:20px;text-align:center;color:var(--muted);font-size:.8rem">Belum ada operator.</div>';document.getElementById('opCount').textContent='0 operator';return;}const cols=['#00C853','#00B0FF','#F59E0B','#EF4444','#8B5CF6','#EC4899','#14B8A6','#F97316'];c.innerHTML=list.map((r,i)=>{const ini=(r.driver_name||'??').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();const tm=r.timestamp_filled?new Date(r.timestamp_filled).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}):'—';let st='Siap',sc='st-siap';if(r.overall_status==='Ready to Work'&&r.validation_status==='Approved'){st='Beroperasi';sc='st-operasi';}else if(r.overall_status==='Driver Unfit'){st='Kendala';sc='st-kendala';}return`<div class="op-row"><div class="op-avatar" style="background:${cols[i%8]}">${ini}</div><div class="op-info"><div class="op-name">${r.driver_name||r.driver_id}</div><div class="op-dept">${r.equipment_class||'—'}</div></div><div class="op-unit"><div class="op-unit-id">${r.unit_id}</div><div class="op-unit-type">${r.vehicle_type||''}</div></div><div class="op-cell"><span class="op-badge ${r.fit_status==='Fit'?'badge-fit':'badge-unfit'}">${r.fit_status}</span></div><div class="op-cell"><span class="op-badge ${r.p2h_status==='Passed'?'badge-lulus':'badge-temuan'}">${r.p2h_status||'—'}</span></div><div class="op-cell" style="color:var(--muted)">${tm}</div><div class="op-cell"><span class="status-dot ${sc}"></span>${st}</div></div>`;}).join('');document.getElementById('opCount').textContent=`${list.length} dari ${allReports.length} operator`;}
-function populateFilter(){const d=[...new Set(allReports.map(r=>r.equipment_class).filter(Boolean))].sort();document.getElementById('filterDept').innerHTML='<option value="">Semua Dept</option>'+d.map(x=>`<option>${x}</option>`).join('');}
-function renderFleet(){const r=allUnits.filter(u=>u.status_unit==='Ready').length,bd=allUnits.filter(u=>u.status_unit==='Breakdown').length,mt=allUnits.filter(u=>u.status_unit==='Maintenance').length,t=allUnits.length;document.getElementById('fleetTotal').textContent=t+' unit';document.getElementById('fleetBar').innerHTML=`<div class="fb-seg" style="width:${r/t*100}%;background:var(--green)"></div><div class="fb-seg" style="width:${mt/t*100}%;background:var(--muted)"></div><div class="fb-seg" style="width:${bd/t*100}%;background:var(--red)"></div>`;const cls=[...new Set(allUnits.map(u=>u.equipment_class||'Other'))].sort();document.getElementById('fleetTypes').innerHTML=cls.map(c=>{const u=allUnits.filter(x=>(x.equipment_class||'Other')===c),rv=u.filter(x=>x.status_unit==='Ready').length;return`<div class="fleet-type"><span>${c}</span><div class="ft-bar"><div class="ft-fill" style="width:${rv/u.length*100}%"></div></div><span class="ft-count">${rv}/${u.length}</span></div>`;}).join('');}
-function renderBD(){const open=(Array.isArray(bdReports)?bdReports:[]).filter(r=>r.status==='Open'||r.status==='In Progress');document.getElementById('bdActiveCount').textContent=open.length+' AKTIF';if(!open.length){document.getElementById('bdList').innerHTML='<div style="padding:16px;text-align:center;color:var(--muted)">✅ Tidak ada breakdown aktif</div>';return;}document.getElementById('bdList').innerHTML=open.map(r=>{const sc=r.severity==='Critical'?'crit':r.severity==='Major'?'med':'low';const sl=r.severity==='Critical'?'Kritis':r.severity==='Major'?'Sedang':'Rendah';const sb=r.severity==='Critical'?'sev-kritis':r.severity==='Major'?'sev-sedang':'sev-rendah';const ss=r.status==='Open'?'bds-open':'bds-progress';return`<div class="bd-item"><div class="bd-unit-badge ${sc}">${r.unit_id}</div><div class="bd-info"><div class="bd-title">${r.component||''} · ${r.description||''}</div><div class="bd-meta">Dilaporkan ${r.driver_name||r.driver_id||''}</div></div><div class="bd-tags"><span class="bd-sev ${sb}">${sl}</span><span class="bd-status ${ss}">${r.status}</span></div></div>`;}).join('');}
-function renderLog(){const logs=[];allReports.slice(0,5).forEach(r=>{const t=r.timestamp_filled?new Date(r.timestamp_filled).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}):'';if(r.overall_status==='Driver Unfit')logs.push({c:'var(--red)',t:`FTW Unfit: ${r.driver_name} — ditindaklanjuti`,tm:t});else if(r.p2h_status!=='Passed')logs.push({c:'var(--amber)',t:`P2H temuan: ${r.unit_id} (${r.driver_name})`,tm:t});else logs.push({c:'var(--green)',t:`Verifikasi P2H ${r.unit_id} (${r.driver_name}) — Lulus`,tm:t});});if(!logs.length)logs.push({c:'var(--muted)',t:'Menunggu aktivitas...',tm:''});document.getElementById('logList').innerHTML=logs.map(l=>`<div class="log-item"><div class="log-dot" style="background:${l.c}"></div><div><div class="log-text">${l.t}</div><div class="log-time">${l.tm} WITA</div></div></div>`).join('');}
-function downloadAll(){alert('Download CSV...');}
+
+// Sidebar nav
+document.querySelectorAll('.sb-item[data-view]').forEach(el=>{el.addEventListener('click',()=>{
+  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));el.classList.add('active');
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('v-'+el.dataset.view).classList.add('active');
+  if(el.dataset.view==='fleet')renderFleet();if(el.dataset.view==='bd')renderBD2();
+});});
+
+document.addEventListener('DOMContentLoaded',()=>{
+  const i=(SESSION.name||'??').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  document.getElementById('sbAv').textContent=i;document.getElementById('sbNm').textContent=SESSION.name||SESSION.id;
+  updateClock();setInterval(updateClock,1000);loadAll();
+});
+function updateClock(){const n=new Date();document.getElementById('clock').textContent=n.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',second:'2-digit'});document.getElementById('tbDate').textContent='Pemantauan kesiapan shift · '+n.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});const h=n.getHours(),s1=h>=7&&h<19;const b=document.getElementById('shiftBadge');b.className='tb-shift '+(s1?'s1':'s2');b.innerHTML=`<div style="font-size:.55rem;opacity:.7">SHIFT AKTIF</div><div>Shift ${s1?'1 · Siang':'2 · Malam'}</div>`;document.getElementById('shLbl').textContent='Shift '+(s1?'1 · Siang':'2 · Malam');}
+async function loadAll(){const today=new Date().toISOString().slice(0,10);try{const[a,b,c,d,e]=await Promise.all([fetch(`${API}/vehicles`,{headers:{'Authorization':'Bearer '+TOKEN}}),fetch(`${API}/vehicles/active-drivers`,{headers:{'Authorization':'Bearer '+TOKEN}}),fetch(`${API}/supervisor/dashboard-stats`,{headers:{'Authorization':'Bearer '+TOKEN}}),fetch(`${API}/supervisor/shift-reports?date=${today}&shift=${curShift}&limit=500`,{headers:{'Authorization':'Bearer '+TOKEN}}),fetch(`${API}/bd-reports?limit=30`,{headers:{'Authorization':'Bearer '+TOKEN}})]);const A=await a.json(),B=await b.json(),C=await c.json(),D=await d.json(),E=await e.json();if(A.success)allUnits=A.data;if(B.success){driverMap={};B.data.forEach(x=>{driverMap[x.unit_id]=x;});}if(D.success)allReports=D.data.reports||[];if(E.success)bdReports=E.data.reports||E.data||[];renderKPI();renderOps();renderFleet();renderBD2();renderLog();renderDonut();popFilter();}catch(e){console.error(e);}}
+
+function renderKPI(){const t=allUnits.length||1,r=allUnits.filter(u=>u.status_unit==='Ready').length,bd=allUnits.filter(u=>u.status_unit==='Breakdown').length,mt=allUnits.filter(u=>u.status_unit==='Maintenance').length,td=allReports.length,fc=allReports.filter(r=>r.fit_status==='Fit').length,pp=allReports.filter(r=>r.p2h_status==='Passed').length,tm=Math.max(td,t);
+$('kD').innerHTML=`${td}<small>/${tm}</small>`;$('kDB').style.width=`${td/tm*100}%`;$('kDS').textContent=`${Math.round(td/tm*100)}% kehadiran`;
+$('kF').innerHTML=`${fc}<small style="color:var(--green)"> Fit</small>`;$('kFB').style.width=`${td?fc/td*100:0}%`;$('kFS').textContent=(td-fc)>0?`${td-fc} Unfit`:'Semua fit';
+$('kP').innerHTML=`${pp}<small>/${td}</small>`;$('kPB').style.width=`${td?pp/td*100:0}%`;$('kPS').textContent=`${td-pp} proses`;
+$('kR').innerHTML=`${r}<small>/${t}</small>`;$('kRB').style.width=`${r/t*100}%`;$('kRS').textContent=`${(r/t*100).toFixed(1)}% availability`;
+$('kB').innerHTML=`${bd+mt}<small style="color:var(--red)"> unit</small>`;$('kBB').style.width=`${(bd+mt)/t*100}%`;$('kBS').textContent=`${bd} BD · ${mt} MT`;
+const aP=Math.round(td/tm*100),fP=td?Math.round(fc/td*100):0,pP=td?Math.round(pp/td*100):0,rP=Math.round(r/t*100),sc=Math.round((aP+fP+pP+rP)/4);
+$('kSc').textContent=sc+'%';$('dA').textContent=aP+'%';$('dF').textContent=fP+'%';$('dP').textContent=pP+'%';$('dR').textContent=rP+'%';
+// Fleet widget
+$('fTot').textContent=t+' unit';$('fBar').innerHTML=`<div class="fseg" style="width:${r/t*100}%;background:var(--green)"></div><div class="fseg" style="width:${mt/t*100}%;background:var(--muted)"></div><div class="fseg" style="width:${bd/t*100}%;background:var(--red)"></div>`;
+const cls=[...new Set(allUnits.map(u=>u.equipment_class||'Other'))].sort();
+$('fTypes').innerHTML=cls.map(c=>{const u=allUnits.filter(x=>(x.equipment_class||'Other')===c),rv=u.filter(x=>x.status_unit==='Ready').length;return`<div class="ftype"><span>${c}</span><div class="ftbar"><div class="ftfill" style="width:${rv/u.length*100}%"></div></div><span class="ftc">${rv}/${u.length}</span></div>`;}).join('');}
+function renderDonut(){const t=allUnits.length||1,r=allUnits.filter(u=>u.status_unit==='Ready').length,td=allReports.length||1,fc=allReports.filter(r=>r.fit_status==='Fit').length,pp=allReports.filter(r=>r.p2h_status==='Passed').length,sc=Math.round(((td/Math.max(td,t)*100)+(fc/td*100)+(pp/td*100)+(r/t*100))/4);const c=document.getElementById('donut');if(c._c)c._c.destroy();c._c=new Chart(c,{type:'doughnut',data:{datasets:[{data:[sc,100-sc],backgroundColor:[sc>=90?'#00C853':sc>=70?'#F59E0B':'#EF4444','#E5E9F0'],borderWidth:0}]},options:{cutout:'78%',responsive:false,plugins:{legend:{display:false},tooltip:{enabled:false}}}});}
+function renderOps(){const df=$('fDept').value;let list=allReports;if(df)list=list.filter(r=>(r.equipment_class||'')==df);const c=$('opTbl');if(!list.length){c.innerHTML='<div style="padding:20px;text-align:center;color:var(--muted)">Belum ada operator.</div>';$('opCnt').textContent='0';return;}const cols=['#00C853','#00B0FF','#F59E0B','#EF4444','#8B5CF6','#EC4899','#14B8A6','#F97316'];c.innerHTML=list.map((r,i)=>{const ini=(r.driver_name||'??').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();const tm=r.timestamp_filled?new Date(r.timestamp_filled).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}):'—';let st='Siap',sc='background:var(--blue)';if(r.validation_status==='Approved'){st='Beroperasi';sc='background:var(--green)';}else if(r.overall_status==='Driver Unfit'){st='Kendala';sc='background:var(--red)';}return`<div class="op-row"><div class="op-av" style="background:${cols[i%8]}">${ini}</div><div class="op-info"><div class="op-name">${r.driver_name||r.driver_id}</div><div class="op-dept">${r.equipment_class||'—'}</div></div><div class="op-unit"><div class="op-uid">${r.unit_id}</div><div class="op-utype">${r.vehicle_type||''}</div></div><div class="op-cell"><span class="badge-s ${r.fit_status==='Fit'?'bg-fit':'bg-unfit'}">${r.fit_status}</span></div><div class="op-cell"><span class="badge-s ${r.p2h_status==='Passed'?'bg-pass':'bg-find'}">${r.p2h_status||'—'}</span></div><div class="op-cell" style="color:var(--muted)">${tm}</div><div class="op-cell"><span class="sdot" style="${sc}"></span>${st}</div></div>`;}).join('');$('opCnt').textContent=`${list.length} operator`;}
+function popFilter(){const d=[...new Set(allReports.map(r=>r.equipment_class).filter(Boolean))].sort();$('fDept').innerHTML='<option value="">Semua</option>'+d.map(x=>`<option>${x}</option>`).join('');}
+function renderLog(){const logs=[];allReports.slice(0,6).forEach(r=>{const t=r.timestamp_filled?new Date(r.timestamp_filled).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}):'';if(r.overall_status==='Driver Unfit')logs.push({c:'var(--red)',t:`Unfit: ${r.driver_name}`,tm:t});else if(r.p2h_status!=='Passed')logs.push({c:'var(--amber)',t:`P2H temuan: ${r.unit_id}`,tm:t});else logs.push({c:'var(--green)',t:`P2H ${r.unit_id} Lulus`,tm:t});});if(!logs.length)logs.push({c:'var(--muted)',t:'Menunggu...',tm:''});$('logL').innerHTML=logs.map(l=>`<div class="log-i"><div class="log-d" style="background:${l.c}"></div><div><div class="log-t">${l.t}</div><div class="log-tm">${l.tm} WITA</div></div></div>`).join('');}
+
+// FLEET VIEW
+function renderFleet(){const q=($('uSearch')?.value||'').toUpperCase();const cls=[...new Set(allUnits.map(u=>u.equipment_class||'Other'))].sort();let html='';cls.forEach(c=>{let units=allUnits.filter(u=>(u.equipment_class||'Other')===c);if(q)units=units.filter(u=>u.unit_id.toUpperCase().includes(q));if(!units.length)return;units.sort((a,b)=>{const o={'Breakdown':0,'Maintenance':1,'Ready':2};return(o[a.status_unit]||2)-(o[b.status_unit]||2);});const r=units.filter(u=>u.status_unit==='Ready').length,bd=units.filter(u=>u.status_unit!=='Ready').length;html+=`<div class="cat-hdr"><span>${c} (${units.length})</span><span style="font-size:.58rem"><span style="color:var(--green)">${r}R</span> · <span style="color:var(--red)">${bd}BD</span></span></div><div class="unit-grid">`;
+units.forEach(u=>{const s=u.status_unit;const drv=driverMap[u.unit_id];html+=`<div class="uc st-${s}"><div class="uc-id">${u.unit_id}</div><div class="uc-type">${u.vehicle_type||''}</div>${drv?`<div class="uc-driver">👤 ${drv.driver_name||''}</div>`:''}${u.notes&&s!=='Ready'?`<div class="uc-notes" onclick="openEd('${u.unit_id}')">📝 ${u.notes}</div>`:''}
+<div class="uc-btns"><button class="sb-btn r ${s==='Ready'?'c':''}" onclick="clickSt('${u.unit_id}','Ready')" ${s==='Ready'?'disabled':''}>✅</button><button class="sb-btn b ${s==='Breakdown'?'c':''}" onclick="clickSt('${u.unit_id}','Breakdown')" ${s==='Breakdown'?'disabled':''}>BD</button><button class="sb-btn m ${s==='Maintenance'?'c':''}" onclick="clickSt('${u.unit_id}','Maintenance')" ${s==='Maintenance'?'disabled':''}>MT</button></div></div>`;});html+=`</div>`;});
+$('fleetGrid').innerHTML=html||'<div style="padding:20px;text-align:center;color:var(--muted)">Tidak ada unit.</div>';}
+function clickSt(uid,st){if(st==='Ready'){setSt(uid,'Ready',null);return;}pendingUnit=uid;pendingStatus=st;$('mdTt').textContent=st==='Breakdown'?'🔴 Keterangan Breakdown':'🟡 Keterangan Maintenance';$('mdDesc').value='';$('mdLoc').value='';$('modalBD').classList.add('show');}
+function closeMd(){$('modalBD').classList.remove('show');}
+function confirmBD(){const d=$('mdDesc').value.trim(),l=$('mdLoc').value.trim();const notes=[d,l?'Lokasi: '+l:''].filter(Boolean).join(' | ');closeMd();setSt(pendingUnit,pendingStatus,notes);}
+async function setSt(uid,st,notes){try{const body={status_unit:st,changed_by:SESSION.id};if(notes)body.notes=notes;const r=await fetch(`${API}/vehicles/${uid}/status`,{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},body:JSON.stringify(body)});const d=await r.json();if(d.success){const u=allUnits.find(x=>x.unit_id===uid);if(u){u.status_unit=st;u.notes=st==='Ready'?null:(notes||u.notes);}renderKPI();renderFleet();renderDonut();}}catch{alert('Gagal.');}}
+function openEd(uid){editingUnit=uid;const u=allUnits.find(x=>x.unit_id===uid);$('edNotes').value=u?.notes||'';$('modalEdit').classList.add('show');}
+function closeEd(){$('modalEdit').classList.remove('show');}
+async function saveNotes(){const notes=$('edNotes').value.trim();try{await fetch(`${API}/vehicles/${editingUnit}/notes`,{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},body:JSON.stringify({notes})});const u=allUnits.find(x=>x.unit_id===editingUnit);if(u)u.notes=notes;closeEd();renderFleet();}catch{alert('Gagal.');}}
+
+// BD VIEW
+function renderBD2(){const open=(Array.isArray(bdReports)?bdReports:[]).filter(r=>r.status!=='Resolved');$('bdCnt2').textContent=open.length+' aktif';const c=$('bdList2');if(!open.length){c.innerHTML='<div style="padding:24px;text-align:center;color:var(--muted)">✅ Semua resolved</div>';return;}c.innerHTML=open.map(r=>{const sc=r.severity==='Critical'?'crit':r.severity==='Major'?'med':'low';const sl=r.severity==='Critical'?'Kritis':r.severity==='Major'?'Sedang':'Rendah';const sb='sev-'+(r.severity==='Critical'?'kritis':r.severity==='Major'?'sedang':'rendah');const ss=r.status==='Open'?'background:rgba(239,68,68,.08);color:var(--red)':'background:rgba(245,158,11,.08);color:var(--amber)';const tm=r.created_at?new Date(r.created_at).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}):'';return`<div class="bd-item"><div class="bd-badge ${sc}">${r.unit_id}</div><div class="bd-inf"><div class="bd-tt">${r.component||''} · ${r.description||''}</div><div class="bd-mt">Dilaporkan ${r.driver_name||r.driver_id||''} · ${tm}</div></div><div class="bd-tags"><span class="bd-sev" style="background:rgba(${r.severity==='Critical'?'239,68,68':r.severity==='Major'?'245,158,11':'59,130,246'},.08);color:var(--${r.severity==='Critical'?'red':r.severity==='Major'?'amber':'info'})">${sl}</span><span class="bd-st" style="${ss}">${r.status}</span></div></div>`;}).join('');}
+
+// HM TAB
+function switchHmTab(n){[1,2,3].forEach(i=>{$('hmPane'+i).style.display=i===n?'':'none';$('hmTab'+i).style.fontWeight=i===n?'700':'400';});if(n===1)renderHmTable();if(n===3)renderAbsList();}
+function renderHmTable(){const f=$('hmFilter')?.value||'';let list=allReports.filter(r=>r.overall_status==='Ready to Work');if(f)list=list.filter(r=>(r.equipment_class||'')===f);
+const body=$('hmTableBody');if(!list.length){body.innerHTML='<div style="padding:20px;text-align:center;color:var(--muted)">Tidak ada data shift.</div>';return;}
+body.innerHTML=list.map(r=>{const done=r.odometer_end?true:false;return`<div class="op-row"><div class="op-info" style="width:130px"><div class="op-name">${r.driver_name||r.driver_id}</div><div class="op-dept">${r.driver_id}</div></div><div class="op-unit"><div class="op-uid">${r.unit_id}</div></div><div class="op-cell">HM: ${r.odometer_entered||'—'}</div><div class="op-cell" style="color:${done?'var(--green)':'var(--amber)'}">${done?r.odometer_end:'—'}</div><div style="display:flex;gap:4px;align-items:center">${done?'<span style="color:var(--green);font-size:.7rem;font-weight:700">✅ Done</span>':`<input type="number" id="hm-${r.report_id}" placeholder="HM Akhir" style="width:80px;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:.78rem;font-family:var(--font)"/><button onclick="saveHm('${r.report_id}')" style="padding:6px 10px;background:var(--green);color:#FFF;border:none;border-radius:6px;font-size:.68rem;font-weight:700;cursor:pointer">Save</button>`}</div></div>`;}).join('');
+const fil=$('hmFilter');if(fil.options.length<=1){const d=[...new Set(allReports.map(r=>r.equipment_class).filter(Boolean))].sort();fil.innerHTML='<option value="">Semua</option>'+d.map(x=>`<option>${x}</option>`).join('');}}
+async function saveHm(rid){const v=parseInt(document.getElementById('hm-'+rid)?.value);if(!v||v<=0){alert('Masukkan angka HM.');return;}
+try{const r=await fetch(`${API}/supervisor/shift-reports/${rid}/end-shift`,{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},body:JSON.stringify({odometer_end:v})});const d=await r.json();if(d.success){const rp=allReports.find(x=>x.report_id===rid);if(rp)rp.odometer_end=v;renderHmTable();}else{alert(d.message||'Gagal');}}catch{alert('Error koneksi');}}
+// Excel upload
+async function processHmFile(){const file=$('hmFile').files[0];if(!file)return;const st=$('hmFileStatus');st.textContent='Memproses...';st.style.color='var(--info)';
+try{const data=await file.arrayBuffer();let rows=[];
+if(file.name.endsWith('.csv')){const text=new TextDecoder().decode(data);const lines=text.split('\n').slice(1);lines.forEach(l=>{const cols=l.split(',');if(cols.length>=2&&cols[0].trim()&&cols[1].trim())rows.push({unit:cols[0].trim(),hm:parseInt(cols[1].trim())});});}
+else{st.textContent='Format .xlsx memerlukan library tambahan. Gunakan CSV (Unit ID, HM Akhir).';st.style.color='var(--amber)';return;}
+if(!rows.length){st.textContent='Tidak ada data valid ditemukan.';st.style.color='var(--red)';return;}
+let ok=0,fail=0;for(const row of rows){const rpt=allReports.find(r=>r.unit_id===row.unit&&!r.odometer_end);if(rpt&&row.hm>0){try{const r=await fetch(`${API}/supervisor/shift-reports/${rpt.report_id}/end-shift`,{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},body:JSON.stringify({odometer_end:row.hm})});const d=await r.json();if(d.success){rpt.odometer_end=row.hm;ok++;}else fail++;}catch{fail++;}}else fail++;}
+st.innerHTML=`<span style="color:var(--green)">✅ ${ok} berhasil</span>${fail?` · <span style="color:var(--red)">${fail} gagal</span>`:''}`;renderHmTable();}catch(e){st.textContent='Error: '+e.message;st.style.color='var(--red)';}}
+
+// ABSENSI MANUAL
+let manualAbs=[];
+async function addAbsensi(){const did=$('absDriverId').value.trim(),uid=$('absUnit').value.trim(),ftw=$('absFtw').value;const st=$('absStatus');
+if(!did||!uid){st.textContent='ID dan Unit wajib diisi.';st.style.color='var(--red)';return;}
+st.textContent='Mengirim...';st.style.color='var(--info)';
+try{const r=await fetch(`${API}/shift-reports`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},body:JSON.stringify({driver_id:did,unit_id:uid,fit_status:ftw,p2h_status:'Passed',overall_status:ftw==='Fit'?'Ready to Work':'Driver Unfit',odometer_entered:0,submitted_by:'CCR-Manual'})});
+const d=await r.json();if(d.success){manualAbs.push({did,uid,ftw,time:new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})});st.innerHTML=`<span style="color:var(--green)">✅ ${did} tercatat hadir (${uid})</span>`;$('absDriverId').value='';$('absUnit').value='';renderAbsList();}else{st.textContent=d.message||'Gagal.';st.style.color='var(--red)';}}catch{st.textContent='Error koneksi.';st.style.color='var(--red)';}}
+function renderAbsList(){const c=$('absListBody');if(!manualAbs.length){c.innerHTML='<div style="padding:16px;text-align:center;color:var(--muted);font-size:.78rem">Belum ada absensi manual hari ini.</div>';return;}
+c.innerHTML=manualAbs.map(a=>`<div class="op-row"><div class="op-info"><div class="op-name">${a.did}</div></div><div class="op-uid">${a.uid}</div><div class="op-cell"><span class="badge-s ${a.ftw==='Fit'?'bg-fit':'bg-unfit'}">${a.ftw}</span></div><div class="op-cell" style="color:var(--muted)">${a.time}</div><div class="op-cell" style="color:var(--green)">✅ CCR</div></div>`).join('');}
+
+// SHIFT PDF REPORT
+async function genShiftPDF(){if(!window.jspdf){alert('Library PDF sedang dimuat, coba lagi.');return;}
+const{jsPDF}=window.jspdf;const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+const pw=doc.internal.pageSize.getWidth(),ph=doc.internal.pageSize.getHeight();
+const today=new Date(),todayStr=today.toISOString().slice(0,10);
+const shLabel=curShift==='1'?'Shift 1 (07:00-19:00)':'Shift 2 (19:00-07:00)';
+const todayFmt=today.toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+
+// Header
+doc.setFillColor(0,200,83);doc.rect(0,0,pw*0.55,22,'F');
+doc.setFillColor(0,176,255);doc.rect(pw*0.55,0,pw*0.45,22,'F');
+doc.setTextColor(255);doc.setFontSize(12);doc.setFont(undefined,'bold');
+doc.text('PT HALMAHERA TRANSPORTASI ENERGI',14,9);
+doc.setFontSize(8);doc.setFont(undefined,'normal');
+doc.text('Starting Shift Web App — Laporan Shift',14,15);
+doc.setFontSize(7);doc.text('Site HSM · Pit Cendana Extend',14,20);
+
+// Shift info
+doc.setFillColor(240,244,248);doc.roundedRect(14,26,pw-28,14,3,3,'F');
+doc.setFontSize(13);doc.setFont(undefined,'bold');doc.setTextColor(0,200,83);
+doc.text(shLabel,20,35);
+doc.setFontSize(8);doc.setFont(undefined,'normal');doc.setTextColor(30,41,59);
+doc.text(`Tanggal: ${todayFmt}  |  Dicetak: ${today.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})}`,pw/2-10,35);
+
+// KPI
+let y=45;doc.setFontSize(11);doc.setFont(undefined,'bold');doc.text('1. Ringkasan',14,y);y+=4;
+const td=allReports.length,fc=allReports.filter(r=>r.fit_status==='Fit').length,pp=allReports.filter(r=>r.p2h_status==='Passed').length;
+const rdy=allUnits.filter(u=>u.status_unit==='Ready').length,bd=allUnits.filter(u=>u.status_unit==='Breakdown').length;
+const hmDone=allReports.filter(r=>r.odometer_end).length;
+doc.autoTable({startY:y,body:[['Operator Hadir','FTW Fit','P2H Lulus','Unit Ready','BD Aktif','HM Terisi'],[td,fc,pp,rdy,bd,hmDone]],styles:{fontSize:8,cellPadding:3,halign:'center'},didParseCell:function(d){if(d.row.index===0){d.cell.styles.fontStyle='bold';d.cell.styles.textColor=[100,116,139];d.cell.styles.fontSize=7;}if(d.row.index===1){d.cell.styles.fontStyle='bold';d.cell.styles.fontSize=16;d.cell.styles.textColor=[0,200,83];}d.cell.styles.fillColor=[240,244,248];}});
+y=doc.lastAutoTable.finalY+6;
+
+// Operator table
+doc.setFontSize(11);doc.setFont(undefined,'bold');doc.text('2. Data Operator',14,y);y+=3;
+doc.autoTable({startY:y,head:[['No','Driver','Unit','Tipe','FTW','P2H','HM Awal','HM Akhir','Status']],body:allReports.map((r,i)=>[i+1,r.driver_name||r.driver_id,r.unit_id,r.equipment_class||'',r.fit_status,r.p2h_status||'—',r.odometer_entered||'—',r.odometer_end||'—',r.overall_status]),styles:{fontSize:7,cellPadding:2},headStyles:{fillColor:[0,200,83],textColor:255,fontStyle:'bold'},alternateRowStyles:{fillColor:[245,247,250]}});
+y=doc.lastAutoTable.finalY+6;
+
+// BD section
+if(y>ph-50){doc.addPage();y=14;}
+const openBD=(Array.isArray(bdReports)?bdReports:[]).filter(r=>r.status!=='Resolved');
+doc.setFontSize(11);doc.setFont(undefined,'bold');doc.text(`3. Breakdown Report (${openBD.length} aktif)`,14,y);y+=3;
+if(openBD.length>0){doc.autoTable({startY:y,head:[['Unit','Komponen','Severity','Deskripsi','Status']],body:openBD.map(r=>[r.unit_id,r.component,r.severity,r.description||'',r.status]),styles:{fontSize:7,cellPadding:2},headStyles:{fillColor:[239,68,68],textColor:255}});}
+else{doc.setFontSize(8);doc.setFont(undefined,'normal');doc.text('Tidak ada breakdown aktif.',14,y+3);}
+
+// Unit carryover
+if(y>ph-40){doc.addPage();y=14;}else y=doc.lastAutoTable?doc.lastAutoTable.finalY+6:y+10;
+const bdUnits=allUnits.filter(u=>u.status_unit!=='Ready');
+doc.setFontSize(11);doc.setFont(undefined,'bold');doc.text(`4. Unit Carryover (${bdUnits.length})`,14,y);y+=3;
+if(bdUnits.length>0){doc.autoTable({startY:y,head:[['Unit','Tipe','Status','Keterangan']],body:bdUnits.map(u=>[u.unit_id,u.vehicle_type||'',u.status_unit,u.notes||'-']),styles:{fontSize:7,cellPadding:2},headStyles:{fillColor:[245,158,11],textColor:255}});}
+
+// Sign-off
+if(doc.lastAutoTable)y=doc.lastAutoTable.finalY+10;else y+=10;
+if(y>ph-50){doc.addPage();y=14;}
+doc.setFontSize(10);doc.setFont(undefined,'bold');doc.text('Serah Terima:',14,y);y+=6;
+const sigW=(pw-28-20)/2;
+doc.setDrawColor(180);doc.roundedRect(14,y,sigW,35,2,2);doc.roundedRect(14+sigW+20,y,sigW,35,2,2);
+doc.setFontSize(7);doc.setFont(undefined,'bold');doc.setTextColor(100);
+doc.text('DISERAHKAN OLEH',14+sigW/2,y+4,{align:'center'});
+doc.text('DITERIMA OLEH',14+sigW+20+sigW/2,y+4,{align:'center'});
+doc.setFont(undefined,'normal');
+doc.text('Nama: ___________________',20,y+22);doc.text('Nama: ___________________',14+sigW+26,y+22);
+doc.text('TTD:',20,y+30);doc.text('TTD:',14+sigW+26,y+30);
+
+// Footer
+const pages=doc.internal.getNumberOfPages();for(let i=1;i<=pages;i++){doc.setPage(i);doc.setFontSize(6.5);doc.setTextColor(180);doc.text('Starting Shift — PT HTE',14,ph-5);doc.text(`Hal ${i}/${pages}`,pw-14,ph-5,{align:'right'});}
+doc.save(`Shift_Report_${shLabel.replace(/\s/g,'_')}_${todayStr}.pdf`);}
+
+// CSV
+async function downloadAll(){try{const today=new Date().toISOString().slice(0,10),B='\uFEFF';let c1='Unit ID,Tipe,Kelas,Status,Keterangan\n';allUnits.forEach(u=>{c1+=`${u.unit_id},"${u.vehicle_type||''}",${u.equipment_class||''},${u.status_unit},"${(u.notes||'').replace(/"/g,'""')}"\n`;});dl(B+c1,`Unit_Status_${today}.csv`);
+const sr=await fetch(`${API}/supervisor/shift-reports?date=${today}&limit=500`,{headers:{'Authorization':'Bearer '+TOKEN}});const sd=await sr.json();let c2='Driver ID,Nama,Unit,FTW,P2H,Status,HM Awal,HM Akhir,Selisih,Waktu,Validasi\n';if(sd.success)(sd.data.reports||[]).forEach(r=>{const diff=r.odometer_end?(r.odometer_end-r.odometer_entered):'';c2+=`${r.driver_id},"${r.driver_name||''}",${r.unit_id},${r.fit_status},${r.p2h_status},"${r.overall_status}",${r.odometer_entered||''},${r.odometer_end||''},${diff},"${r.timestamp_filled?new Date(r.timestamp_filled).toLocaleString('id-ID'):''}",${r.validation_status||'Pending'}\n`;});setTimeout(()=>dl(B+c2,`Shift_Report_${today}.csv`),500);
+const lr=await fetch(`${API}/vehicles/status-log?limit=1000`,{headers:{'Authorization':'Bearer '+TOKEN}});const ld=await lr.json();let c3='Unit,Dari,Ke,Keterangan,Diubah Oleh,Mulai,Selesai,Durasi\n';if(ld.success)(ld.data||[]).forEach(l=>{c3+=`${l.unit_id},${l.status_from},${l.status_to},"${(l.notes||'').replace(/"/g,'""')}",${l.changed_by_name||''},"${l.time_start?new Date(l.time_start).toLocaleString('id-ID'):''}","${l.time_end?new Date(l.time_end).toLocaleString('id-ID'):''}",${l.duration_minutes||''}\n`;});setTimeout(()=>dl(B+c3,`Status_Log_${today}.csv`),1000);
+}catch{alert('Gagal download.');}}
+function dl(c,f){const b=new Blob([c],{type:'text/csv;charset=utf-8;'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=f;document.body.appendChild(a);a.click();document.body.removeChild(a);}
 function doLogout(){localStorage.removeItem('fms_token');localStorage.removeItem('fms_session');window.location.href='index.html';}
+function $(id){return document.getElementById(id);}
 </script>
 <script>if("serviceWorker"in navigator){navigator.serviceWorker.register("sw.js").catch(()=>{});}</script>
 </body>

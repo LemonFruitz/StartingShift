@@ -2,387 +2,252 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Starting Shift — PJO Dashboard</title>
 <link rel="manifest" href="manifest.json"/>
-<link rel="apple-touch-icon" href="icon-192.png"/>
-<meta name="apple-mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
-<title>Starting Shift — Dashboard PJO</title>
-<link rel="stylesheet" href="style.css"/>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
 <style>
-.kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px}
-.kpi{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px 16px;box-shadow:var(--shadow-sm);position:relative;overflow:hidden}
-.kpi::after{content:'';position:absolute;top:-20px;right:-20px;width:60px;height:60px;border-radius:50%;opacity:.08}
-.kpi.green::after{background:var(--success)}.kpi.red::after{background:var(--danger)}.kpi.blue::after{background:var(--secondary)}.kpi.yellow::after{background:var(--warning)}
-.kpi-val{font-size:2rem;font-weight:800;line-height:1;margin-bottom:4px}
-.kpi-label{font-size:.68rem;font-weight:600;color:var(--text-muted);letter-spacing:.02em}
-.kpi-sub{font-size:.6rem;color:var(--text-muted);margin-top:4px}
-
-.chart-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:14px;box-shadow:var(--shadow-sm)}
-.chart-title{font-size:.85rem;font-weight:700;color:var(--text);margin-bottom:12px}
-.chart-wrap{position:relative;height:220px}
-.chart-wrap canvas{max-height:220px}
-
-.eq-table{width:100%;border-collapse:collapse;font-size:.78rem}
-.eq-table th{text-align:left;padding:8px 10px;background:var(--input-bg);color:var(--text-muted);font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--border)}
-.eq-table td{padding:8px 10px;border-bottom:1px solid var(--border)}
-.eq-table tr:hover{background:var(--input-bg)}
-.eq-table .num{text-align:center;font-weight:700}
-
-.alert-card{background:var(--danger-bg);border:1px solid rgba(239,68,68,.2);border-radius:var(--radius-md);padding:14px;margin-bottom:10px;display:flex;gap:10px;align-items:flex-start}
-.alert-card .ac-ico{font-size:1.2rem;flex-shrink:0}.alert-card .ac-text{font-size:.78rem;color:var(--danger);line-height:1.5}
-.alert-card .ac-unit{font-weight:700}
-
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+:root{--bg:#F0F4F8;--card:#FFF;--border:#E5E9F0;--text:#1E293B;--muted:#94A3B8;--gray:#64748B;--green:#00C853;--blue:#00B0FF;--red:#EF4444;--amber:#F59E0B;--info:#3B82F6;--success:#10B981;--sidebar:#1E293B;--font:'Plus Jakarta Sans',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}html,body{height:100%;overflow:hidden}
+body{background:var(--bg);font-family:var(--font);color:var(--text);display:flex}
+.sidebar{width:220px;background:var(--sidebar);color:#FFF;display:flex;flex-direction:column;height:100vh;flex-shrink:0}
+.sb-brand{padding:18px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #2D3A4A}
+.sb-brand img{height:24px}.sbt-name{font-size:.85rem;font-weight:800}.sbt-sub{font-size:.55rem;color:var(--muted)}
+.sb-nav{flex:1;overflow-y:auto;padding:12px 0}
+.sb-section{padding:6px 16px;font-size:.55rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-top:8px}
+.sb-item{display:flex;align-items:center;gap:10px;padding:10px 16px;font-size:.78rem;font-weight:600;color:#94A3B8;cursor:pointer;transition:all .15s;border-left:3px solid transparent}
+.sb-item:hover{background:#2D3A4A;color:#FFF}.sb-item.active{background:rgba(0,200,83,.1);color:var(--green);border-left-color:var(--green)}
+.sb-ico{width:18px;text-align:center;font-size:.85rem}
+.sb-user{padding:14px 16px;border-top:1px solid #2D3A4A;display:flex;align-items:center;gap:10px}
+.sb-avatar{width:32px;height:32px;border-radius:8px;background:var(--blue);display:grid;place-items:center;font-size:.7rem;font-weight:800}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{display:flex;justify-content:space-between;align-items:center;padding:12px 20px;background:var(--card);border-bottom:1px solid var(--border)}
+.tb-title{font-size:1.15rem;font-weight:800}
+.tb-live{display:inline-flex;align-items:center;gap:5px;font-size:.65rem;font-weight:700;color:var(--blue)}
+.tb-dot{width:7px;height:7px;border-radius:50%;animation:pulse 2s ease infinite}
+.tb-sub{font-size:.65rem;color:var(--muted)}
+.tb-clock{font-size:1.1rem;font-weight:800;font-variant-numeric:tabular-nums}
+.tb-shift{padding:6px 14px;border-radius:8px;font-size:.68rem;font-weight:700}
+.tb-shift.s1{background:rgba(0,200,83,.08);color:var(--green);border:1px solid rgba(0,200,83,.2)}
+.tb-shift.s2{background:rgba(0,176,255,.08);color:var(--blue);border:1px solid rgba(0,176,255,.2)}
+.content{flex:1;overflow-y:auto;padding:16px 20px;display:flex;gap:16px}
+.content::-webkit-scrollbar{width:5px}.content::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.col-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:14px}.col-right{width:310px;display:flex;flex-direction:column;gap:14px;flex-shrink:0}
+.view{display:none}.view.active{display:flex}
+.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;position:relative;overflow:hidden}
+.kpi-icon{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;font-size:.85rem;margin-bottom:8px}
+.kpi-label{font-size:.62rem;color:var(--gray);font-weight:600;margin-bottom:4px}
+.kpi-val{font-size:1.5rem;font-weight:800;line-height:1}.kpi-val small{font-size:.75rem;font-weight:600;color:var(--muted)}
+.kpi-bar{height:3px;border-radius:2px;background:var(--border);margin-top:8px}.kpi-fill{height:100%;border-radius:2px}
+.kpi-sub{font-size:.55rem;color:var(--muted);margin-top:4px}
+.kpi-hl{background:linear-gradient(135deg,var(--green),var(--blue));color:#FFF;border:none}.kpi-hl .kpi-label,.kpi-hl .kpi-sub{color:rgba(255,255,255,.7)}.kpi-hl .kpi-val{color:#FFF}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.panel-head{padding:14px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)}
+.panel-title{font-size:.88rem;font-weight:700}
+.pfsel{padding:5px 10px;border:1px solid var(--border);border-radius:6px;font-size:.68rem;font-family:var(--font);color:var(--gray);background:var(--bg)}
+.widget{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px}
+.wt{font-size:.82rem;font-weight:700;margin-bottom:4px}.ws{font-size:.6rem;color:var(--muted);margin-bottom:10px}
+.chart-wrap{position:relative;height:200px}
 /* Ranking */
-.score-bar{width:60px;height:6px;background:var(--border);border-radius:3px;display:inline-block;vertical-align:middle;margin-right:6px}
-.score-fill{height:100%;border-radius:3px}
-.grade{font-size:.6rem;font-weight:700;padding:3px 8px;border-radius:4px;text-align:center;display:inline-block;min-width:28px}
-.grade-a{background:#ECFDF5;color:#059669}.grade-b{background:#EFF6FF;color:#2563EB}
-.grade-c{background:#FFFBEB;color:#D97706}.grade-d{background:#FEF2F2;color:#DC2626}
-.rank-medal{font-size:1rem;margin-right:2px}
-
-.section-title{font-size:.92rem;font-weight:700;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.rk-row{display:flex;align-items:center;padding:10px 16px;border-bottom:1px solid var(--border);gap:10px}
+.rk-row:hover{background:var(--bg)}
+.rk-pos{width:28px;font-size:.78rem;font-weight:800;text-align:center}
+.rk-av{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;font-size:.6rem;font-weight:800;color:#FFF;flex-shrink:0}
+.rk-info{flex:1;min-width:0}.rk-name{font-size:.78rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.rk-meta{font-size:.55rem;color:var(--muted)}
+.rk-cell{font-size:.68rem;font-weight:600;text-align:center;min-width:42px}
+.rk-score{min-width:50px;text-align:center}.rk-sc-bar{width:40px;height:5px;border-radius:3px;background:var(--border);display:inline-block;vertical-align:middle;margin-right:4px}
+.rk-sc-fill{height:100%;border-radius:3px}
+.grade{font-size:.58rem;font-weight:700;padding:3px 8px;border-radius:4px;min-width:22px;text-align:center;display:inline-block}
+.grade-a{background:#ECFDF5;color:#059669}.grade-b{background:#EFF6FF;color:#2563EB}.grade-c{background:#FFFBEB;color:#D97706}.grade-d{background:#FEF2F2;color:#DC2626}
+.badge-s{display:inline-flex;padding:3px 8px;border-radius:5px;font-size:.58rem;font-weight:700}
+.bg-fit{background:rgba(0,200,83,.08);color:var(--green)}.bg-unfit{background:rgba(239,68,68,.08);color:var(--red)}
+/* Equipment */
+.eq-row{display:flex;align-items:center;padding:10px 16px;border-bottom:1px solid var(--border);gap:10px}
+.eq-name{flex:1;font-size:.78rem;font-weight:700}.eq-cell{font-size:.7rem;text-align:center;min-width:45px;font-weight:600}
+.eq-bar{width:80px;height:6px;border-radius:3px;background:var(--border)}.eq-fill{height:100%;border-radius:3px;background:var(--green)}
+/* Alert */
+.alert-item{padding:10px 16px;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:start}
+.alert-dot{width:8px;height:8px;border-radius:50%;margin-top:4px;flex-shrink:0}
+.alert-text{font-size:.72rem;font-weight:600;color:var(--text)}.alert-meta{font-size:.55rem;color:var(--muted);margin-top:2px}
+@media(max-width:900px){.sidebar{display:none}.col-right{display:none}.kpi-row{grid-template-columns:repeat(3,1fr)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(0,176,255,.3)}50%{box-shadow:0 0 0 5px rgba(0,176,255,0)}}
 </style>
 </head>
 <body>
-<div class="app app-wide">
-
-<div class="topnav">
-  <div class="topnav-left"><img class="topnav-logo" src="logo-hte.png" alt="HTE"/><div class="topnav-text"><div class="tn-title">Starting Shift</div><div class="tn-sub">Dashboard PJO</div></div></div>
-  <div class="topnav-actions">
-    <button class="topnav-btn" style="color:var(--danger);border-color:rgba(239,68,68,.3)" onclick="downloadPJOPDF()">📄 PDF</button>
-    <button class="topnav-btn" onclick="doLogout()">Logout</button>
+<div class="sidebar">
+  <div class="sb-brand"><img src="logo-hte.png" alt="HTE"/><div><div class="sbt-name">Starting Shift</div><div class="sbt-sub">PT HTE · MINING OPS</div></div></div>
+  <div class="sb-nav">
+    <div class="sb-section">Executive</div>
+    <div class="sb-item active" data-view="overview"><span class="sb-ico">📊</span> Overview</div>
+    <div class="sb-item" data-view="ranking"><span class="sb-ico">🏆</span> Driver Ranking</div>
+    <div class="sb-item" data-view="equipment"><span class="sb-ico">🚛</span> Equipment Summary</div>
+    <div class="sb-section">Laporan</div>
+    <div class="sb-item" onclick="genPDF()"><span class="sb-ico">📄</span> PDF Executive</div>
+    <div class="sb-section">Sistem</div>
+    <div class="sb-item" onclick="doLogout()"><span class="sb-ico">🚪</span> Logout</div>
   </div>
+  <div class="sb-user"><div class="sb-avatar" id="sbAv">—</div><div><div style="font-size:.78rem;font-weight:700" id="sbNm">—</div><div style="font-size:.58rem;color:var(--muted)">PJO Management</div></div></div>
 </div>
-
-<!-- KPI Cards -->
-<div class="kpi-grid" id="kpiGrid">
-  <div class="kpi green"><div class="kpi-val text-success" id="kP2h">—</div><div class="kpi-label">P2H Compliance</div><div class="kpi-sub" id="kP2hSub">—</div></div>
-  <div class="kpi blue"><div class="kpi-val text-primary" id="kFtw">—</div><div class="kpi-label">FTW Pass Rate</div><div class="kpi-sub" id="kFtwSub">—</div></div>
-  <div class="kpi green"><div class="kpi-val text-success" id="kFleet">—</div><div class="kpi-label">Fleet Readiness</div><div class="kpi-sub" id="kFleetSub">—</div></div>
-  <div class="kpi yellow"><div class="kpi-val" style="color:var(--warning)" id="kDriver">—</div><div class="kpi-label">Driver Coverage</div><div class="kpi-sub" id="kDriverSub">—</div></div>
-</div>
-
-<!-- Trend Chart -->
-<div class="chart-card">
-  <div class="chart-title">📈 Tren 7 Hari Terakhir — Laporan Shift</div>
-  <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
-</div>
-
-<!-- BD Trend -->
-<div class="chart-card">
-  <div class="chart-title">🔴 Tren Breakdown & Unfit</div>
-  <div class="chart-wrap"><canvas id="bdChart"></canvas></div>
-</div>
-
-<!-- Equipment Summary -->
-<div class="chart-card">
-  <div class="section-title">🏗️ Ringkasan per Jenis Unit</div>
-  <div style="overflow-x:auto">
-    <table class="eq-table" id="eqTable">
-      <thead><tr><th>Kelas Unit</th><th class="num">Total</th><th class="num">Ready</th><th class="num">BD</th><th class="num">MT</th><th class="num">Driver Lapor</th><th class="num">Avg HM/Shift</th></tr></thead>
-      <tbody id="eqBody"><tr><td colspan="7" style="text-align:center;color:var(--text-muted)">Memuat...</td></tr></tbody>
-    </table>
+<div class="main">
+  <div class="topbar">
+    <div><div style="display:flex;align-items:center;gap:8px"><span class="tb-title">Executive Dashboard</span><span class="tb-live"><span class="tb-dot" style="background:var(--blue)"></span> PJO</span></div><div class="tb-sub" id="tbDate">—</div></div>
+    <div style="display:flex;align-items:center;gap:14px"><div style="text-align:right"><div class="tb-clock" id="clock">--:--:--</div><div style="font-size:.55rem;color:var(--muted)">WITA</div></div><div id="shiftBadge" class="tb-shift s1">Shift 1</div></div>
   </div>
-</div>
 
-<!-- Alerts -->
-<div id="alertSection"></div>
-
-<!-- Driver Ranking -->
-<div class="chart-card">
-  <div class="section-title" style="justify-content:space-between">
-    <span>🏆 Driver Compliance Ranking (30 Hari)</span>
-    <select id="rankFilter" onchange="renderRanking()" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:var(--input-bg);color:var(--text);font-family:var(--font);font-size:.72rem">
-      <option value="">Semua Kelas</option>
-    </select>
+  <!-- VIEW: OVERVIEW -->
+  <div class="content view active" id="v-overview">
+    <div class="col-main">
+      <div class="kpi-row">
+        <div class="kpi"><div class="kpi-icon" style="background:rgba(0,200,83,.08)">📋</div><div class="kpi-label">P2H Compliance</div><div class="kpi-val" style="color:var(--green)" id="kP2H">—%</div><div class="kpi-bar"><div class="kpi-fill" id="kP2HB" style="width:0;background:var(--green)"></div></div><div class="kpi-sub" id="kP2HS">—</div></div>
+        <div class="kpi"><div class="kpi-icon" style="background:rgba(0,176,255,.08)">💪</div><div class="kpi-label">FTW Pass Rate</div><div class="kpi-val" style="color:var(--blue)" id="kFTW">—%</div><div class="kpi-bar"><div class="kpi-fill" id="kFTWB" style="width:0;background:var(--blue)"></div></div><div class="kpi-sub" id="kFTWS">—</div></div>
+        <div class="kpi"><div class="kpi-icon" style="background:rgba(0,200,83,.08)">🚛</div><div class="kpi-label">Fleet Readiness</div><div class="kpi-val" id="kFleet">—%</div><div class="kpi-bar"><div class="kpi-fill" id="kFleetB" style="width:0;background:var(--green)"></div></div><div class="kpi-sub" id="kFleetS">—</div></div>
+        <div class="kpi"><div class="kpi-icon" style="background:rgba(239,68,68,.08)">⚠️</div><div class="kpi-label">BD Aktif</div><div class="kpi-val" style="color:var(--red)" id="kBD">—</div><div class="kpi-sub" id="kBDS">—</div></div>
+        <div class="kpi kpi-hl"><div class="kpi-icon" style="background:rgba(255,255,255,.15)">🎯</div><div class="kpi-label">Skor Operasi</div><div class="kpi-val" id="kScore">—%</div><div class="kpi-sub">Gabungan P2H+FTW+Fleet</div></div>
+      </div>
+      <!-- Charts -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div class="widget"><div class="wt">Tren 7 Hari</div><div class="ws">Total lapor, RTW, BD, Unfit per hari</div><div class="chart-wrap"><canvas id="trendChart"></canvas></div></div>
+        <div class="widget"><div class="wt">Distribusi Status</div><div class="ws">Proporsi status shift hari ini</div><div class="chart-wrap"><canvas id="statusChart"></canvas></div></div>
+      </div>
+      <!-- Top 5 ranking preview -->
+      <div class="panel"><div class="panel-head"><div class="panel-title">🏆 Top 5 Driver Compliance</div><a style="font-size:.72rem;color:var(--green);font-weight:600;cursor:pointer" onclick="switchView('ranking')">Lihat Semua →</a></div><div id="topRankBody"></div></div>
+    </div>
+    <div class="col-right">
+      <div class="widget"><div class="wt">Kesiapan Hari Ini</div><div class="ws">Donut score gabungan</div><div style="display:flex;align-items:center;gap:16px"><div><canvas id="donutChart" width="110" height="110"></canvas></div><div style="flex:1"><div style="display:flex;justify-content:space-between;padding:3px 0;font-size:.7rem"><span style="color:var(--gray)">P2H</span><span style="font-weight:700" id="dP">—</span></div><div style="display:flex;justify-content:space-between;padding:3px 0;font-size:.7rem"><span style="color:var(--gray)">FTW</span><span style="font-weight:700" id="dF">—</span></div><div style="display:flex;justify-content:space-between;padding:3px 0;font-size:.7rem"><span style="color:var(--gray)">Fleet</span><span style="font-weight:700" id="dR">—</span></div></div></div></div>
+      <!-- Equipment mini -->
+      <div class="widget"><div style="display:flex;justify-content:space-between"><div class="wt">Fleet per Tipe</div><span style="font-size:.72rem;font-weight:700" id="fTot">—</span></div><div id="eqMini" style="margin-top:8px"></div></div>
+      <!-- Alerts -->
+      <div class="widget"><div style="display:flex;justify-content:space-between;align-items:center"><div class="wt">⚠️ Alerts</div><span style="font-size:.58rem;font-weight:700;color:var(--red)" id="alertCnt">—</span></div><div id="alertList" style="max-height:200px;overflow-y:auto;margin-top:8px"></div></div>
+    </div>
   </div>
-  <div style="overflow-x:auto">
-    <table class="eq-table" id="rankTable">
-      <thead><tr>
-        <th style="width:30px">#</th><th>Driver</th><th>Role</th><th class="num">Lapor</th>
-        <th class="num">FTW</th><th class="num">P2H</th><th class="num">HM</th><th class="num">Score</th><th style="width:80px">Grade</th>
-      </tr></thead>
-      <tbody id="rankBody"><tr><td colspan="9" style="text-align:center;color:var(--text-muted)">Memuat...</td></tr></tbody>
-    </table>
-  </div>
-</div>
 
+  <!-- VIEW: RANKING -->
+  <div class="content view" id="v-ranking" style="flex-direction:column;gap:14px">
+    <div style="display:flex;justify-content:space-between;align-items:center"><div class="panel-title">🏆 Driver Compliance Ranking — 30 Hari</div><select class="pfsel" id="rkFilter" onchange="renderRanking()"><option value="">Semua Kelas</option></select></div>
+    <div class="panel" style="flex:1;overflow:hidden"><div style="overflow-y:auto;max-height:calc(100vh - 180px)" id="rankBody"></div></div>
+  </div>
+
+  <!-- VIEW: EQUIPMENT -->
+  <div class="content view" id="v-equipment" style="flex-direction:column;gap:14px">
+    <div class="panel-title">🚛 Equipment Summary — Per Jenis Unit</div>
+    <div class="panel" style="flex:1;overflow:hidden">
+      <div class="panel-head" style="font-size:.68rem;display:flex;gap:10px;color:var(--gray);font-weight:600"><span style="flex:1">Jenis Unit</span><span style="width:50px;text-align:center">Total</span><span style="width:50px;text-align:center">Ready</span><span style="width:50px;text-align:center">BD</span><span style="width:50px;text-align:center">MT</span><span style="width:50px;text-align:center">Driver</span><span style="width:80px">Readiness</span></div>
+      <div style="overflow-y:auto;max-height:calc(100vh - 200px)" id="eqBody"></div>
+    </div>
+  </div>
 </div>
 
 <script>
-const API='https://fms-light-backend-production.up.railway.app/api/v1';
-const TOKEN=localStorage.getItem('fms_token');
-const SESSION=JSON.parse(localStorage.getItem('fms_session')||'null');
+const API='https://fms-light-backend-production.up.railway.app/api/v1',TOKEN=localStorage.getItem('fms_token'),SESSION=JSON.parse(localStorage.getItem('fms_session')||'null');
 if(!SESSION||!TOKEN)window.location.href='index.html';
+let allUnits=[],allReports=[],trendData=[],rankData=[],bdReports=[];
+const _h=new Date().getHours(),curShift=(_h>=7&&_h<19)?'1':'2';
+function $(id){return document.getElementById(id);}
+function switchView(v){document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));document.querySelectorAll('.sb-item[data-view="'+v+'"]').forEach(i=>i.classList.add('active'));document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));$('v-'+v).classList.add('active');}
+document.querySelectorAll('.sb-item[data-view]').forEach(el=>{el.addEventListener('click',()=>switchView(el.dataset.view));});
+document.addEventListener('DOMContentLoaded',()=>{const i=(SESSION.name||'??').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();$('sbAv').textContent=i;$('sbNm').textContent=SESSION.name||SESSION.id;updateClock();setInterval(updateClock,1000);loadAll();});
+function updateClock(){const n=new Date();$('clock').textContent=n.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',second:'2-digit'});$('tbDate').textContent='Executive overview · '+n.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});const h=n.getHours(),s1=h>=7&&h<19;const b=$('shiftBadge');b.className='tb-shift '+(s1?'s1':'s2');b.innerHTML=`<div style="font-size:.55rem;opacity:.7">SHIFT AKTIF</div><div>Shift ${s1?'1 · Siang':'2 · Malam'}</div>`;}
+async function loadAll(){const today=new Date().toISOString().slice(0,10);try{const[a,b,c,d,e]=await Promise.all([fetch(`${API}/vehicles`,{headers:{'Authorization':'Bearer '+TOKEN}}),fetch(`${API}/supervisor/shift-reports?date=${today}&shift=${curShift}&limit=500`,{headers:{'Authorization':'Bearer '+TOKEN}}),fetch(`${API}/supervisor/daily-trends?days=7`,{headers:{'Authorization':'Bearer '+TOKEN}}),fetch(`${API}/supervisor/driver-ranking?days=30`,{headers:{'Authorization':'Bearer '+TOKEN}}),fetch(`${API}/bd-reports?limit=30`,{headers:{'Authorization':'Bearer '+TOKEN}})]);
+const A=await a.json(),B=await b.json(),C=await c.json(),D=await d.json(),E=await e.json();
+if(A.success)allUnits=A.data;if(B.success)allReports=B.data.reports||[];if(C.success)trendData=C.data||[];if(D.success)rankData=D.data||[];if(E.success)bdReports=E.data.reports||E.data||[];
+renderKPI();renderTrend();renderStatus();renderDonut();renderEqMini();renderAlerts();renderTopRank();renderRanking();renderEquipment();popRkFilter();}catch(e){console.error(e);}}
 
-let trendData=[],eqData=[],statsData=null,allUnits=[],rankData=[];
+function renderKPI(){const t=allUnits.length||1,r=allUnits.filter(u=>u.status_unit==='Ready').length,bd=allUnits.filter(u=>u.status_unit==='Breakdown').length,mt=allUnits.filter(u=>u.status_unit==='Maintenance').length;
+const td=allReports.length||1,fc=allReports.filter(r=>r.fit_status==='Fit').length,pp=allReports.filter(r=>r.p2h_status==='Passed').length;
+const p2hPct=Math.round(pp/td*100),ftwPct=Math.round(fc/td*100),fleetPct=Math.round(r/t*100),score=Math.round((p2hPct+ftwPct+fleetPct)/3);
+$('kP2H').textContent=p2hPct+'%';$('kP2HB').style.width=p2hPct+'%';$('kP2HS').textContent=`${pp}/${td} passed`;
+$('kFTW').textContent=ftwPct+'%';$('kFTWB').style.width=ftwPct+'%';$('kFTWS').textContent=`${fc}/${td} fit`;
+$('kFleet').textContent=fleetPct+'%';$('kFleetB').style.width=fleetPct+'%';$('kFleetS').textContent=`${r}/${t} ready`;
+$('kBD').textContent=bd+mt;$('kBDS').textContent=`${bd} BD · ${mt} MT`;
+$('kScore').textContent=score+'%';
+$('dP').textContent=p2hPct+'%';$('dF').textContent=ftwPct+'%';$('dR').textContent=fleetPct+'%';}
 
-document.addEventListener('DOMContentLoaded',()=>{ loadAll(); });
+function renderDonut(){const t=allUnits.length||1,r=allUnits.filter(u=>u.status_unit==='Ready').length,td=allReports.length||1,fc=allReports.filter(x=>x.fit_status==='Fit').length,pp=allReports.filter(x=>x.p2h_status==='Passed').length;
+const sc=Math.round((pp/td*100+fc/td*100+r/t*100)/3);const c=$('donutChart');if(c._c)c._c.destroy();c._c=new Chart(c,{type:'doughnut',data:{datasets:[{data:[sc,100-sc],backgroundColor:[sc>=85?'#00C853':sc>=70?'#F59E0B':'#EF4444','#E5E9F0'],borderWidth:0}]},options:{cutout:'78%',responsive:false,plugins:{legend:{display:false},tooltip:{enabled:false}}}});}
 
-async function loadAll(){
-  await Promise.all([loadStats(),loadTrends(),loadEquipment(),loadUnits(),loadRanking()]);
-  renderKPI();renderTrendChart();renderBDChart();renderEquipment();renderAlerts();renderRanking();
-}
+function renderTrend(){const c=$('trendChart');if(c._c)c._c.destroy();const labels=trendData.map(d=>new Date(d.date).toLocaleDateString('id-ID',{day:'2-digit',month:'short'}));
+c._c=new Chart(c,{type:'line',data:{labels,datasets:[{label:'Total',data:trendData.map(d=>d.total||0),borderColor:'#3B82F6',backgroundColor:'rgba(59,130,246,.1)',fill:true,tension:.3},{label:'RTW',data:trendData.map(d=>d.rtw||0),borderColor:'#00C853',tension:.3},{label:'BD',data:trendData.map(d=>d.bd||0),borderColor:'#EF4444',tension:.3},{label:'Unfit',data:trendData.map(d=>d.unfit||0),borderColor:'#F59E0B',tension:.3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{boxWidth:8,font:{size:10,family:'Plus Jakarta Sans'}}}},scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:{color:'#F0F4F8'}}}}});}
 
-async function loadStats(){
-  try{const r=await fetch(`${API}/supervisor/dashboard-stats`,{headers:{'Authorization':'Bearer '+TOKEN}});
-  const d=await r.json();if(d.success)statsData=d.data;}catch{}}
+function renderStatus(){const c=$('statusChart');if(c._c)c._c.destroy();const rtw=allReports.filter(r=>r.overall_status==='Ready to Work').length,unfit=allReports.filter(r=>r.overall_status==='Driver Unfit').length,bd=allReports.filter(r=>r.overall_status==='Unit Breakdown').length;
+c._c=new Chart(c,{type:'doughnut',data:{labels:['Ready to Work','Driver Unfit','Unit Breakdown'],datasets:[{data:[rtw,unfit,bd],backgroundColor:['#00C853','#F59E0B','#EF4444'],borderWidth:2,borderColor:'#FFF'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{boxWidth:8,font:{size:10,family:'Plus Jakarta Sans'}}}}}});}
 
-async function loadTrends(){
-  try{const r=await fetch(`${API}/supervisor/daily-trends?days=7`,{headers:{'Authorization':'Bearer '+TOKEN}});
-  const d=await r.json();if(d.success)trendData=d.data;}catch{}}
+function renderEqMini(){const cls=[...new Set(allUnits.map(u=>u.equipment_class||'Other'))].sort();$('fTot').textContent=allUnits.length+' unit';
+$('eqMini').innerHTML=cls.map(c=>{const u=allUnits.filter(x=>(x.equipment_class||'Other')===c),rv=u.filter(x=>x.status_unit==='Ready').length;return`<div style="display:flex;align-items:center;padding:2px 0;font-size:.68rem"><span style="flex:1">${c}</span><div style="width:60px;height:5px;border-radius:3px;background:var(--border);margin:0 6px"><div style="height:100%;border-radius:3px;background:var(--green);width:${rv/u.length*100}%"></div></div><span style="font-weight:700;min-width:28px;text-align:right">${rv}/${u.length}</span></div>`;}).join('');}
 
-async function loadEquipment(){
-  try{const r=await fetch(`${API}/supervisor/equipment-summary`,{headers:{'Authorization':'Bearer '+TOKEN}});
-  const d=await r.json();if(d.success)eqData=d.data;}catch{}}
+function renderAlerts(){const bds=allUnits.filter(u=>u.status_unit!=='Ready');$('alertCnt').textContent=bds.length+' unit';
+if(!bds.length){$('alertList').innerHTML='<div style="padding:12px;text-align:center;color:var(--green);font-size:.75rem">✅ Semua unit ready</div>';return;}
+$('alertList').innerHTML=bds.map(u=>{const c=u.status_unit==='Breakdown'?'var(--red)':'var(--amber)';return`<div class="alert-item"><div class="alert-dot" style="background:${c}"></div><div><div class="alert-text">${u.unit_id} — ${u.status_unit}</div><div class="alert-meta">${u.notes||'Tidak ada keterangan'}</div></div></div>`;}).join('');}
 
-async function loadUnits(){
-  try{const r=await fetch(`${API}/vehicles`,{headers:{'Authorization':'Bearer '+TOKEN}});
-  const d=await r.json();if(d.success)allUnits=d.data;}catch{}}
+function renderTopRank(){const top=rankData.slice(0,5);if(!top.length){$('topRankBody').innerHTML='<div style="padding:16px;text-align:center;color:var(--muted);font-size:.78rem">Belum ada data ranking.</div>';return;}
+const cols=['#00C853','#00B0FF','#F59E0B','#EF4444','#8B5CF6'];const medals=['🥇','🥈','🥉','4','5'];
+$('topRankBody').innerHTML=top.map((r,i)=>{const ini=(r.driver_name||'??').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();let gc='grade-d',gl='D';if(r.score>=85){gc='grade-a';gl='A';}else if(r.score>=70){gc='grade-b';gl='B';}else if(r.score>=50){gc='grade-c';gl='C';}
+const bc=r.score>=85?'#10B981':r.score>=70?'#3B82F6':r.score>=50?'#F59E0B':'#EF4444';
+return`<div class="rk-row"><div class="rk-pos">${medals[i]}</div><div class="rk-av" style="background:${cols[i]}">${ini}</div><div class="rk-info"><div class="rk-name">${r.driver_name||r.driver_id}</div><div class="rk-meta">${r.driver_id} · ${r.equipment_class||''}</div></div><div class="rk-cell" style="color:${r.ftw_rate>=90?'var(--green)':'var(--amber)'}">${r.ftw_rate}%</div><div class="rk-cell" style="color:${r.p2h_rate>=90?'var(--green)':'var(--amber)'}">${r.p2h_rate}%</div><div class="rk-score"><div class="rk-sc-bar"><div class="rk-sc-fill" style="width:${r.score}%;background:${bc}"></div></div>${r.score}</div><div><span class="grade ${gc}">${gl}</span></div></div>`;}).join('');}
 
-// ── KPI ──
-function renderKPI(){
-  if(!statsData)return;
-  const s=statsData;
-  const totalUnits=allUnits.length||1;
-  const readyUnits=allUnits.filter(u=>u.status_unit==='Ready').length;
+function renderRanking(){const f=$('rkFilter')?.value||'';let list=rankData;if(f)list=list.filter(r=>r.equipment_class===f);const body=$('rankBody');if(!list.length){body.innerHTML='<div style="padding:20px;text-align:center;color:var(--muted)">Tidak ada data.</div>';return;}
+const cols=['#00C853','#00B0FF','#F59E0B','#EF4444','#8B5CF6','#EC4899','#14B8A6','#F97316'];const medals=['🥇','🥈','🥉'];
+body.innerHTML=list.map((r,i)=>{const ini=(r.driver_name||'??').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();let gc='grade-d',gl='D';if(r.score>=85){gc='grade-a';gl='A';}else if(r.score>=70){gc='grade-b';gl='B';}else if(r.score>=50){gc='grade-c';gl='C';}
+const bc=r.score>=85?'#10B981':r.score>=70?'#3B82F6':r.score>=50?'#F59E0B':'#EF4444';
+return`<div class="rk-row"><div class="rk-pos">${i<3?medals[i]:(i+1)}</div><div class="rk-av" style="background:${cols[i%8]}">${ini}</div><div class="rk-info"><div class="rk-name">${r.driver_name||r.driver_id}</div><div class="rk-meta">${r.driver_id} · ${r.equipment_class||''} · ${r.total_reports}× lapor</div></div><div class="rk-cell" style="color:${r.ftw_rate>=90?'var(--green)':'var(--amber)'}">${r.ftw_rate}%</div><div class="rk-cell" style="color:${r.p2h_rate>=90?'var(--green)':'var(--amber)'}">${r.p2h_rate}%</div><div class="rk-cell" style="color:${r.hm_rate>=80?'var(--green)':'var(--amber)'}">${r.hm_rate}%</div><div class="rk-score"><div class="rk-sc-bar"><div class="rk-sc-fill" style="width:${r.score}%;background:${bc}"></div></div>${r.score}</div><div><span class="grade ${gc}">${gl}</span></div></div>`;}).join('');}
+function popRkFilter(){const d=[...new Set(rankData.map(r=>r.equipment_class).filter(Boolean))].sort();$('rkFilter').innerHTML='<option value="">Semua Kelas</option>'+d.map(x=>`<option>${x}</option>`).join('');}
 
-  // P2H Compliance: drivers who reported / total ready units
-  const p2h=totalUnits>0?Math.round(s.total_reports/totalUnits*100):0;
-  document.getElementById('kP2h').textContent=p2h+'%';
-  document.getElementById('kP2hSub').textContent=`${s.total_reports} lapor dari ${totalUnits} unit`;
+function renderEquipment(){const cls=[...new Set(allUnits.map(u=>u.equipment_class||'Other'))].sort();
+$('eqBody').innerHTML=cls.map(c=>{const u=allUnits.filter(x=>(x.equipment_class||'Other')===c),r=u.filter(x=>x.status_unit==='Ready').length,bd=u.filter(x=>x.status_unit==='Breakdown').length,mt=u.filter(x=>x.status_unit==='Maintenance').length;
+const drivers=allReports.filter(x=>(x.equipment_class||'')==c).length;const pct=Math.round(r/u.length*100);
+return`<div class="eq-row"><span class="eq-name">${c}</span><span class="eq-cell">${u.length}</span><span class="eq-cell" style="color:var(--green)">${r}</span><span class="eq-cell" style="color:var(--red)">${bd}</span><span class="eq-cell" style="color:var(--amber)">${mt}</span><span class="eq-cell" style="color:var(--blue)">${drivers}</span><span style="width:80px;display:flex;align-items:center;gap:4px"><div class="eq-bar"><div class="eq-fill" style="width:${pct}%"></div></div><span style="font-size:.65rem;font-weight:700">${pct}%</span></span></div>`;}).join('');}
 
-  // FTW Pass Rate
-  const ftwRate=s.total_reports>0?Math.round(s.active_drivers/s.total_reports*100):0;
-  document.getElementById('kFtw').textContent=ftwRate+'%';
-  document.getElementById('kFtwSub').textContent=`${s.active_drivers} fit dari ${s.total_reports} lapor`;
+function genPDF(){if(!window.jspdf){alert('Library PDF sedang dimuat.');return;}
+const{jsPDF}=window.jspdf;const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+const pw=doc.internal.pageSize.getWidth(),ph=doc.internal.pageSize.getHeight();
+const today=new Date(),todayStr=today.toISOString().slice(0,10);
+const shLabel=curShift==='1'?'Shift 1 (07:00-19:00)':'Shift 2 (19:00-07:00)';
+const g=[0,200,83],bl=[0,176,255],dk=[30,41,59];
 
-  // Fleet Readiness
-  const fleet=Math.round(readyUnits/totalUnits*100);
-  document.getElementById('kFleet').textContent=fleet+'%';
-  document.getElementById('kFleetSub').textContent=`${readyUnits} ready, ${s.unit_breakdown} BD`;
+// Header
+doc.setFillColor(...g);doc.rect(0,0,pw*0.55,20,'F');doc.setFillColor(...bl);doc.rect(pw*0.55,0,pw*0.45,20,'F');
+doc.setTextColor(255);doc.setFontSize(11);doc.setFont(undefined,'bold');doc.text('PT HALMAHERA TRANSPORTASI ENERGI',14,8);
+doc.setFontSize(7.5);doc.setFont(undefined,'normal');doc.text('Executive Dashboard — PJO Report',14,14);
+doc.setFontSize(6.5);doc.text('Site HSM · '+today.toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric'}),14,18);
 
-  // Driver Coverage
-  document.getElementById('kDriver').textContent=s.active_drivers;
-  document.getElementById('kDriverSub').textContent=`dari ${s.total_reports} yang melapor hari ini`;
-}
+// KPI Section
+doc.setTextColor(...dk);let y=26;doc.setFontSize(11);doc.setFont(undefined,'bold');doc.text('1. Key Performance Indicators',14,y);y+=4;
+const t=allUnits.length||1,r=allUnits.filter(u=>u.status_unit==='Ready').length,bd=allUnits.filter(u=>u.status_unit==='Breakdown').length,mt=allUnits.filter(u=>u.status_unit==='Maintenance').length;
+const td=allReports.length||1,fc=allReports.filter(x=>x.fit_status==='Fit').length,pp=allReports.filter(x=>x.p2h_status==='Passed').length;
+const p2hPct=Math.round(pp/td*100),ftwPct=Math.round(fc/td*100),fleetPct=Math.round(r/t*100),score=Math.round((p2hPct+ftwPct+fleetPct)/3);
+doc.autoTable({startY:y,body:[['P2H Compliance','FTW Pass Rate','Fleet Readiness','BD Aktif','Skor Operasi'],[p2hPct+'%',ftwPct+'%',fleetPct+'%',bd+mt+' unit',score+'%']],
+styles:{fontSize:8,cellPadding:3,halign:'center'},didParseCell:function(d){if(d.row.index===0){d.cell.styles.fontStyle='bold';d.cell.styles.textColor=[100,116,139];d.cell.styles.fontSize=7;}if(d.row.index===1){d.cell.styles.fontStyle='bold';d.cell.styles.fontSize=16;d.cell.styles.textColor=g;}d.cell.styles.fillColor=[240,244,248];}});
+y=doc.lastAutoTable.finalY+6;
 
-// ── Trend Chart ──
-function renderTrendChart(){
-  if(!trendData.length)return;
-  const labels=trendData.map(t=>{const d=new Date(t.date);return d.toLocaleDateString('id-ID',{day:'2-digit',month:'short'});});
-  new Chart(document.getElementById('trendChart'),{
-    type:'line',
-    data:{
-      labels,
-      datasets:[
-        {label:'Total Lapor',data:trendData.map(t=>t.total_reports),borderColor:'#00C853',backgroundColor:'rgba(0,200,83,.1)',fill:true,tension:.4,borderWidth:2.5,pointRadius:4,pointBackgroundColor:'#00C853'},
-        {label:'Ready to Work',data:trendData.map(t=>t.rtw),borderColor:'#00B0FF',backgroundColor:'rgba(0,176,255,.1)',fill:true,tension:.4,borderWidth:2,pointRadius:3,pointBackgroundColor:'#00B0FF'},
-      ]
-    },
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11,family:'Plus Jakarta Sans'},usePointStyle:true,padding:14}}},scales:{y:{beginAtZero:true,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:10}}},x:{grid:{display:false},ticks:{font:{size:10}}}}}
-  });
-}
+// Equipment Summary
+doc.setFontSize(11);doc.setFont(undefined,'bold');doc.text('2. Equipment Summary',14,y);y+=3;
+const cls=[...new Set(allUnits.map(u=>u.equipment_class||'Other'))].sort();
+doc.autoTable({startY:y,head:[['Jenis Unit','Total','Ready','BD','MT','Drivers','Readiness']],
+body:cls.map(c=>{const u=allUnits.filter(x=>(x.equipment_class||'Other')===c),rv=u.filter(x=>x.status_unit==='Ready').length,bv=u.filter(x=>x.status_unit==='Breakdown').length,mv=u.filter(x=>x.status_unit==='Maintenance').length,dv=allReports.filter(x=>(x.equipment_class||'')==c).length;return[c,u.length,rv,bv,mv,dv,Math.round(rv/u.length*100)+'%'];}),
+styles:{fontSize:7.5,cellPadding:2},headStyles:{fillColor:g,textColor:255,fontStyle:'bold'},alternateRowStyles:{fillColor:[245,247,250]}});
+y=doc.lastAutoTable.finalY+6;
 
-// ── BD Chart ──
-function renderBDChart(){
-  if(!trendData.length)return;
-  const labels=trendData.map(t=>{const d=new Date(t.date);return d.toLocaleDateString('id-ID',{day:'2-digit',month:'short'});});
-  new Chart(document.getElementById('bdChart'),{
-    type:'bar',
-    data:{
-      labels,
-      datasets:[
-        {label:'Unit Breakdown',data:trendData.map(t=>t.breakdown),backgroundColor:'rgba(239,68,68,.7)',borderRadius:6,barPercentage:.5},
-        {label:'Driver Unfit',data:trendData.map(t=>t.unfit),backgroundColor:'rgba(245,158,11,.7)',borderRadius:6,barPercentage:.5},
-        {label:'BD Reports',data:trendData.map(t=>t.bd_reports),backgroundColor:'rgba(59,130,246,.6)',borderRadius:6,barPercentage:.5},
-      ]
-    },
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11,family:'Plus Jakarta Sans'},usePointStyle:true,padding:14}}},scales:{y:{beginAtZero:true,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:10},stepSize:1}},x:{grid:{display:false},ticks:{font:{size:10}}}}}
-  });
-}
+// Driver Ranking Top 10
+if(y>ph-60){doc.addPage();y=14;}
+doc.setFontSize(11);doc.setFont(undefined,'bold');doc.text('3. Driver Compliance Ranking — Top 10',14,y);y+=3;
+const top10=rankData.slice(0,10);
+if(top10.length){doc.autoTable({startY:y,head:[['#','Driver','ID','Kelas','Lapor','FTW%','P2H%','HM%','Score','Grade']],
+body:top10.map((r,i)=>{let gr='D';if(r.score>=85)gr='A';else if(r.score>=70)gr='B';else if(r.score>=50)gr='C';return[i+1,r.driver_name||'',r.driver_id,r.equipment_class||'',r.total_reports,r.ftw_rate+'%',r.p2h_rate+'%',r.hm_rate+'%',r.score,gr];}),
+styles:{fontSize:7,cellPadding:2},headStyles:{fillColor:g,textColor:255,fontStyle:'bold'},alternateRowStyles:{fillColor:[245,247,250]},
+didParseCell:function(d){if(d.section==='body'&&d.column.index===9){d.cell.styles.fontStyle='bold';const v=d.cell.raw;d.cell.styles.textColor=v==='A'?[5,150,105]:v==='B'?[37,99,235]:v==='C'?[217,119,6]:[220,38,38];}}});}
 
-// ── Equipment Summary ──
-function renderEquipment(){
-  const body=document.getElementById('eqBody');
-  if(!eqData.length){body.innerHTML='<tr><td colspan="7" class="empty">Tidak ada data.</td></tr>';return;}
-  body.innerHTML=eqData.map(e=>{
-    const readyPct=e.total_units>0?Math.round(e.ready/e.total_units*100):0;
-    return `<tr>
-      <td style="font-weight:700">${e.equipment_class}</td>
-      <td class="num">${e.total_units}</td>
-      <td class="num" style="color:var(--success)">${e.ready}</td>
-      <td class="num" style="color:${e.bd>0?'var(--danger)':'var(--text-muted)'}">${e.bd}</td>
-      <td class="num" style="color:${e.mt>0?'var(--warning)':'var(--text-muted)'}">${e.mt}</td>
-      <td class="num">${e.drivers_reported}</td>
-      <td class="num">${e.avg_hm_per_shift||'—'}</td>
-    </tr>`;
-  }).join('');
-}
+// BD list
+y=doc.lastAutoTable?doc.lastAutoTable.finalY+6:y+5;if(y>ph-40){doc.addPage();y=14;}
+const openBD=(Array.isArray(bdReports)?bdReports:[]).filter(r=>r.status!=='Resolved');
+doc.setFontSize(11);doc.setFont(undefined,'bold');doc.text(`4. Breakdown Aktif (${openBD.length})`,14,y);y+=3;
+if(openBD.length){doc.autoTable({startY:y,head:[['Unit','Komponen','Severity','Deskripsi','Status']],body:openBD.map(r=>[r.unit_id,r.component,r.severity,r.description||'',r.status]),styles:{fontSize:7,cellPadding:2},headStyles:{fillColor:[239,68,68],textColor:255}});}
+else{doc.setFontSize(8);doc.setFont(undefined,'normal');doc.text('Tidak ada breakdown aktif.',14,y+2);}
 
-// ── Alerts ──
-function renderAlerts(){
-  const bdUnits=allUnits.filter(u=>u.status_unit!=='Ready');
-  const section=document.getElementById('alertSection');
-  if(!bdUnits.length){section.innerHTML='';return;}
-  let html='<div class="section-title" style="margin-top:4px">⚠️ Unit Tidak Ready</div>';
-  bdUnits.forEach(u=>{
-    html+=`<div class="alert-card"><span class="ac-ico">${u.status_unit==='Breakdown'?'🔴':'🟡'}</span><div class="ac-text"><span class="ac-unit">${u.unit_id}</span> — ${u.vehicle_type||''}<br>${u.notes||'Tidak ada keterangan'}</div></div>`;
-  });
-  section.innerHTML=html;
-}
-
-// ── Ranking ──
-async function loadRanking(){
-  try{const r=await fetch(`${API}/supervisor/driver-ranking?days=30`,{headers:{'Authorization':'Bearer '+TOKEN}});
-  const d=await r.json();if(d.success)rankData=d.data;
-  // Populate filter
-  const classes=[...new Set(rankData.map(r=>r.equipment_class).filter(Boolean))].sort();
-  const sel=document.getElementById('rankFilter');
-  sel.innerHTML='<option value="">Semua Kelas</option>'+classes.map(c=>`<option value="${c}">${c}</option>`).join('');
-  }catch{}}
-
-function renderRanking(){
-  const filter=document.getElementById('rankFilter').value;
-  let list=rankData;
-  if(filter) list=list.filter(r=>r.equipment_class===filter);
-  const body=document.getElementById('rankBody');
-  if(!list.length){body.innerHTML='<tr><td colspan="9" style="text-align:center;color:var(--text-muted)">Tidak ada data.</td></tr>';return;}
-
-  body.innerHTML=list.map((r,i)=>{
-    const rank=i+1;
-    let medal='';
-    if(rank===1)medal='<span class="rank-medal">🥇</span>';
-    else if(rank===2)medal='<span class="rank-medal">🥈</span>';
-    else if(rank===3)medal='<span class="rank-medal">🥉</span>';
-
-    let gradeClass,gradeLabel;
-    if(r.score>=85){gradeClass='grade-a';gradeLabel='A';}
-    else if(r.score>=70){gradeClass='grade-b';gradeLabel='B';}
-    else if(r.score>=50){gradeClass='grade-c';gradeLabel='C';}
-    else{gradeClass='grade-d';gradeLabel='D';}
-
-    const barColor=r.score>=85?'#10B981':r.score>=70?'#3B82F6':r.score>=50?'#F59E0B':'#EF4444';
-
-    return `<tr>
-      <td class="num">${medal}${rank}</td>
-      <td><div style="font-weight:700;font-size:.82rem">${r.driver_name||r.driver_id}</div><div style="font-size:.6rem;color:var(--text-muted)">${r.driver_id} · ${r.equipment_class||''}</div></td>
-      <td style="font-size:.72rem">${r.role||'Driver'}</td>
-      <td class="num">${r.total_reports}×<br><span style="font-size:.55rem;color:var(--text-muted)">${r.days_reported} hari</span></td>
-      <td class="num" style="color:${r.ftw_rate>=90?'var(--success)':r.ftw_rate>=70?'var(--warning)':'var(--danger)'}">${r.ftw_rate}%</td>
-      <td class="num" style="color:${r.p2h_rate>=90?'var(--success)':r.p2h_rate>=70?'var(--warning)':'var(--danger)'}">${r.p2h_rate}%</td>
-      <td class="num" style="color:${r.hm_rate>=80?'var(--success)':r.hm_rate>=50?'var(--warning)':'var(--danger)'}">${r.hm_rate}%</td>
-      <td class="num"><div class="score-bar"><div class="score-fill" style="width:${r.score}%;background:${barColor}"></div></div>${r.score}</td>
-      <td class="num"><span class="grade ${gradeClass}">${gradeLabel}</span></td>
-    </tr>`;
-  }).join('');
-}
-
-// ── PDF ──
-async function downloadPJOPDF(){
-  if(!window.jspdf){alert('Library PDF sedang dimuat.');return;}
-  const {jsPDF}=window.jspdf;
-  const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
-  const pw=doc.internal.pageSize.getWidth(),ph=doc.internal.pageSize.getHeight();
-  const today=new Date().toISOString().slice(0,10);
-  const todayFmt=new Date().toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
-
-  // Header
-  doc.setFillColor(0,200,83);doc.rect(0,0,pw*.55,24,'F');
-  doc.setFillColor(0,176,255);doc.rect(pw*.55,0,pw*.45,24,'F');
-  doc.setTextColor(255);doc.setFontSize(13);doc.setFont(undefined,'bold');
-  doc.text('PT HALMAHERA TRANSPORTASI ENERGI',14,10);
-  doc.setFontSize(9);doc.setFont(undefined,'normal');
-  doc.text('Laporan Eksekutif PJO — Starting Shift Web App',14,16);
-  doc.setFontSize(7);doc.text(todayFmt,14,21);
-  doc.setTextColor(30);
-
-  // KPI
-  doc.setFontSize(10);doc.setFont(undefined,'bold');doc.text('Key Performance Indicators',14,32);
-  const totalU=allUnits.length||1,readyU=allUnits.filter(u=>u.status_unit==='Ready').length;
-  const kpis=[
-    {label:'P2H Compliance',val:statsData?Math.round(statsData.total_reports/totalU*100)+'%':'—'},
-    {label:'FTW Pass Rate',val:statsData&&statsData.total_reports>0?Math.round(statsData.active_drivers/statsData.total_reports*100)+'%':'—'},
-    {label:'Fleet Readiness',val:Math.round(readyU/totalU*100)+'%'},
-    {label:'Driver Aktif',val:statsData?String(statsData.active_drivers):'—'},
-  ];
-  kpis.forEach((k,i)=>{
-    const x=14+i*65;
-    doc.setFillColor(240,244,248);doc.roundedRect(x,35,58,16,3,3,'F');
-    doc.setFontSize(16);doc.setFont(undefined,'bold');doc.setTextColor(0,160,70);
-    doc.text(k.val,x+29,45,{align:'center'});
-    doc.setFontSize(6);doc.setFont(undefined,'normal');doc.setTextColor(100);
-    doc.text(k.label,x+29,50,{align:'center'});
-  });
-  doc.setTextColor(30);
-
-  // Equipment table
-  if(eqData.length>0){
-    doc.setFontSize(10);doc.setFont(undefined,'bold');doc.text('Ringkasan per Jenis Unit',14,60);
-    doc.autoTable({startY:63,
-      head:[['Kelas Unit','Total','Ready','BD','MT','Driver Lapor','Avg HM/Shift']],
-      body:eqData.map(e=>[e.equipment_class,e.total_units,e.ready,e.bd,e.mt,e.drivers_reported,e.avg_hm_per_shift||'-']),
-      styles:{fontSize:7,cellPadding:2.5},headStyles:{fillColor:[0,200,83],textColor:255,fontStyle:'bold'},
-      alternateRowStyles:{fillColor:[245,247,250]},
-    });
-  }
-
-  // BD units
-  const bdU=allUnits.filter(u=>u.status_unit!=='Ready');
-  if(bdU.length>0){
-    let y=doc.lastAutoTable?doc.lastAutoTable.finalY+8:80;
-    if(y>ph-30){doc.addPage();y=14;}
-    doc.setFontSize(10);doc.setFont(undefined,'bold');doc.text('Unit Tidak Ready',14,y);
-    doc.autoTable({startY:y+3,
-      head:[['Unit','Tipe','Status','Keterangan']],
-      body:bdU.map(u=>[u.unit_id,u.vehicle_type||'',u.status_unit,u.notes||'-']),
-      styles:{fontSize:7,cellPadding:2},headStyles:{fillColor:[239,68,68],textColor:255},
-      alternateRowStyles:{fillColor:[254,242,242]},
-    });
-  }
-
-  // Driver Ranking
-  if(rankData.length>0){
-    doc.addPage();
-    doc.setFillColor(0,200,83);doc.rect(0,0,pw*.55,22,'F');
-    doc.setFillColor(0,176,255);doc.rect(pw*.55,0,pw*.45,22,'F');
-    doc.setTextColor(255);doc.setFontSize(12);doc.setFont(undefined,'bold');
-    doc.text('PT HALMAHERA TRANSPORTASI ENERGI',14,10);
-    doc.setFontSize(8);doc.setFont(undefined,'normal');doc.text('Driver Compliance Ranking — 30 Hari Terakhir',14,17);
-    doc.setTextColor(30);
-
-    const top20=rankData.slice(0,20);
-    doc.autoTable({startY:26,
-      head:[['#','Driver ID','Nama','Role','Kelas','Lapor','FTW%','P2H%','HM%','Score','Grade']],
-      body:top20.map((r,i)=>{
-        let grade='D';if(r.score>=85)grade='A';else if(r.score>=70)grade='B';else if(r.score>=50)grade='C';
-        return [i+1,r.driver_id,r.driver_name||'',r.role||'',r.equipment_class||'',r.total_reports,r.ftw_rate+'%',r.p2h_rate+'%',r.hm_rate+'%',r.score,grade];
-      }),
-      styles:{fontSize:7,cellPadding:2},
-      headStyles:{fillColor:[0,200,83],textColor:255,fontStyle:'bold'},
-      alternateRowStyles:{fillColor:[245,247,250]},
-      didParseCell:function(d){
-        if(d.section==='body'&&d.column.index===10){
-          d.cell.styles.fontStyle='bold';
-          const v=d.cell.raw;
-          if(v==='A')d.cell.styles.textColor=[5,150,105];
-          else if(v==='B')d.cell.styles.textColor=[37,99,235];
-          else if(v==='C')d.cell.styles.textColor=[217,119,6];
-          else d.cell.styles.textColor=[220,38,38];
-        }
-      }
-    });
-  }
-
-  const pages=doc.internal.getNumberOfPages();
-  for(let i=1;i<=pages;i++){doc.setPage(i);doc.setFontSize(6.5);doc.setTextColor(180);
-    doc.text('Starting Shift Web App — PT HTE',14,ph-5);doc.text(`Hal ${i}/${pages}`,pw-14,ph-5,{align:'right'});}
-  doc.save(`Laporan_PJO_${today}.pdf`);
-}
-
+// Footer
+const pages=doc.internal.getNumberOfPages();for(let i=1;i<=pages;i++){doc.setPage(i);doc.setFontSize(6.5);doc.setTextColor(180);doc.text('Starting Shift — PJO Executive Report — PT HTE',14,ph-5);doc.text(`${i}/${pages}`,pw-14,ph-5,{align:'right'});}
+doc.save(`PJO_Executive_${todayStr}.pdf`);}
 function doLogout(){localStorage.removeItem('fms_token');localStorage.removeItem('fms_session');window.location.href='index.html';}
 </script>
 <script>if("serviceWorker"in navigator){navigator.serviceWorker.register("sw.js").catch(()=>{});}</script>
