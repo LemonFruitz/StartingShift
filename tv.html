@@ -126,7 +126,7 @@ body{background:var(--bg);font-family:var(--font);color:var(--text)}
 </div>
 
 <script>
-const API='https://fms-light-backend-production.up.railway.app/api/v1';
+const API='https://starting-hte.my.id/api/v1';
 const TOKEN=localStorage.getItem('fms_token');
 if(!TOKEN){const p=new URLSearchParams(location.search);if(p.get('token'))localStorage.setItem('fms_token',p.get('token'));else{alert('Login dulu sebagai CCR.');window.location.href='index.html';}}
 const AUTH={'Authorization':'Bearer '+(localStorage.getItem('fms_token'))};
