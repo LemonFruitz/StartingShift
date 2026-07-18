@@ -81,11 +81,13 @@ body{background:var(--bg);font-family:var(--font);color:var(--text)}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(0,200,83,.25)}50%{box-shadow:0 0 0 5px rgba(0,200,83,0)}}
 @keyframes bdPulse{0%,100%{opacity:1}50%{opacity:.65}}
 </style>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+<style>.mi{font-family:'Material Icons Outlined';font-size:18px;vertical-align:middle;font-weight:normal;font-style:normal;line-height:1}.mi-sm{font-size:14px}</style>
 </head>
 <body>
 
 <div class="notif-bar" id="notifBar">
-  <span class="notif-icon">🚨</span><span class="notif-text"></span><span class="notif-close">✕</span>
+  <span class="notif-icon"><span class="mi">emergency</span></span><span class="notif-text"></span><span class="notif-close"><span class="mi">close</span></span>
 </div>
 
 <div class="tv">
@@ -114,11 +116,11 @@ body{background:var(--bg);font-family:var(--font);color:var(--text)}
   <div class="unit-panel" id="unitPanel"></div>
   <div class="right-panel">
     <div class="info-panel" style="flex:1.2">
-      <div class="panel-title"><span>👤 Driver Aktif</span><span id="driverCount">—</span></div>
+      <div class="panel-title"><span><span class="mi">person</span> Driver Aktif</span><span id="driverCount">—</span></div>
       <div class="info-list" id="driverList"><div class="empty-msg">Memuat...</div></div>
     </div>
     <div class="info-panel">
-      <div class="panel-title"><span style="color:var(--red)">🔴 Unit BD / MT</span><span id="bdCount">—</span></div>
+      <div class="panel-title"><span style="color:var(--red)"><span class="mi">error</span> Unit BD / MT</span><span id="bdCount">—</span></div>
       <div class="info-list" id="bdList"><div class="empty-msg">Memuat...</div></div>
     </div>
   </div>
@@ -167,8 +169,8 @@ async function loadAll(){
     if(!firstLoad){
       const cur=new Set(allUnits.filter(u=>u.status_unit==='Breakdown').map(u=>u.unit_id));
       const nb=[...cur].filter(id=>!prevBDUnits.has(id));
-      if(nb.length>0)showNotif(`🚨 BREAKDOWN BARU: ${nb.join(', ')}`);
-      if(sD.success&&sD.data.bd_open>prevBDOpen&&prevBDOpen>0)showNotif(`⚠️ BD Report baru masuk! Total: ${sD.data.bd_open}`);
+      if(nb.length>0)showNotif(`BREAKDOWN BARU: ${nb.join(', ')}`);
+      if(sD.success&&sD.data.bd_open>prevBDOpen&&prevBDOpen>0)showNotif(`BD Report baru masuk! Total: ${sD.data.bd_open}`);
       prevBDUnits=cur;if(sD.success)prevBDOpen=sD.data.bd_open;
     }else{prevBDUnits=new Set(allUnits.filter(u=>u.status_unit==='Breakdown').map(u=>u.unit_id));if(sD.success)prevBDOpen=sD.data.bd_open;firstLoad=false;}
   }catch(e){console.error(e);}
@@ -226,7 +228,7 @@ function renderBD(){
   const bdU=allUnits.filter(u=>u.status_unit!=='Ready');
   const list=document.getElementById('bdList');
   document.getElementById('bdCount').textContent=bdU.length;
-  if(!bdU.length){list.innerHTML='<div class="empty-msg" style="color:var(--green)">✅ Semua unit Ready</div>';return;}
+  if(!bdU.length){list.innerHTML='<div class="empty-msg" style="color:var(--green)"><span class="mi">check_circle</span> Semua unit Ready</div>';return;}
   list.innerHTML=bdU.map(u=>{
     const c=u.status_unit==='Breakdown'?'var(--red)':'var(--amber)';
     return`<div class="bd-item" style="border-left-color:${c}"><div class="bd-unit" style="color:${c}">${u.unit_id} — ${u.status_unit}</div><div class="bd-notes">${u.notes||'Tidak ada keterangan'}</div></div>`;

@@ -118,22 +118,24 @@ body{background:var(--bg);font-family:var(--font);color:var(--text);display:flex
 @media(max-width:900px){.sidebar{display:none}.col-right{display:none}.kpi-row{grid-template-columns:repeat(3,1fr)}}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(0,200,83,.3)}50%{box-shadow:0 0 0 5px rgba(0,200,83,0)}}
 </style>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+<style>.mi{font-family:'Material Icons Outlined';font-size:18px;vertical-align:middle;font-weight:normal;font-style:normal;line-height:1}.mi-sm{font-size:14px}</style>
 </head>
 <body>
 <div class="sidebar">
   <div class="sb-brand"><img src="logo-hte.png" alt="HTE"/><div><div class="sbt-name">Starting Shift</div><div class="sbt-sub">PT HTE · MINING OPS</div></div></div>
   <div class="sb-nav">
     <div class="sb-section">Monitoring</div>
-    <div class="sb-item active" data-view="dashboard"><span class="sb-ico">📊</span> Dashboard CCR</div>
-    <div class="sb-item" data-view="hm"><span class="sb-ico">⏱️</span> Update HM</div>
-    <div class="sb-item" data-view="fleet"><span class="sb-ico">🚛</span> Fleet & Alat</div>
-    <div class="sb-item" data-view="bd"><span class="sb-ico">⚠️</span> Breakdown Report</div>
+    <div class="sb-item active" data-view="dashboard"><span class="sb-ico"><span class="mi">dashboard</span></span> Dashboard CCR</div>
+    <div class="sb-item" data-view="hm"><span class="sb-ico"><span class="mi">timer</span></span> Update HM</div>
+    <div class="sb-item" data-view="fleet"><span class="sb-ico"><span class="mi">local_shipping</span></span> Fleet & Alat</div>
+    <div class="sb-item" data-view="bd"><span class="sb-ico"><span class="mi">warning_amber</span></span> Breakdown Report</div>
     <div class="sb-section">Laporan</div>
-    <div class="sb-item" onclick="genShiftPDF()"><span class="sb-ico">📄</span> PDF Shift Report</div>
-    <div class="sb-item" onclick="downloadAll()"><span class="sb-ico">📥</span> Download CSV</div>
+    <div class="sb-item" onclick="genShiftPDF()"><span class="sb-ico"><span class="mi">picture_as_pdf</span></span> PDF Shift Report</div>
+    <div class="sb-item" onclick="downloadAll()"><span class="sb-ico"><span class="mi">download</span></span> Download CSV</div>
     <div class="sb-section">Sistem</div>
-    <div class="sb-item" onclick="window.open('tv.html','_blank')"><span class="sb-ico">📺</span> TV Monitor</div>
-    <div class="sb-item" onclick="doLogout()"><span class="sb-ico">🚪</span> Logout</div>
+    <div class="sb-item" onclick="window.open('tv.html','_blank')"><span class="sb-ico"><span class="mi">tv</span></span> TV Monitor</div>
+    <div class="sb-item" onclick="doLogout()"><span class="sb-ico"><span class="mi">logout</span></span> Logout</div>
   </div>
   <div class="sb-user"><div class="sb-avatar" id="sbAv">—</div><div><div class="sb-uname" id="sbNm">—</div><div class="sb-urole">Admin CCR</div></div></div>
 </div>
@@ -147,12 +149,12 @@ body{background:var(--bg);font-family:var(--font);color:var(--text);display:flex
   <div class="content view active" id="v-dashboard">
     <div class="col-main">
       <div class="kpi-row">
-        <div class="kpi"><div class="kpi-icon" style="background:rgba(0,200,83,.08)">👤</div><div class="kpi-label">Operator Hadir</div><div class="kpi-val" id="kD">—</div><div class="kpi-bar"><div class="kpi-fill" id="kDB" style="width:0;background:var(--green)"></div></div><div class="kpi-sub" id="kDS">—</div></div>
-        <div class="kpi"><div class="kpi-icon" style="background:rgba(239,68,68,.08)">💪</div><div class="kpi-label">FTW Fit</div><div class="kpi-val" style="color:var(--green)" id="kF">—</div><div class="kpi-bar"><div class="kpi-fill" id="kFB" style="width:0;background:var(--green)"></div></div><div class="kpi-sub" id="kFS">—</div></div>
-        <div class="kpi"><div class="kpi-icon" style="background:rgba(59,130,246,.08)">📋</div><div class="kpi-label">P2H Selesai</div><div class="kpi-val" id="kP">—</div><div class="kpi-bar"><div class="kpi-fill" id="kPB" style="width:0;background:var(--info)"></div></div><div class="kpi-sub" id="kPS">—</div></div>
-        <div class="kpi"><div class="kpi-icon" style="background:rgba(0,200,83,.08)">🚛</div><div class="kpi-label">Unit Ready</div><div class="kpi-val" id="kR">—</div><div class="kpi-bar"><div class="kpi-fill" id="kRB" style="width:0;background:var(--green)"></div></div><div class="kpi-sub" id="kRS">—</div></div>
-        <div class="kpi"><div class="kpi-icon" style="background:rgba(239,68,68,.08)">⚠️</div><div class="kpi-label">Breakdown</div><div class="kpi-val" style="color:var(--red)" id="kB">—</div><div class="kpi-bar"><div class="kpi-fill" id="kBB" style="width:0;background:var(--red)"></div></div><div class="kpi-sub" id="kBS">—</div></div>
-        <div class="kpi kpi-hl"><div class="kpi-icon" style="background:rgba(255,255,255,.15)">🎯</div><div class="kpi-label">Kesiapan Shift</div><div class="kpi-val" id="kSc">—%</div><div class="kpi-sub">Skor gabungan</div></div>
+        <div class="kpi"><div class="kpi-icon" style="background:rgba(0,200,83,.08)"><span class="mi">group</span></div><div class="kpi-label">Operator Hadir</div><div class="kpi-val" id="kD">—</div><div class="kpi-bar"><div class="kpi-fill" id="kDB" style="width:0;background:var(--green)"></div></div><div class="kpi-sub" id="kDS">—</div></div>
+        <div class="kpi"><div class="kpi-icon" style="background:rgba(239,68,68,.08)"><span class="mi">health_and_safety</span></div><div class="kpi-label">FTW Fit</div><div class="kpi-val" style="color:var(--green)" id="kF">—</div><div class="kpi-bar"><div class="kpi-fill" id="kFB" style="width:0;background:var(--green)"></div></div><div class="kpi-sub" id="kFS">—</div></div>
+        <div class="kpi"><div class="kpi-icon" style="background:rgba(59,130,246,.08)"><span class="mi">checklist</span></div><div class="kpi-label">P2H Selesai</div><div class="kpi-val" id="kP">—</div><div class="kpi-bar"><div class="kpi-fill" id="kPB" style="width:0;background:var(--info)"></div></div><div class="kpi-sub" id="kPS">—</div></div>
+        <div class="kpi"><div class="kpi-icon" style="background:rgba(0,200,83,.08)"><span class="mi">local_shipping</span></div><div class="kpi-label">Unit Ready</div><div class="kpi-val" id="kR">—</div><div class="kpi-bar"><div class="kpi-fill" id="kRB" style="width:0;background:var(--green)"></div></div><div class="kpi-sub" id="kRS">—</div></div>
+        <div class="kpi"><div class="kpi-icon" style="background:rgba(239,68,68,.08)"><span class="mi">warning_amber</span></div><div class="kpi-label">Breakdown</div><div class="kpi-val" style="color:var(--red)" id="kB">—</div><div class="kpi-bar"><div class="kpi-fill" id="kBB" style="width:0;background:var(--red)"></div></div><div class="kpi-sub" id="kBS">—</div></div>
+        <div class="kpi kpi-hl"><div class="kpi-icon" style="background:rgba(255,255,255,.15)"><span class="mi">track_changes</span></div><div class="kpi-label">Kesiapan Shift</div><div class="kpi-val" id="kSc">—%</div><div class="kpi-sub">Skor gabungan</div></div>
       </div>
       <div class="panel"><div class="panel-head"><div><div class="panel-title">Operator Aktif — <span id="shLbl">Shift 1</span></div></div><select class="pfsel" id="fDept" onchange="renderOps()"><option value="">Semua</option></select></div><div class="panel-body" id="opTbl"></div><div class="panel-foot"><span id="opCnt">—</span></div></div>
     </div>
@@ -165,14 +167,14 @@ body{background:var(--bg);font-family:var(--font);color:var(--text);display:flex
 
   <!-- VIEW: FLEET -->
   <div class="content view" id="v-fleet" style="flex-direction:column">
-    <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:8px"><div class="panel-title">🚛 Fleet & Status Unit</div></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:8px"><div class="panel-title"><span class="mi">local_shipping</span> Fleet & Status Unit</div></div>
     <input class="search-in" type="text" placeholder="Cari unit..." id="uSearch" oninput="renderFleet()" style="margin:0 0 10px"/>
     <div style="flex:1;overflow-y:auto" id="fleetGrid"></div>
   </div>
 
   <!-- VIEW: BD -->
   <div class="content view" id="v-bd" style="flex-direction:column">
-    <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:8px"><div class="panel-title">⚠️ Breakdown Reports</div><span class="badge-s" style="background:rgba(239,68,68,.08);color:var(--red)" id="bdCnt2">0 aktif</span></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:8px"><div class="panel-title"><span class="mi">warning_amber</span> Breakdown Reports</div><span class="badge-s" style="background:rgba(239,68,68,.08);color:var(--red)" id="bdCnt2">0 aktif</span></div>
     <div style="flex:1;overflow-y:auto;background:var(--card);border:1px solid var(--border);border-radius:12px" id="bdList2"></div>
   </div>
 
@@ -201,7 +203,7 @@ body{background:var(--bg);font-family:var(--font);color:var(--text);display:flex
     </style>
     <div style="display:flex;justify-content:space-between;align-items:center">
       <div>
-        <div class="panel-title">⚡ Queue Input HM — Closing Shift</div>
+        <div class="panel-title"><span class="mi">bolt</span> Queue Input HM — Closing Shift</div>
         <div style="font-size:.6rem;color:var(--muted);margin-top:2px">Input HM akhir tiap unit · tekan Enter untuk simpan & lanjut otomatis ke unit berikutnya</div>
       </div>
       <span class="badge-s" style="background:rgba(0,200,83,.08);color:var(--green)" id="hmShiftBadge">Shift 1</span>
@@ -219,9 +221,9 @@ body{background:var(--bg);font-family:var(--font);color:var(--text);display:flex
 
     <!-- Tabs -->
     <div style="display:flex;gap:6px">
-      <button class="pfsel" style="cursor:pointer;font-weight:700" id="hmTab1" onclick="switchHmTab(1)">⚡ Queue Input</button>
-      <button class="pfsel" style="cursor:pointer" id="hmTab2" onclick="switchHmTab(2)">📁 Upload CSV</button>
-      <button class="pfsel" style="cursor:pointer" id="hmTab3" onclick="switchHmTab(3)">👤 Absensi Manual</button>
+      <button class="pfsel" style="cursor:pointer;font-weight:700" id="hmTab1" onclick="switchHmTab(1)"><span class="mi">bolt</span> Queue Input</button>
+      <button class="pfsel" style="cursor:pointer" id="hmTab2" onclick="switchHmTab(2)"><span class="mi">upload_file</span> Upload CSV</button>
+      <button class="pfsel" style="cursor:pointer" id="hmTab3" onclick="switchHmTab(3)"><span class="mi">person</span> Absensi Manual</button>
     </div>
 
     <!-- Tab 1: Queue Input HM -->
@@ -229,12 +231,12 @@ body{background:var(--bg);font-family:var(--font);color:var(--text);display:flex
       <div style="display:flex;gap:12px;align-items:stretch;flex-wrap:wrap">
         <!-- Queue focus card -->
         <div class="panel" style="flex:1;min-width:280px">
-          <div class="panel-head"><div class="panel-title">🎯 Antrean Input</div><span class="badge-s" style="background:rgba(0,176,255,.08);color:var(--blue)" id="hmQueuePos">—</span></div>
+          <div class="panel-head"><div class="panel-title"><span class="mi">track_changes</span> Antrean Input</div><span class="badge-s" style="background:rgba(0,176,255,.08);color:var(--blue)" id="hmQueuePos">—</span></div>
           <div id="hmQueueCard" style="padding:16px"></div>
         </div>
         <!-- Outstanding panel -->
         <div class="panel" style="width:250px;display:flex;flex-direction:column">
-          <div class="panel-head"><div class="panel-title">📋 Outstanding</div><span class="badge-s bg-unfit" id="hmOutCount">0</span></div>
+          <div class="panel-head"><div class="panel-title"><span class="mi">checklist</span> Outstanding</div><span class="badge-s bg-unfit" id="hmOutCount">0</span></div>
           <div id="hmOutstanding" style="overflow-y:auto;max-height:290px"></div>
         </div>
       </div>
@@ -253,7 +255,7 @@ body{background:var(--bg);font-family:var(--font);color:var(--text);display:flex
     <!-- Tab 2: Upload CSV -->
     <div id="hmPane2" class="panel" style="display:none;padding:24px;text-align:center">
       <div style="border:2px dashed var(--border);border-radius:12px;padding:40px 20px;background:var(--bg)">
-        <div style="font-size:2rem;margin-bottom:8px">📁</div>
+        <div style="font-size:2rem;margin-bottom:8px"><span class="mi" style="font-size:inherit">upload_file</span></div>
         <div style="font-size:.88rem;font-weight:700;margin-bottom:4px">Upload File CSV HM</div>
         <div style="font-size:.68rem;color:var(--muted);margin-bottom:16px">Format: Unit ID, HM Akhir (kolom A & B, mulai baris 2)</div>
         <input type="file" id="hmFile" accept=".csv" onchange="processHmFile()" style="display:none"/>
@@ -272,7 +274,7 @@ body{background:var(--bg);font-family:var(--font);color:var(--text);display:flex
           <div><label style="font-size:.6rem;font-weight:600;color:var(--gray);display:block;margin-bottom:2px">Unit *</label><div style="position:relative"><input type="text" id="absUnit" placeholder="Ketik unit..." autocomplete="off" oninput="searchUnit(this.value)" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-family:var(--font);font-size:.8rem"/><div id="unitDropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--card);border:1px solid var(--border);border-radius:0 0 8px 8px;max-height:150px;overflow-y:auto;z-index:10;box-shadow:0 4px 12px rgba(0,0,0,.1)"></div></div><div id="absUnitInfo" style="font-size:.58rem;margin-top:2px;min-height:14px"></div></div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr 80px;gap:6px">
-          <div><label style="font-size:.6rem;font-weight:600;color:var(--gray);display:block;margin-bottom:2px">Status</label><select id="absFtw" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-family:var(--font);font-size:.78rem"><option value="Fit">✅ Fit</option><option value="Sakit">🤒 Sakit</option><option value="Cuti">📋 Cuti</option><option value="Training">📚 Training</option><option value="Libur">🏖️ Libur</option><option value="Standby">⏸️ Standby</option><option value="Cadangan">🔄 Cadangan</option></select></div>
+          <div><label style="font-size:.6rem;font-weight:600;color:var(--gray);display:block;margin-bottom:2px">Status</label><select id="absFtw" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-family:var(--font);font-size:.78rem"><option value="Fit">Fit</option><option value="Sakit">Sakit</option><option value="Cuti">Cuti</option><option value="Training">Training</option><option value="Libur">Libur</option><option value="Standby">Standby</option><option value="Cadangan">Cadangan</option></select></div>
           <div><label style="font-size:.6rem;font-weight:600;color:var(--gray);display:block;margin-bottom:2px">Alasan</label><select id="absReason" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-family:var(--font);font-size:.78rem"><option value="Belum login web">Belum login web</option><option value="Internet gangguan">Internet gangguan</option><option value="HP rusak">HP rusak</option><option value="Lupa login">Lupa login</option><option value="Driver baru">Driver baru</option><option value="Lainnya">Lainnya</option></select></div>
           <div><label style="font-size:.6rem;font-weight:600;color:var(--gray);display:block;margin-bottom:2px">Jam</label><input type="time" id="absTime" style="width:100%;padding:8px 6px;border:1px solid var(--border);border-radius:6px;font-family:var(--font);font-size:.78rem"/></div>
         </div>
@@ -290,8 +292,8 @@ body{background:var(--bg);font-family:var(--font);color:var(--text);display:flex
 </div>
 
 <!-- MODALS -->
-<div class="modal-ov" id="modalBD"><div class="modal"><div class="modal-h" id="mdTt">🔴 Keterangan Breakdown</div><div class="modal-b"><div class="mf"><label>Deskripsi</label><textarea id="mdDesc" placeholder="Jelaskan kerusakan..."></textarea></div><div class="mf"><label>Lokasi Unit</label><input type="text" id="mdLoc" placeholder="Contoh: Hauling Road KM 3"/></div></div><div class="modal-f"><button class="mbtn-c" onclick="closeMd()">Batal</button><button class="mbtn-o" onclick="confirmBD()">Konfirmasi</button></div></div></div>
-<div class="modal-ov" id="modalEdit"><div class="modal"><div class="modal-h">✏️ Edit Keterangan</div><div class="modal-b"><div class="mf"><label>Keterangan</label><textarea id="edNotes"></textarea></div></div><div class="modal-f"><button class="mbtn-c" onclick="closeEd()">Batal</button><button class="mbtn-o" onclick="saveNotes()">Simpan</button></div></div></div>
+<div class="modal-ov" id="modalBD"><div class="modal"><div class="modal-h" id="mdTt"><span class="mi">error</span> Keterangan Breakdown</div><div class="modal-b"><div class="mf"><label>Deskripsi</label><textarea id="mdDesc" placeholder="Jelaskan kerusakan..."></textarea></div><div class="mf"><label>Lokasi Unit</label><input type="text" id="mdLoc" placeholder="Contoh: Hauling Road KM 3"/></div></div><div class="modal-f"><button class="mbtn-c" onclick="closeMd()">Batal</button><button class="mbtn-o" onclick="confirmBD()">Konfirmasi</button></div></div></div>
+<div class="modal-ov" id="modalEdit"><div class="modal"><div class="modal-h"><span class="mi">edit</span> Edit Keterangan</div><div class="modal-b"><div class="mf"><label>Keterangan</label><textarea id="edNotes"></textarea></div></div><div class="modal-f"><button class="mbtn-c" onclick="closeEd()">Batal</button><button class="mbtn-o" onclick="saveNotes()">Simpan</button></div></div></div>
 
 <script>
 const API='https://fms-light-backend-production.up.railway.app/api/v1',TOKEN=localStorage.getItem('fms_token'),SESSION=JSON.parse(localStorage.getItem('fms_session')||'null');
@@ -334,10 +336,10 @@ function renderLog(){const logs=[];allReports.slice(0,6).forEach(r=>{const t=r.t
 
 // FLEET VIEW
 function renderFleet(){const q=($('uSearch')?.value||'').toUpperCase();const cls=[...new Set(allUnits.map(u=>u.equipment_class||'Other'))].sort();let html='';cls.forEach(c=>{let units=allUnits.filter(u=>(u.equipment_class||'Other')===c);if(q)units=units.filter(u=>u.unit_id.toUpperCase().includes(q));if(!units.length)return;units.sort((a,b)=>{const o={'Breakdown':0,'Maintenance':1,'Ready':2};return(o[a.status_unit]||2)-(o[b.status_unit]||2);});const r=units.filter(u=>u.status_unit==='Ready').length,bd=units.filter(u=>u.status_unit!=='Ready').length;html+=`<div class="cat-hdr"><span>${c} (${units.length})</span><span style="font-size:.58rem"><span style="color:var(--green)">${r}R</span> · <span style="color:var(--red)">${bd}BD</span></span></div><div class="unit-grid">`;
-units.forEach(u=>{const s=u.status_unit;const drv=driverMap[u.unit_id];html+=`<div class="uc st-${s}"><div class="uc-id">${u.unit_id}</div><div class="uc-type">${u.vehicle_type||''}</div>${drv?`<div class="uc-driver">👤 ${drv.driver_name||''}</div>`:''}${u.notes&&s!=='Ready'?`<div class="uc-notes" onclick="openEd('${u.unit_id}')">📝 ${u.notes}</div>`:''}
-<div class="uc-btns"><button class="sb-btn r ${s==='Ready'?'c':''}" onclick="clickSt('${u.unit_id}','Ready')" ${s==='Ready'?'disabled':''}>✅</button><button class="sb-btn b ${s==='Breakdown'?'c':''}" onclick="clickSt('${u.unit_id}','Breakdown')" ${s==='Breakdown'?'disabled':''}>BD</button><button class="sb-btn m ${s==='Maintenance'?'c':''}" onclick="clickSt('${u.unit_id}','Maintenance')" ${s==='Maintenance'?'disabled':''}>MT</button></div></div>`;});html+=`</div>`;});
+units.forEach(u=>{const s=u.status_unit;const drv=driverMap[u.unit_id];html+=`<div class="uc st-${s}"><div class="uc-id">${u.unit_id}</div><div class="uc-type">${u.vehicle_type||''}</div>${drv?`<div class="uc-driver"><span class="mi">person</span> ${drv.driver_name||''}</div>`:''}${u.notes&&s!=='Ready'?`<div class="uc-notes" onclick="openEd('${u.unit_id}')"><span class="mi">edit_note</span> ${u.notes}</div>`:''}
+<div class="uc-btns"><button class="sb-btn r ${s==='Ready'?'c':''}" onclick="clickSt('${u.unit_id}','Ready')" ${s==='Ready'?'disabled':''}><span class="mi">check_circle</span></button><button class="sb-btn b ${s==='Breakdown'?'c':''}" onclick="clickSt('${u.unit_id}','Breakdown')" ${s==='Breakdown'?'disabled':''}>BD</button><button class="sb-btn m ${s==='Maintenance'?'c':''}" onclick="clickSt('${u.unit_id}','Maintenance')" ${s==='Maintenance'?'disabled':''}>MT</button></div></div>`;});html+=`</div>`;});
 $('fleetGrid').innerHTML=html||'<div style="padding:20px;text-align:center;color:var(--muted)">Tidak ada unit.</div>';}
-function clickSt(uid,st){if(st==='Ready'){setSt(uid,'Ready',null);return;}pendingUnit=uid;pendingStatus=st;$('mdTt').textContent=st==='Breakdown'?'🔴 Keterangan Breakdown':'🟡 Keterangan Maintenance';$('mdDesc').value='';$('mdLoc').value='';$('modalBD').classList.add('show');}
+function clickSt(uid,st){if(st==='Ready'){setSt(uid,'Ready',null);return;}pendingUnit=uid;pendingStatus=st;$('mdTt').innerHTML=st==='Breakdown'?'<span class="mi">error</span> Keterangan Breakdown':'<span class="mi">build</span> Keterangan Maintenance';$('mdDesc').value='';$('mdLoc').value='';$('modalBD').classList.add('show');}
 function closeMd(){$('modalBD').classList.remove('show');}
 function confirmBD(){const d=$('mdDesc').value.trim(),l=$('mdLoc').value.trim();const notes=[d,l?'Lokasi: '+l:''].filter(Boolean).join(' | ');closeMd();setSt(pendingUnit,pendingStatus,notes);}
 async function setSt(uid,st,notes){try{const body={status_unit:st,changed_by:SESSION.id};if(notes)body.notes=notes;const r=await fetch(`${API}/vehicles/${uid}/status`,{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},body:JSON.stringify(body)});const d=await r.json();if(d.success){const u=allUnits.find(x=>x.unit_id===uid);if(u){u.status_unit=st;u.notes=st==='Ready'?null:(notes||u.notes);}renderKPI();renderFleet();renderDonut();}}catch(e){alert('Gagal.');}}
@@ -346,7 +348,7 @@ function closeEd(){$('modalEdit').classList.remove('show');}
 async function saveNotes(){const notes=$('edNotes').value.trim();try{await fetch(`${API}/vehicles/${editingUnit}/notes`,{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},body:JSON.stringify({notes})});const u=allUnits.find(x=>x.unit_id===editingUnit);if(u)u.notes=notes;closeEd();renderFleet();}catch(e){alert('Gagal.');}}
 
 // BD VIEW
-function renderBD2(){const open=(Array.isArray(bdReports)?bdReports:[]).filter(r=>r.status!=='Resolved');$('bdCnt2').textContent=open.length+' aktif';const c=$('bdList2');if(!open.length){c.innerHTML='<div style="padding:24px;text-align:center;color:var(--muted)">✅ Semua resolved</div>';return;}c.innerHTML=open.map(r=>{const sc=r.severity==='Critical'?'crit':r.severity==='Major'?'med':'low';const sl=r.severity==='Critical'?'Kritis':r.severity==='Major'?'Sedang':'Rendah';const sb='sev-'+(r.severity==='Critical'?'kritis':r.severity==='Major'?'sedang':'rendah');const ss=r.status==='Open'?'background:rgba(239,68,68,.08);color:var(--red)':'background:rgba(245,158,11,.08);color:var(--amber)';const tm=r.created_at?new Date(r.created_at).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}):'';return`<div class="bd-item"><div class="bd-badge ${sc}">${r.unit_id}</div><div class="bd-inf"><div class="bd-tt">${r.component||''} · ${r.description||''}</div><div class="bd-mt">Dilaporkan ${r.driver_name||r.driver_id||''} · ${tm}</div></div><div class="bd-tags"><span class="bd-sev" style="background:rgba(${r.severity==='Critical'?'239,68,68':r.severity==='Major'?'245,158,11':'59,130,246'},.08);color:var(--${r.severity==='Critical'?'red':r.severity==='Major'?'amber':'info'})">${sl}</span><span class="bd-st" style="${ss}">${r.status}</span></div></div>`;}).join('');}
+function renderBD2(){const open=(Array.isArray(bdReports)?bdReports:[]).filter(r=>r.status!=='Resolved');$('bdCnt2').textContent=open.length+' aktif';const c=$('bdList2');if(!open.length){c.innerHTML='<div style="padding:24px;text-align:center;color:var(--muted)"><span class="mi">check_circle</span> Semua resolved</div>';return;}c.innerHTML=open.map(r=>{const sc=r.severity==='Critical'?'crit':r.severity==='Major'?'med':'low';const sl=r.severity==='Critical'?'Kritis':r.severity==='Major'?'Sedang':'Rendah';const sb='sev-'+(r.severity==='Critical'?'kritis':r.severity==='Major'?'sedang':'rendah');const ss=r.status==='Open'?'background:rgba(239,68,68,.08);color:var(--red)':'background:rgba(245,158,11,.08);color:var(--amber)';const tm=r.created_at?new Date(r.created_at).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}):'';return`<div class="bd-item"><div class="bd-badge ${sc}">${r.unit_id}</div><div class="bd-inf"><div class="bd-tt">${r.component||''} · ${r.description||''}</div><div class="bd-mt">Dilaporkan ${r.driver_name||r.driver_id||''} · ${tm}</div></div><div class="bd-tags"><span class="bd-sev" style="background:rgba(${r.severity==='Critical'?'239,68,68':r.severity==='Major'?'245,158,11':'59,130,246'},.08);color:var(--${r.severity==='Critical'?'red':r.severity==='Major'?'amber':'info'})">${sl}</span><span class="bd-st" style="${ss}">${r.status}</span></div></div>`;}).join('');}
 
 // ===== QUEUE INPUT HM (Closing Shift) =====
 let hmQueueIdx=0, hmMeta={};
@@ -384,12 +386,12 @@ function updateHmSummary(){
 function renderHmQueue(focus){
   const p=hmPendingList();const card=$('hmQueueCard');
   $('hmQueuePos').textContent=p.length?`${Math.min(hmQueueIdx+1,p.length)} / ${p.length} belum HM`:'0 antre';
-  if(!p.length){card.innerHTML='<div style="text-align:center;padding:28px 10px"><div style="font-size:2.2rem">✅</div><div style="font-weight:800;font-size:1rem;color:var(--green);margin-top:6px">Semua unit sudah update HM</div><div style="font-size:.7rem;color:var(--muted);margin-top:4px">Queue closing shift selesai.</div></div>';return;}
+  if(!p.length){card.innerHTML='<div style="text-align:center;padding:28px 10px"><div style="font-size:2.2rem"><span class="mi" style="font-size:inherit">check_circle</span></div><div style="font-weight:800;font-size:1rem;color:var(--green);margin-top:6px">Semua unit sudah update HM</div><div style="font-size:.7rem;color:var(--muted);margin-top:4px">Queue closing shift selesai.</div></div>';return;}
   if(hmQueueIdx>=p.length)hmQueueIdx=p.length-1;if(hmQueueIdx<0)hmQueueIdx=0;
   const r=p[hmQueueIdx];const awal=r.odometer_entered||0;
   card.innerHTML=`
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-      <div style="min-width:0"><div style="font-size:1.7rem;font-weight:800;line-height:1">${r.unit_id}</div><div style="font-size:.72rem;color:var(--gray);margin-top:3px">👤 ${r.driver_name||r.driver_id} <span style="color:var(--muted)">· ${r.driver_id}</span></div></div>
+      <div style="min-width:0"><div style="font-size:1.7rem;font-weight:800;line-height:1">${r.unit_id}</div><div style="font-size:.72rem;color:var(--gray);margin-top:3px"><span class="mi">person</span> ${r.driver_name||r.driver_id} <span style="color:var(--muted)">· ${r.driver_id}</span></div></div>
       <span class="badge-s" style="background:rgba(0,176,255,.08);color:var(--blue)">${r.equipment_class||'—'}</span>
     </div>
     <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
@@ -399,7 +401,7 @@ function renderHmQueue(focus){
     </div>
     <div id="hmQueueMsg" style="font-size:.66rem;min-height:15px;margin-top:6px"></div>
     <div style="display:flex;gap:6px;margin-top:6px">
-      <button class="hm-mini" style="padding:8px 14px" onclick="saveQueueHm()">💾 Simpan</button>
+      <button class="hm-mini" style="padding:8px 14px" onclick="saveQueueHm()"><span class="mi">save</span> Simpan</button>
       <button class="hm-mini" style="background:var(--gray);padding:8px 14px" onclick="hmQueueNav(1)">↓ Lewati</button>
       <button class="hm-mini" style="background:var(--card);color:var(--gray);border:1px solid var(--border);padding:8px 14px" onclick="hmQueueClear()">Batal</button>
     </div>
@@ -411,7 +413,7 @@ function hmQueueOnInput(){
   const el=$('hmQueueInput'),diff=$('hmQueueDiff'),msg=$('hmQueueMsg');if(!el)return;
   if(el.value===''){el.classList.remove('err');diff.textContent='—';diff.style.color='var(--muted)';msg.textContent='';return;}
   const v=Number(el.value),d=v-awal;diff.textContent=(d>=0?'+':'')+d;
-  if(awal&&v<awal){el.classList.add('err');diff.style.color='var(--red)';msg.innerHTML=`<span style="color:var(--red)">⚠️ HM akhir lebih kecil dari HM awal (${awal})</span>`;}
+  if(awal&&v<awal){el.classList.add('err');diff.style.color='var(--red)';msg.innerHTML=`<span style="color:var(--red)"><span class="mi">warning_amber</span> HM akhir lebih kecil dari HM awal (${awal})</span>`;}
   else{el.classList.remove('err');diff.style.color='var(--green)';msg.textContent='';}
 }
 function hmQueueKey(e){
@@ -435,7 +437,7 @@ function jumpToQueue(rid){const p=hmPendingList();const i=p.findIndex(r=>r.repor
 // --- Outstanding panel ---
 function renderOutstanding(){
   const p=hmPendingList();const c=$('hmOutstanding');$('hmOutCount').textContent=p.length;
-  if(!p.length){c.innerHTML='<div style="padding:20px;text-align:center;color:var(--muted);font-size:.72rem">✅ Tidak ada outstanding</div>';return;}
+  if(!p.length){c.innerHTML='<div style="padding:20px;text-align:center;color:var(--muted);font-size:.72rem"><span class="mi">check_circle</span> Tidak ada outstanding</div>';return;}
   const curId=p[Math.min(hmQueueIdx,p.length-1)]?.report_id;
   c.innerHTML=p.map(r=>`<div class="hm-out-row ${r.report_id===curId?'active':''}" onclick="jumpToQueue('${r.report_id}')"><div style="min-width:0"><div style="font-weight:800;font-size:.76rem">${r.unit_id}</div><div style="font-size:.58rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.driver_name||r.driver_id}</div></div><div style="text-align:right;flex-shrink:0"><div style="font-size:.55rem;color:var(--muted)">HM awal</div><div style="font-size:.72rem;font-weight:700">${r.odometer_entered||'—'}</div></div></div>`).join('');
 }
@@ -458,7 +460,7 @@ function renderHmTable(){
     const statusBadge=done?(manual?'<span class="badge-s" style="background:rgba(245,158,11,.1);color:var(--amber)">Manual</span>':'<span class="badge-s bg-fit">Sudah</span>'):'<span class="badge-s bg-unfit">Belum</span>';
     const meta=hmMeta[r.report_id];const op=meta?meta.op:(done?'—':'');
     const jam=meta?meta.time:(done&&r.timestamp_filled?new Date(r.timestamp_filled).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}):'—');
-    const akhirCell=done?`<span style="font-weight:700;color:var(--green)">${r.odometer_end}</span>`:`<div style="display:flex;gap:4px"><input id="hmi-${r.report_id}" class="hm-inp" type="number" inputmode="numeric" min="${awal}" placeholder="HM akhir" oninput="hmRowInput('${r.report_id}',${awal})" onkeydown="hmRowKey(event,'${r.report_id}',${awal})"/><button class="hm-mini" onclick="saveHm('${r.report_id}',${awal})">✓</button></div>`;
+    const akhirCell=done?`<span style="font-weight:700;color:var(--green)">${r.odometer_end}</span>`:`<div style="display:flex;gap:4px"><input id="hmi-${r.report_id}" class="hm-inp" type="number" inputmode="numeric" min="${awal}" placeholder="HM akhir" oninput="hmRowInput('${r.report_id}',${awal})" onkeydown="hmRowKey(event,'${r.report_id}',${awal})"/><button class="hm-mini" onclick="saveHm('${r.report_id}',${awal})"><span class="mi">check</span></button></div>`;
     return `<div class="hm-row ${cls} hm-grid"><span class="hm-u">${r.unit_id}</span><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.driver_name||r.driver_id}</span><span style="color:var(--gray)">${r.equipment_class||'—'}</span><span>${awal||'—'}</span><span>${akhirCell}</span><span>${diffHtml}</span><span>${statusBadge}</span><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--gray)">${op||'—'}</span><span style="color:var(--muted)">${jam}</span></div>`;
   }).join('');
   body.innerHTML=`<div class="hm-scroll"><div style="min-width:900px">${head}${rows}</div></div>`;
@@ -489,7 +491,7 @@ if(file.name.endsWith('.csv')){const text=new TextDecoder().decode(data);const l
 else{st.textContent='Gunakan format CSV.';st.style.color='var(--amber)';return;}
 if(!rows.length){st.textContent='Tidak ada data valid.';st.style.color='var(--red)';return;}
 let ok=0,fail=0;for(const row of rows){const rpt=allReports.find(r=>r.unit_id===row.unit&&!r.odometer_end);if(rpt&&row.hm>0&&(!rpt.odometer_entered||row.hm>=rpt.odometer_entered)){try{const r=await fetch(`${API}/supervisor/shift-reports/${rpt.report_id}/end-shift`,{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},body:JSON.stringify({odometer_end:row.hm})});const d=await r.json();if(d.success){rpt.odometer_end=row.hm;hmMeta[rpt.report_id]={op:'CSV Upload',time:new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})};ok++;}else fail++;}catch(e){fail++;}}else fail++;}
-st.innerHTML=`<span style="color:var(--green)">✅ ${ok} berhasil</span>${fail?` · <span style="color:var(--red)">${fail} gagal/skip</span>`:''}`;renderHmView();}catch(e){st.textContent='Error: '+e.message;st.style.color='var(--red)';}}
+st.innerHTML=`<span style="color:var(--green)"><span class="mi">check_circle</span> ${ok} berhasil</span>${fail?` · <span style="color:var(--red)">${fail} gagal/skip</span>`:''}`;renderHmView();}catch(e){st.textContent='Error: '+e.message;st.style.color='var(--red)';}}
 
 // ABSENSI MANUAL
 let manualAbs=[];let allDriversList=[];let driversLoaded=false;
@@ -507,16 +509,16 @@ const ql=q.toLowerCase();
 const matches=allDriversList.filter(n=>(n.name&&n.name.toLowerCase().includes(ql))||n.id.toLowerCase().includes(ql)).slice(0,8);
 if(!matches.length){dd.innerHTML='<div style="padding:8px 10px;font-size:.72rem;color:var(--muted)">Tidak ditemukan — ketik ID manual</div>';dd.style.display='block';return;}
 dd.innerHTML=matches.map(m=>{const nm=(m.name||'').replace(/'/g,'');return'<div onclick="selectDriver(\''+m.id+'\',\''+nm+'\')" style="padding:8px 10px;font-size:.78rem;cursor:pointer;border-bottom:1px solid var(--border)" onmouseover="this.style.background=\'var(--bg)\'" onmouseout="this.style.background=\'\'"><b>'+(m.name||m.id)+'</b> <span style="color:var(--muted);font-size:.6rem">'+m.id+(m.cls?' · '+m.cls:'')+'</span></div>';}).join('');dd.style.display='block';}
-function selectDriver(id,name){$('absDriverId').value=id;$('driverDropdown').style.display='none';$('absDriverInfo').innerHTML=`<span style="color:var(--green)">✓ ${name}</span>`;}
+function selectDriver(id,name){$('absDriverId').value=id;$('driverDropdown').style.display='none';$('absDriverInfo').innerHTML=`<span style="color:var(--green)"><span class="mi">check</span> ${name}</span>`;}
 function searchUnit(q){const dd=$('unitDropdown');if(q.length<2){dd.style.display='none';return;}
 const matches=allUnits.filter(u=>u.unit_id.toLowerCase().includes(q.toLowerCase())).slice(0,8);
 if(!matches.length){dd.style.display='none';return;}
 dd.innerHTML=matches.map(u=>{const taken=allReports.find(r=>r.unit_id===u.unit_id);const stColor=u.status_unit==='Ready'?'var(--green)':u.status_unit==='Breakdown'?'var(--red)':'var(--amber)';
-return`<div onclick="selectUnit('${u.unit_id}')" style="padding:8px 10px;font-size:.78rem;cursor:pointer;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''"><span style="font-weight:700">${u.unit_id} <span style="font-weight:400;color:var(--muted);font-size:.65rem">${u.vehicle_type||''}</span></span><span style="font-size:.58rem;font-weight:600;color:${stColor}">${u.status_unit}${taken?' · 👤'+( taken.driver_name||'').split(' ')[0]:''}</span></div>`;}).join('');dd.style.display='block';}
+return`<div onclick="selectUnit('${u.unit_id}')" style="padding:8px 10px;font-size:.78rem;cursor:pointer;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''"><span style="font-weight:700">${u.unit_id} <span style="font-weight:400;color:var(--muted);font-size:.65rem">${u.vehicle_type||''}</span></span><span style="font-size:.58rem;font-weight:600;color:${stColor}">${u.status_unit}${taken?' · <span class="mi">person</span>'+( taken.driver_name||'').split(' ')[0]:''}</span></div>`;}).join('');dd.style.display='block';}
 function selectUnit(uid){$('absUnit').value=uid;$('unitDropdown').style.display='none';const u=allUnits.find(x=>x.unit_id===uid);const taken=allReports.find(r=>r.unit_id===uid);
-if(u&&u.status_unit!=='Ready'){$('absUnitInfo').innerHTML=`<span style="color:var(--red)">⚠️ Unit ${u.status_unit}</span>`;}
-else if(taken){$('absUnitInfo').innerHTML=`<span style="color:var(--amber)">⚠️ Sudah dipakai ${taken.driver_name||taken.driver_id}</span>`;}
-else{$('absUnitInfo').innerHTML=`<span style="color:var(--green)">✓ Ready</span>`;}}
+if(u&&u.status_unit!=='Ready'){$('absUnitInfo').innerHTML=`<span style="color:var(--red)"><span class="mi">warning_amber</span> Unit ${u.status_unit}</span>`;}
+else if(taken){$('absUnitInfo').innerHTML=`<span style="color:var(--amber)"><span class="mi">warning_amber</span> Sudah dipakai ${taken.driver_name||taken.driver_id}</span>`;}
+else{$('absUnitInfo').innerHTML=`<span style="color:var(--green)"><span class="mi">check</span> Ready</span>`;}}
 // Close dropdowns on click outside
 document.addEventListener('click',e=>{if(!e.target.closest('#absDriverId')&&!e.target.closest('#driverDropdown'))$('driverDropdown').style.display='none';if(!e.target.closest('#absUnit')&&!e.target.closest('#unitDropdown'))$('unitDropdown').style.display='none';});
 
@@ -527,7 +529,7 @@ if(existing&&!confirm(`Unit ${uid} sudah dipakai oleh ${existing.driver_name||ex
 st.textContent='Mengirim...';st.style.color='var(--info)';
 const ftwVal=(ftw==='Fit')?'Fit':'Unfit';const overall=(ftw==='Fit')?'Ready to Work':'Driver Unfit';
 try{const r=await fetch(`${API}/shift-reports`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},body:JSON.stringify({driver_id:did,unit_id:uid,fit_status:ftwVal,p2h_status:'Passed',overall_status:overall,odometer_entered:0,submitted_by:'CCR-Manual'})});
-const d=await r.json();if(d.success){manualAbs.push({did,uid,ftw,reason,notes,time:timeVal||new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})});st.innerHTML=`<span style="color:var(--green)">✅ ${did} tercatat (${uid}) — ${reason}</span>`;$('absDriverId').value='';$('absUnit').value='';$('absNotes').value='';$('absDriverInfo').innerHTML='';$('absUnitInfo').innerHTML='';updateHmSummary();renderAbsList();}else{st.textContent=d.message||'Gagal.';st.style.color='var(--red)';}}catch(e){st.textContent='Error koneksi.';st.style.color='var(--red)';}}
+const d=await r.json();if(d.success){manualAbs.push({did,uid,ftw,reason,notes,time:timeVal||new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})});st.innerHTML=`<span style="color:var(--green)"><span class="mi">check_circle</span> ${did} tercatat (${uid}) — ${reason}</span>`;$('absDriverId').value='';$('absUnit').value='';$('absNotes').value='';$('absDriverInfo').innerHTML='';$('absUnitInfo').innerHTML='';updateHmSummary();renderAbsList();}else{st.textContent=d.message||'Gagal.';st.style.color='var(--red)';}}catch(e){st.textContent='Error koneksi.';st.style.color='var(--red)';}}
 function renderAbsList(){const c=$('absListBody');
 // Combine: allReports (web) + manualAbs (manual) for current shift
 const combined=[];
@@ -536,7 +538,7 @@ manualAbs.forEach(a=>{if(!combined.find(x=>x.id===a.did)){combined.push({name:a.
 if(!combined.length){c.innerHTML='<div style="padding:16px;text-align:center;color:var(--muted);font-size:.78rem">Belum ada data absensi shift ini.</div>';return;}
 c.innerHTML=combined.map((a,i)=>{const stColor=a.ftw==='Fit'?'bg-fit':a.ftw==='Unfit'?'bg-unfit':'bg-find';
 const srcStyle=a.src==='WEB'?'background:rgba(0,200,83,.08);color:var(--green)':'background:rgba(245,158,11,.08);color:var(--amber)';
-return`<div style="display:flex;padding:8px 16px;border-bottom:1px solid var(--border);align-items:center;font-size:.72rem;gap:4px"><span style="width:30px;color:var(--muted);font-weight:600">${i+1}</span><span style="flex:1"><span style="font-weight:700">${a.name}</span>${a.notes?`<br><span style="font-size:.58rem;color:var(--muted)">${a.notes}</span>`:''}</span><span style="width:70px;font-weight:600">${a.uid}</span><span style="width:55px"><span class="badge-s ${stColor}">${a.ftw}</span></span><span style="width:50px;color:var(--muted)">${a.time}</span><span style="width:55px"><span class="badge-s" style="${srcStyle}">${a.src}</span></span><span style="width:50px">${a.src==='MANUAL'?`<button onclick="removeAbs('${a.id}')" style="background:none;border:none;cursor:pointer;font-size:.8rem" title="Hapus">🗑</button>`:''}</span></div>`;}).join('');}
+return`<div style="display:flex;padding:8px 16px;border-bottom:1px solid var(--border);align-items:center;font-size:.72rem;gap:4px"><span style="width:30px;color:var(--muted);font-weight:600">${i+1}</span><span style="flex:1"><span style="font-weight:700">${a.name}</span>${a.notes?`<br><span style="font-size:.58rem;color:var(--muted)">${a.notes}</span>`:''}</span><span style="width:70px;font-weight:600">${a.uid}</span><span style="width:55px"><span class="badge-s ${stColor}">${a.ftw}</span></span><span style="width:50px;color:var(--muted)">${a.time}</span><span style="width:55px"><span class="badge-s" style="${srcStyle}">${a.src}</span></span><span style="width:50px">${a.src==='MANUAL'?`<button onclick="removeAbs('${a.id}')" style="background:none;border:none;cursor:pointer;font-size:.8rem" title="Hapus"><span class="mi">delete</span></button>`:''}</span></div>`;}).join('');}
 function removeAbs(did){const i=manualAbs.findIndex(a=>a.did===did);if(i>=0&&confirm('Hapus entry manual ini?')){manualAbs.splice(i,1);renderAbsList();updateHmSummary();}}
 
 // SHIFT PDF REPORT
