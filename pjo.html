@@ -141,7 +141,7 @@ body{background:var(--bg);font-family:var(--font);color:var(--text);display:flex
 </div>
 
 <script>
-const API='https://fms-light-backend-production.up.railway.app/api/v1',TOKEN=localStorage.getItem('fms_token'),SESSION=JSON.parse(localStorage.getItem('fms_session')||'null');
+const API='https://starting-hte.my.id/api/v1',TOKEN=localStorage.getItem('fms_token'),SESSION=JSON.parse(localStorage.getItem('fms_session')||'null');
 if(!SESSION||!TOKEN)window.location.href='index.html';
 let allUnits=[],allReports=[],trendData=[],rankData=[],bdReports=[];
 const _h=new Date().getHours(),curShift=(_h>=7&&_h<19)?'1':'2';
