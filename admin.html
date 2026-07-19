@@ -331,7 +331,7 @@ const cls=[...new Set(allUnits.map(u=>u.equipment_class||'Other'))].sort();
 $('fTypes').innerHTML=cls.map(c=>{const u=allUnits.filter(x=>(x.equipment_class||'Other')===c),rv=u.filter(x=>x.status_unit==='Ready').length;return`<div class="ftype"><span>${c}</span><div class="ftbar"><div class="ftfill" style="width:${rv/u.length*100}%"></div></div><span class="ftc">${rv}/${u.length}</span></div>`;}).join('');}
 function renderDonut(){const t=allUnits.length||1,r=allUnits.filter(u=>u.status_unit==='Ready').length,td=allReports.length||1,fc=allReports.filter(r=>r.fit_status==='Fit').length,pp=allReports.filter(r=>r.p2h_status==='Passed').length,sc=Math.round(((td/Math.max(td,t)*100)+(fc/td*100)+(pp/td*100)+(r/t*100))/4);const c=document.getElementById('donut');if(c._c)c._c.destroy();c._c=new Chart(c,{type:'doughnut',data:{datasets:[{data:[sc,100-sc],backgroundColor:[sc>=90?'#00C853':sc>=70?'#F59E0B':'#EF4444','#E5E9F0'],borderWidth:0}]},options:{cutout:'78%',responsive:false,plugins:{legend:{display:false},tooltip:{enabled:false}}}});}
 function renderOps(){const df=$('fDept').value;let list=allReports;if(df)list=list.filter(r=>(r.equipment_class||'')==df);const c=$('opTbl');if(!list.length){c.innerHTML='<div style="padding:20px;text-align:center;color:var(--muted)">Belum ada operator.</div>';$('opCnt').textContent='0';return;}const cols=['#00C853','#00B0FF','#F59E0B','#EF4444','#8B5CF6','#EC4899','#14B8A6','#F97316'];c.innerHTML=list.map((r,i)=>{const ini=(r.driver_name||'??').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();const tm=r.timestamp_filled?new Date(r.timestamp_filled).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}):'—';let st='Siap',sc='background:var(--blue)';if(r.validation_status==='Approved'){st='Beroperasi';sc='background:var(--green)';}else if(r.overall_status==='Driver Unfit'){st='Kendala';sc='background:var(--red)';}return`<div class="op-row"><div class="op-av" style="background:${cols[i%8]}">${ini}</div><div class="op-info"><div class="op-name">${r.driver_name||r.driver_id}</div><div class="op-dept">${r.equipment_class||'—'}</div></div><div class="op-unit"><div class="op-uid">${r.unit_id}</div><div class="op-utype">${r.vehicle_type||''}</div></div><div class="op-cell"><span class="badge-s ${r.fit_status==='Fit'?'bg-fit':'bg-unfit'}">${r.fit_status}</span></div><div class="op-cell"><span class="badge-s ${r.p2h_status==='Passed'?'bg-pass':'bg-find'}">${r.p2h_status||'—'}</span></div><div class="op-cell" style="color:var(--muted)">${tm}</div><div class="op-cell"><span class="sdot" style="${sc}"></span>${st}</div></div>`;}).join('');$('opCnt').textContent=`${list.length} operator`;}
-function popFilter(){const d=[...new Set(allReports.map(r=>r.equipment_class).filter(Boolean))].sort();$('fDept').innerHTML='<option value="">Semua</option>'+d.map(x=>`<option>${x}</option>`).join('');}
+function popFilter(){const d=[...new Set((allReports||[]).map(r=>r.equipment_class).filter(Boolean))].sort();$('fDept').innerHTML='<option value="">Semua</option>'+d.map(x=>`<option>${x}</option>`).join('');}
 function renderLog(){const logs=[];allReports.slice(0,6).forEach(r=>{const t=r.timestamp_filled?new Date(r.timestamp_filled).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}):'';if(r.overall_status==='Driver Unfit')logs.push({c:'var(--red)',t:`Unfit: ${r.driver_name}`,tm:t});else if(r.p2h_status!=='Passed')logs.push({c:'var(--amber)',t:`P2H temuan: ${r.unit_id}`,tm:t});else logs.push({c:'var(--green)',t:`P2H ${r.unit_id} Lulus`,tm:t});});if(!logs.length)logs.push({c:'var(--muted)',t:'Menunggu...',tm:''});$('logL').innerHTML=logs.map(l=>`<div class="log-i"><div class="log-d" style="background:${l.c}"></div><div><div class="log-t">${l.t}</div><div class="log-tm">${l.tm} WITA</div></div></div>`).join('');}
 
 // FLEET VIEW
@@ -443,8 +443,9 @@ function renderOutstanding(){
 }
 // --- Full HM table ---
 function renderHmTable(){
+  if(!allReports)allReports=[];
   const f=$('hmFilter')?.value||'';const q=($('hmSearch')?.value||'').toUpperCase();
-  const fil=$('hmFilter');if(fil&&fil.options.length<=1){const d=[...new Set(allReports.map(r=>r.equipment_class).filter(Boolean))].sort();fil.innerHTML='<option value="">Semua Fleet</option>'+d.map(x=>`<option>${x}</option>`).join('');}
+  const fil=$('hmFilter');if(fil&&fil.options.length<=1){const d=[...new Set((allReports||[]).map(r=>r.equipment_class).filter(Boolean))].sort();fil.innerHTML='<option value="">Semua Fleet</option>'+d.map(x=>`<option>${x}</option>`).join('');}
   let list=hmBaseList();
   if(f)list=list.filter(r=>(r.equipment_class||'')===f);
   if(q)list=list.filter(r=>(r.unit_id||'').toUpperCase().includes(q)||(r.driver_name||'').toUpperCase().includes(q)||(r.driver_id||'').toUpperCase().includes(q));
@@ -530,11 +531,11 @@ st.textContent='Mengirim...';st.style.color='var(--info)';
 const ftwVal=(ftw==='Fit')?'Fit':'Unfit';const overall=(ftw==='Fit')?'Ready to Work':'Driver Unfit';
 try{const r=await fetch(`${API}/shift-reports`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},body:JSON.stringify({driver_id:did,unit_id:uid,fit_status:ftwVal,p2h_status:'Passed',overall_status:overall,odometer_entered:0,submitted_by:'CCR-Manual'})});
 const d=await r.json();if(d.success){manualAbs.push({did,uid,ftw,reason,notes,time:timeVal||new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})});st.innerHTML=`<span style="color:var(--green)"><span class="mi">check_circle</span> ${did} tercatat (${uid}) — ${reason}</span>`;$('absDriverId').value='';$('absUnit').value='';$('absNotes').value='';$('absDriverInfo').innerHTML='';$('absUnitInfo').innerHTML='';updateHmSummary();renderAbsList();}else{st.textContent=d.message||'Gagal.';st.style.color='var(--red)';}}catch(e){st.textContent='Error koneksi.';st.style.color='var(--red)';}}
-function renderAbsList(){const c=$('absListBody');
+function renderAbsList(){if(!allReports)allReports=[];if(!manualAbs)manualAbs=[];const c=$('absListBody');
 // Combine: allReports (web) + manualAbs (manual) for current shift
 const combined=[];
-allReports.forEach(r=>{combined.push({name:r.driver_name||r.driver_id,id:r.driver_id,uid:r.unit_id,ftw:r.fit_status,time:r.timestamp_filled?new Date(r.timestamp_filled).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}):'—',src:r.submitted_by==='CCR-Manual'?'MANUAL':'WEB',notes:''});});
-manualAbs.forEach(a=>{if(!combined.find(x=>x.id===a.did)){combined.push({name:a.did,id:a.did,uid:a.uid,ftw:a.ftw,time:a.time,src:'MANUAL',notes:a.notes||''});}});
+(allReports||[]).forEach(r=>{combined.push({name:r.driver_name||r.driver_id,id:r.driver_id,uid:r.unit_id,ftw:r.fit_status,time:r.timestamp_filled?new Date(r.timestamp_filled).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}):'—',src:r.submitted_by==='CCR-Manual'?'MANUAL':'WEB',notes:''});});
+(manualAbs||[]).forEach(a=>{if(!combined.find(x=>x.id===a.did)){combined.push({name:a.did,id:a.did,uid:a.uid,ftw:a.ftw,time:a.time,src:'MANUAL',notes:a.notes||''});}});
 if(!combined.length){c.innerHTML='<div style="padding:16px;text-align:center;color:var(--muted);font-size:.78rem">Belum ada data absensi shift ini.</div>';return;}
 c.innerHTML=combined.map((a,i)=>{const stColor=a.ftw==='Fit'?'bg-fit':a.ftw==='Unfit'?'bg-unfit':'bg-find';
 const srcStyle=a.src==='WEB'?'background:rgba(0,200,83,.08);color:var(--green)':'background:rgba(245,158,11,.08);color:var(--amber)';
@@ -575,7 +576,7 @@ y=doc.lastAutoTable.finalY+6;
 
 // Operator table
 doc.setFontSize(11);doc.setFont(undefined,'bold');doc.text('2. Data Operator',14,y);y+=3;
-doc.autoTable({startY:y,head:[['No','Driver','Unit','Tipe','FTW','P2H','HM Awal','HM Akhir','Status']],body:allReports.map((r,i)=>[i+1,r.driver_name||r.driver_id,r.unit_id,r.equipment_class||'',r.fit_status,r.p2h_status||'—',r.odometer_entered||'—',r.odometer_end||'—',r.overall_status]),styles:{fontSize:7,cellPadding:2},headStyles:{fillColor:[0,200,83],textColor:255,fontStyle:'bold'},alternateRowStyles:{fillColor:[245,247,250]}});
+doc.autoTable({startY:y,head:[['No','Driver','Unit','Tipe','FTW','P2H','HM Awal','HM Akhir','Status']],body:(allReports||[]).map((r,i)=>[i+1,r.driver_name||r.driver_id,r.unit_id,r.equipment_class||'',r.fit_status,r.p2h_status||'—',r.odometer_entered||'—',r.odometer_end||'—',r.overall_status]),styles:{fontSize:7,cellPadding:2},headStyles:{fillColor:[0,200,83],textColor:255,fontStyle:'bold'},alternateRowStyles:{fillColor:[245,247,250]}});
 y=doc.lastAutoTable.finalY+6;
 
 // BD section
