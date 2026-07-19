@@ -266,19 +266,28 @@ body{background:var(--bg);font-family:var(--font);color:var(--text);display:flex
 
     <!-- Tab 3: Absensi Manual -->
     <div id="hmPane3" class="panel" style="display:none;flex:1;overflow-y:auto">
-      <div class="panel-head"><div class="panel-title">Absensi Manual — Driver Belum Lapor di Web</div></div>
+      <!-- Sticky: Tanggal + Shift -->
+      <div style="position:sticky;top:0;z-index:6;background:var(--card);padding:10px 16px;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+        <div><label style="font-size:.58rem;font-weight:600;color:var(--gray);display:block;margin-bottom:2px">Tanggal</label><input type="date" id="absDate" onchange="reloadAbsData()" style="padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-family:var(--font);font-size:.78rem"/></div>
+        <div><label style="font-size:.58rem;font-weight:600;color:var(--gray);display:block;margin-bottom:2px">Shift</label><select id="absShift" onchange="reloadAbsData()" style="padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-family:var(--font);font-size:.78rem"><option value="1">Shift 1 · Siang</option><option value="2">Shift 2 · Malam</option></select></div>
+        <div style="flex:1"></div>
+        <div class="panel-title" style="font-size:.82rem"><span class="mi">person</span> Absensi Manual — Belum Lapor di Web</div>
+      </div>
       <!-- Form -->
       <div style="padding:12px 16px;display:flex;flex-direction:column;gap:8px;border-bottom:1px solid var(--border)">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-          <div><label style="font-size:.6rem;font-weight:600;color:var(--gray);display:block;margin-bottom:2px">Nama / ID Driver *</label><div style="position:relative"><input type="text" id="absDriverId" placeholder="Ketik nama atau ID..." autocomplete="off" oninput="searchDriver(this.value)" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-family:var(--font);font-size:.8rem"/><div id="driverDropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--card);border:1px solid var(--border);border-radius:0 0 8px 8px;max-height:150px;overflow-y:auto;z-index:10;box-shadow:0 4px 12px rgba(0,0,0,.1)"></div></div><div id="absDriverInfo" style="font-size:.58rem;color:var(--muted);margin-top:2px;min-height:14px"></div></div>
+          <div><label style="font-size:.6rem;font-weight:600;color:var(--gray);display:block;margin-bottom:2px">Nama Driver *</label><div style="position:relative"><input type="text" id="absDriverId" placeholder="Ketik nama atau ID..." autocomplete="off" oninput="searchDriver(this.value)" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-family:var(--font);font-size:.8rem"/><div id="driverDropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--card);border:1px solid var(--border);border-radius:0 0 8px 8px;max-height:150px;overflow-y:auto;z-index:10;box-shadow:0 4px 12px rgba(0,0,0,.1)"></div></div><div id="absDriverInfo" style="font-size:.58rem;color:var(--muted);margin-top:2px;min-height:14px"></div></div>
           <div><label style="font-size:.6rem;font-weight:600;color:var(--gray);display:block;margin-bottom:2px">Unit *</label><div style="position:relative"><input type="text" id="absUnit" placeholder="Ketik unit..." autocomplete="off" oninput="searchUnit(this.value)" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-family:var(--font);font-size:.8rem"/><div id="unitDropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--card);border:1px solid var(--border);border-radius:0 0 8px 8px;max-height:150px;overflow-y:auto;z-index:10;box-shadow:0 4px 12px rgba(0,0,0,.1)"></div></div><div id="absUnitInfo" style="font-size:.58rem;margin-top:2px;min-height:14px"></div></div>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 80px;gap:6px">
+        <div style="display:grid;grid-template-columns:130px 1fr 90px;gap:6px">
+          <div><label style="font-size:.6rem;font-weight:600;color:var(--gray);display:block;margin-bottom:2px">HM Awal</label><input type="number" id="absHmAwal" min="0" placeholder="Opsional" oninput="checkHmAwal()" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-family:var(--font);font-size:.8rem"/><div id="absHmInfo" style="font-size:.56rem;color:var(--muted);margin-top:2px;min-height:13px"></div></div>
           <div><label style="font-size:.6rem;font-weight:600;color:var(--gray);display:block;margin-bottom:2px">Status</label><select id="absFtw" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-family:var(--font);font-size:.78rem"><option value="Fit">Fit</option><option value="Sakit">Sakit</option><option value="Cuti">Cuti</option><option value="Training">Training</option><option value="Libur">Libur</option><option value="Standby">Standby</option><option value="Cadangan">Cadangan</option></select></div>
-          <div><label style="font-size:.6rem;font-weight:600;color:var(--gray);display:block;margin-bottom:2px">Alasan</label><select id="absReason" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-family:var(--font);font-size:.78rem"><option value="Belum login web">Belum login web</option><option value="Internet gangguan">Internet gangguan</option><option value="HP rusak">HP rusak</option><option value="Lupa login">Lupa login</option><option value="Driver baru">Driver baru</option><option value="Lainnya">Lainnya</option></select></div>
           <div><label style="font-size:.6rem;font-weight:600;color:var(--gray);display:block;margin-bottom:2px">Jam</label><input type="time" id="absTime" style="width:100%;padding:8px 6px;border:1px solid var(--border);border-radius:6px;font-family:var(--font);font-size:.78rem"/></div>
         </div>
-        <div><label style="font-size:.6rem;font-weight:600;color:var(--gray);display:block;margin-bottom:2px">Catatan (opsional)</label><input type="text" id="absNotes" placeholder="Contoh: Menggantikan Budi" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-family:var(--font);font-size:.8rem"/></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+          <div><label style="font-size:.6rem;font-weight:600;color:var(--gray);display:block;margin-bottom:2px">Alasan</label><select id="absReason" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-family:var(--font);font-size:.78rem"><option value="Belum login web">Belum login web</option><option value="Internet gangguan">Internet gangguan</option><option value="HP rusak">HP rusak</option><option value="Lupa login">Lupa login</option><option value="Driver baru">Driver baru</option><option value="Lainnya">Lainnya</option></select></div>
+          <div><label style="font-size:.6rem;font-weight:600;color:var(--gray);display:block;margin-bottom:2px">Catatan (opsional)</label><input type="text" id="absNotes" placeholder="Contoh: Menggantikan Budi" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-family:var(--font);font-size:.8rem"/></div>
+        </div>
         <button onclick="addAbsensi()" style="padding:10px;background:var(--green);color:#FFF;border:none;border-radius:6px;font-family:var(--font);font-weight:700;font-size:.78rem;cursor:pointer;min-height:40px">+ Tambah Absensi</button>
       </div>
       <div id="absStatus" style="padding:8px 16px;font-size:.72rem;min-height:20px"></div>
@@ -370,7 +379,7 @@ async function commitHm(rid,val){
     alert(d.message||'Gagal simpan HM');return false;
   }catch(e){alert('Error koneksi');return false;}
 }
-function switchHmTab(n){[1,2,3].forEach(i=>{$('hmPane'+i).style.display=i===n?'':'none';$('hmTab'+i).style.fontWeight=i===n?'700':'400';});if(n===1)renderHmView();if(n===3){loadDriverList();renderAbsList();const now=new Date();$('absTime').value=now.toTimeString().slice(0,5);}}
+function switchHmTab(n){[1,2,3].forEach(i=>{$('hmPane'+i).style.display=i===n?'':'none';$('hmTab'+i).style.fontWeight=i===n?'700':'400';});if(n===1)renderHmView();if(n===3){loadDriverList();renderAbsList();const now=new Date();$('absTime').value=now.toTimeString().slice(0,5);if(!$('absDate').value)$('absDate').value=absDate||new Date().toISOString().slice(0,10);if(!absShift){absShift=curShift;$('absShift').value=curShift;}}}
 function renderHmView(){updateHmSummary();renderHmQueue(false);renderOutstanding();renderHmTable();}
 function updateHmSummary(){
   const base=hmBaseList();const total=base.length;const done=base.filter(isHmDone).length;const pending=total-done;
@@ -495,7 +504,7 @@ let ok=0,fail=0;for(const row of rows){const rpt=allReports.find(r=>r.unit_id===
 st.innerHTML=`<span style="color:var(--green)"><span class="mi">check_circle</span> ${ok} berhasil</span>${fail?` · <span style="color:var(--red)">${fail} gagal/skip</span>`:''}`;renderHmView();}catch(e){st.textContent='Error: '+e.message;st.style.color='var(--red)';}}
 
 // ABSENSI MANUAL
-let manualAbs=[];let allDriversList=[];let driversLoaded=false;
+let manualAbs=[];let allDriversList=[];let driversLoaded=false;let absReports=null;let absLastHm=null;let absShift='';let absDate='';
 async function loadDriverList(){if(driversLoaded)return;try{
 const r=await fetch(`${API}/manpower`,{headers:{'Authorization':'Bearer '+TOKEN}});
 const d=await r.json();
@@ -516,25 +525,44 @@ const matches=allUnits.filter(u=>u.unit_id.toLowerCase().includes(q.toLowerCase(
 if(!matches.length){dd.style.display='none';return;}
 dd.innerHTML=matches.map(u=>{const taken=allReports.find(r=>r.unit_id===u.unit_id);const stColor=u.status_unit==='Ready'?'var(--green)':u.status_unit==='Breakdown'?'var(--red)':'var(--amber)';
 return`<div onclick="selectUnit('${u.unit_id}')" style="padding:8px 10px;font-size:.78rem;cursor:pointer;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''"><span style="font-weight:700">${u.unit_id} <span style="font-weight:400;color:var(--muted);font-size:.65rem">${u.vehicle_type||''}</span></span><span style="font-size:.58rem;font-weight:600;color:${stColor}">${u.status_unit}${taken?' · <span class="mi">person</span>'+( taken.driver_name||'').split(' ')[0]:''}</span></div>`;}).join('');dd.style.display='block';}
-function selectUnit(uid){$('absUnit').value=uid;$('unitDropdown').style.display='none';const u=allUnits.find(x=>x.unit_id===uid);const taken=allReports.find(r=>r.unit_id===uid);
+function selectUnit(uid){$('absUnit').value=uid;$('unitDropdown').style.display='none';const u=(allUnits||[]).find(x=>x.unit_id===uid);const taken=(absReports||allReports||[]).find(r=>r.unit_id===uid);
 if(u&&u.status_unit!=='Ready'){$('absUnitInfo').innerHTML=`<span style="color:var(--red)"><span class="mi">warning_amber</span> Unit ${u.status_unit}</span>`;}
 else if(taken){$('absUnitInfo').innerHTML=`<span style="color:var(--amber)"><span class="mi">warning_amber</span> Sudah dipakai ${taken.driver_name||taken.driver_id}</span>`;}
-else{$('absUnitInfo').innerHTML=`<span style="color:var(--green)"><span class="mi">check</span> Ready</span>`;}}
+else{$('absUnitInfo').innerHTML=`<span style="color:var(--green)"><span class="mi">check</span> Ready</span>`;}
+absLastHm=getLastHm(uid);checkHmAwal();}
+// Ambil HM terakhir unit dari data /vehicles (last_odometer_value) atau shift report terakhir
+function getLastHm(uid){const u=(allUnits||[]).find(x=>x.unit_id===uid);
+if(u&&u.last_odometer_value!=null&&u.last_odometer_value!==''&&Number(u.last_odometer_value)>0)return Number(u.last_odometer_value);
+const src=absReports||allReports||[];let best=null;
+src.forEach(r=>{if(r.unit_id===uid){const v=Number(r.odometer_end||r.odometer_entered||0);if(v>0&&(best==null||v>best))best=v;}});
+return best;}
+// Validasi HM Awal vs HM terakhir (selisih > 50 → warning kuning)
+function checkHmAwal(){const el=$('absHmAwal'),hi=$('absHmInfo');if(!el||!hi)return;
+const base=absLastHm!=null?`<span style="color:var(--gray)">HM terakhir unit ini: <b>${absLastHm}</b></span>`:`<span style="color:var(--muted)">HM terakhir belum ada di database</span>`;
+el.style.borderColor='var(--border)';
+if(el.value!==''&&absLastHm!=null){const v=Number(el.value);const diff=Math.abs(v-absLastHm);
+if(diff>50){hi.innerHTML=base+` · <span style="color:var(--amber)"><span class="mi mi-sm">warning</span> selisih ${diff} dari HM terakhir — cek kembali</span>`;el.style.borderColor='var(--amber)';return;}}
+hi.innerHTML=base;}
+// Muat ulang laporan shift utk tanggal/shift terpilih (khusus tab Absensi, tidak mengubah data view lain)
+async function reloadAbsData(){absDate=$('absDate').value||new Date().toISOString().slice(0,10);absShift=$('absShift').value||curShift;
+const st=$('absStatus');if(st){st.style.color='var(--info)';st.textContent=`Memuat data ${absDate} · Shift ${absShift}...`;}
+try{const r=await fetch(`${API}/supervisor/shift-reports?date=${absDate}&shift=${absShift}&limit=500`,{headers:{'Authorization':'Bearer '+TOKEN}});const d=await r.json();absReports=(d.success&&d.data.reports)?d.data.reports:[];}catch(e){absReports=[];}
+if(st)st.textContent='';renderAbsList();}
 // Close dropdowns on click outside
 document.addEventListener('click',e=>{if(!e.target.closest('#absDriverId')&&!e.target.closest('#driverDropdown'))$('driverDropdown').style.display='none';if(!e.target.closest('#absUnit')&&!e.target.closest('#unitDropdown'))$('unitDropdown').style.display='none';});
 
-async function addAbsensi(){const did=$('absDriverId').value.trim(),uid=$('absUnit').value.trim(),ftw=$('absFtw').value,reason=$('absReason').value,timeVal=$('absTime').value,notes=$('absNotes')?.value?.trim()||'';const st=$('absStatus');
-if(!did||!uid){st.textContent='Nama/ID dan Unit wajib diisi.';st.style.color='var(--red)';return;}
-const existing=allReports.find(r=>r.unit_id===uid);
+async function addAbsensi(){const did=$('absDriverId').value.trim(),uid=$('absUnit').value.trim(),ftw=$('absFtw').value,reason=$('absReason').value,timeVal=$('absTime').value,notes=$('absNotes')?.value?.trim()||'';const hmRaw=$('absHmAwal')?.value;const hmAwal=(hmRaw&&Number(hmRaw)>0)?Number(hmRaw):0;const st=$('absStatus');
+if(!did||!uid){st.textContent='Nama Driver dan Unit wajib diisi.';st.style.color='var(--red)';return;}
+const existing=(absReports||allReports||[]).find(r=>r.unit_id===uid);
 if(existing&&!confirm(`Unit ${uid} sudah dipakai oleh ${existing.driver_name||existing.driver_id}. Lanjutkan?`))return;
 st.textContent='Mengirim...';st.style.color='var(--info)';
-const ftwVal=(ftw==='Fit')?'Fit':'Unfit';const overall=(ftw==='Fit')?'Ready to Work':'Driver Unfit';
-try{const r=await fetch(`${API}/shift-reports`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},body:JSON.stringify({driver_id:did,unit_id:uid,fit_status:ftwVal,p2h_status:'Passed',overall_status:overall,odometer_entered:0,submitted_by:'CCR-Manual'})});
-const d=await r.json();if(d.success){manualAbs.push({did,uid,ftw,reason,notes,time:timeVal||new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})});st.innerHTML=`<span style="color:var(--green)"><span class="mi">check_circle</span> ${did} tercatat (${uid}) — ${reason}</span>`;$('absDriverId').value='';$('absUnit').value='';$('absNotes').value='';$('absDriverInfo').innerHTML='';$('absUnitInfo').innerHTML='';updateHmSummary();renderAbsList();}else{st.textContent=d.message||'Gagal.';st.style.color='var(--red)';}}catch(e){st.textContent='Error koneksi.';st.style.color='var(--red)';}}
+const fitStatus=(ftw==='Fit')?'Fit':'Unfit';const overall=(fitStatus==='Fit')?'Ready to Work':'Driver Unfit';
+try{const r=await fetch(`${API}/shift-reports`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},body:JSON.stringify({driver_id:did,unit_id:uid,fit_status:fitStatus,odometer_entered:hmAwal,submitted_by:'CCR-Manual',p2h_status:'Passed',overall_status:overall})});
+const d=await r.json();if(d.success){manualAbs.push({did,uid,ftw,reason,notes,hm:hmAwal,time:timeVal||new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})});st.innerHTML=`<span style="color:var(--green)"><span class="mi">check_circle</span> ${did} tercatat (${uid})${hmAwal?` · HM ${hmAwal}`:''} — ${reason}</span>`;$('absDriverId').value='';$('absUnit').value='';$('absNotes').value='';if($('absHmAwal'))$('absHmAwal').value='';$('absDriverInfo').innerHTML='';$('absUnitInfo').innerHTML='';$('absHmInfo').innerHTML='';absLastHm=null;updateHmSummary();renderAbsList();}else{st.textContent=d.message||'Gagal.';st.style.color='var(--red)';}}catch(e){st.textContent='Error koneksi.';st.style.color='var(--red)';}}
 function renderAbsList(){if(!allReports)allReports=[];if(!manualAbs)manualAbs=[];const c=$('absListBody');
 // Combine: allReports (web) + manualAbs (manual) for current shift
 const combined=[];
-(allReports||[]).forEach(r=>{combined.push({name:r.driver_name||r.driver_id,id:r.driver_id,uid:r.unit_id,ftw:r.fit_status,time:r.timestamp_filled?new Date(r.timestamp_filled).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}):'—',src:r.submitted_by==='CCR-Manual'?'MANUAL':'WEB',notes:''});});
+(absReports||allReports||[]).forEach(r=>{combined.push({name:r.driver_name||r.driver_id,id:r.driver_id,uid:r.unit_id,ftw:r.fit_status,time:r.timestamp_filled?new Date(r.timestamp_filled).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}):'—',src:r.submitted_by==='CCR-Manual'?'MANUAL':'WEB',notes:''});});
 (manualAbs||[]).forEach(a=>{if(!combined.find(x=>x.id===a.did)){combined.push({name:a.did,id:a.did,uid:a.uid,ftw:a.ftw,time:a.time,src:'MANUAL',notes:a.notes||''});}});
 if(!combined.length){c.innerHTML='<div style="padding:16px;text-align:center;color:var(--muted);font-size:.78rem">Belum ada data absensi shift ini.</div>';return;}
 c.innerHTML=combined.map((a,i)=>{const stColor=a.ftw==='Fit'?'bg-fit':a.ftw==='Unfit'?'bg-unfit':'bg-find';
