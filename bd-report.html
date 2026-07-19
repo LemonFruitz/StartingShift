@@ -39,6 +39,8 @@
 .bd-card-body img{width:100%;max-height:150px;object-fit:contain;border-radius:var(--radius-sm);margin-top:6px;border:1px solid var(--border)}
 .bd-card-footer{padding:8px 14px;background:var(--input-bg);font-size:.68rem;color:var(--text-muted);display:flex;justify-content:space-between}
 </style>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+<style>.mi{font-family:'Material Icons Outlined';font-size:18px;vertical-align:middle;font-weight:normal;font-style:normal;line-height:1}.mi-sm{font-size:14px}</style>
 </head>
 <body>
 <div class="app">
@@ -51,11 +53,11 @@
   <div class="hb-status">Shift Aktif</div>
 </div>
 <div class="tabs">
-  <button class="tab active" id="tabForm" onclick="switchTab('form')">📝 Buat Laporan</button>
-  <button class="tab" id="tabHistory" onclick="switchTab('history')">📋 Riwayat <span class="counter" id="histCount" style="display:none">0</span></button>
+  <button class="tab active" id="tabForm" onclick="switchTab('form')"><span class="mi">edit_note</span> Buat Laporan</button>
+  <button class="tab" id="tabHistory" onclick="switchTab('history')"><span class="mi">checklist</span> Riwayat <span class="counter" id="histCount" style="display:none">0</span></button>
 </div>
 <div class="tab-panel active" id="panelForm">
-  <div class="page-title">🔴 Lapor Temuan Breakdown</div>
+  <div class="page-title"><span class="mi">error</span> Lapor Temuan Breakdown</div>
   <div class="page-desc">Laporkan kerusakan yang ditemukan selama shift berjalan.</div>
   <div class="alert alert-error" id="formAlert"></div>
   <div class="field"><label class="field-label">Komponen Rusak</label>
@@ -65,18 +67,18 @@
     <optgroup label="Struktur"><option value="Body / Bak">Body / Bak</option><option value="Hydraulic System">Hydraulic</option><option value="Suspension">Suspension</option><option value="Exhaust System">Exhaust</option></optgroup>
     <optgroup label="Lainnya"><option value="Lainnya">Lainnya</option></optgroup></select></div>
   <div class="field"><label class="field-label">Tingkat Keparahan</label>
-    <div class="sev-row"><button class="sev-pill" id="sevCritical" onclick="setSev('Critical')">🔴 Critical</button><button class="sev-pill" id="sevMajor" onclick="setSev('Major')">🟠 Major</button><button class="sev-pill" id="sevMinor" onclick="setSev('Minor')">🟡 Minor</button></div></div>
+    <div class="sev-row"><button class="sev-pill" id="sevCritical" onclick="setSev('Critical')"><span class="mi">error</span> Critical</button><button class="sev-pill" id="sevMajor" onclick="setSev('Major')"><span class="mi">warning</span> Major</button><button class="sev-pill" id="sevMinor" onclick="setSev('Minor')"><span class="mi">build</span> Minor</button></div></div>
   <div class="field"><label class="field-label">Deskripsi Kerusakan</label><textarea id="bdDesc" placeholder="Jelaskan kondisi kerusakan..."></textarea></div>
   <div class="field"><label class="field-label">Lokasi Kejadian</label><input type="text" id="bdLoc" placeholder="Contoh: Pit Cendana Ext, Hauling Road KM 2"/></div>
   <div class="field"><label class="field-label">Waktu Kejadian</label><input type="datetime-local" id="bdTime"/></div>
   <div class="field"><label class="field-label">Foto (opsional)</label>
-    <div class="photo-area" id="bdPhotoArea"><span class="ph-ico">📷</span><span class="ph-text">Ketuk untuk foto</span><img id="bdPhotoPreview" alt=""/><input type="file" accept="image/*" capture="environment" onchange="handleBdPhoto(this)"/></div></div>
+    <div class="photo-area" id="bdPhotoArea"><span class="ph-ico"><span class="mi">photo_camera</span></span><span class="ph-text">Ketuk untuk foto</span><img id="bdPhotoPreview" alt=""/><input type="file" accept="image/*" capture="environment" onchange="handleBdPhoto(this)"/></div></div>
   <div class="field"><label class="field-label">Tindakan Sementara (opsional)</label><input type="text" id="bdAction" placeholder="Contoh: Unit dihentikan"/></div>
-  <button class="btn btn-danger" id="btnSubmitBd" onclick="submitBD()">🔴 Kirim Laporan BD</button>
+  <button class="btn btn-danger" id="btnSubmitBd" onclick="submitBD()"><span class="mi">error</span> Kirim Laporan BD</button>
   <button class="btn btn-outline mt-12" onclick="window.location.href='index.html'">← Kembali ke Dashboard</button>
 </div>
 <div class="tab-panel" id="panelHistory">
-  <div class="page-title">📋 Riwayat BD Shift Ini</div>
+  <div class="page-title"><span class="mi">checklist</span> Riwayat BD Shift Ini</div>
   <div id="historyList"></div>
   <button class="btn btn-outline mt-12" onclick="window.location.href='index.html'">← Kembali</button>
 </div>
@@ -169,7 +171,7 @@ async function submitBD() {
 
   const btn = document.getElementById('btnSubmitBd');
   btn.disabled = true;
-  btn.textContent = '⏳ Mengirim...';
+  btn.innerHTML = '<span class="mi">hourglass_empty</span> Mengirim...';
 
   try {
     const res = await fetch(`${API}/bd-reports`, {
@@ -184,14 +186,14 @@ async function submitBD() {
 
     if (!res.ok || !data.success) {
       btn.disabled = false;
-      btn.textContent = '🔴 KIRIM LAPORAN BD';
-      showAlert('⛔ Gagal: ' + (data.message || 'Server error'), 'red');
+      btn.innerHTML = '<span class="mi">error</span> KIRIM LAPORAN BD';
+      showAlert('<span class="mi">do_not_disturb_on</span> Gagal: ' + (data.message || 'Server error'), 'red');
       return;
     }
 
     // Berhasil
     const bdId = data.data.bd_id;
-    showAlert(`✅ Laporan BD #${bdId} berhasil dikirim ke database!` +
+    showAlert(`<span class="mi">check_circle</span> Laporan BD #${bdId} berhasil dikirim ke database!` +
       (currentSev === 'Critical' ? ' Unit otomatis berstatus BREAKDOWN.' : ''), 'green');
 
     // Reset form
@@ -214,10 +216,10 @@ async function submitBD() {
     await updateHistoryCount();
 
   } catch (e) {
-    showAlert('⛔ Gagal terhubung ke server. Coba lagi.', 'red');
+    showAlert('<span class="mi">do_not_disturb_on</span> Gagal terhubung ke server. Coba lagi.', 'red');
   } finally {
     btn.disabled = false;
-    btn.textContent = '🔴 KIRIM LAPORAN BD';
+    btn.innerHTML = '<span class="mi">error</span> KIRIM LAPORAN BD';
   }
 }
 
@@ -237,7 +239,7 @@ async function updateHistoryCount() {
 
 async function renderHistory() {
   const container = document.getElementById('historyList');
-  container.innerHTML = '<div class="bd-history-empty">⏳ Memuat data...</div>';
+  container.innerHTML = '<div class="bd-history-empty"><span class="mi">hourglass_empty</span> Memuat data...</div>';
 
   try {
     const res = await fetch(`${API}/bd-reports?unit_id=${SESSION.unit}&limit=50`, {
@@ -247,7 +249,7 @@ async function renderHistory() {
 
     if (!data.success || data.data.reports.length === 0) {
       container.innerHTML = `<div class="bd-history-empty">
-        <div style="font-size:2rem;margin-bottom:8px">📭</div>
+        <div style="font-size:2rem;margin-bottom:8px"><span class="mi" style="font-size:inherit">inbox</span></div>
         Belum ada laporan BD untuk unit ini.
       </div>`;
       return;
@@ -257,14 +259,14 @@ async function renderHistory() {
       <div class="bd-card sev-${r.severity}">
         <div class="bd-card-head">
           <span class="bch-comp">${r.component}</span>
-          <span class="bch-sev s-${r.severity}">${r.severity === 'Critical' ? '🔴' : r.severity === 'Major' ? '🟠' : '🟡'} ${r.severity}</span>
+          <span class="bch-sev s-${r.severity}">${r.severity === 'Critical' ? '<span class="mi">error</span>' : r.severity === 'Major' ? '<span class="mi">warning</span>' : '<span class="mi">build</span>'} ${r.severity}</span>
         </div>
         <div class="bd-card-body">
-          <div class="bcb-row"><span class="bcb-ico">📝</span> ${r.description}</div>
-          <div class="bcb-row"><span class="bcb-ico">📍</span> ${r.location}</div>
-          <div class="bcb-row"><span class="bcb-ico">🕐</span> ${r.event_time ? new Date(r.event_time).toLocaleString('id-ID') : '—'}</div>
-          ${r.action_taken ? `<div class="bcb-row"><span class="bcb-ico">🔧</span> ${r.action_taken}</div>` : ''}
-          <div class="bcb-row"><span class="bcb-ico">👤</span> ${r.driver_name || r.driver_id}</div>
+          <div class="bcb-row"><span class="bcb-ico"><span class="mi">edit_note</span></span> ${r.description}</div>
+          <div class="bcb-row"><span class="bcb-ico"><span class="mi">location_on</span></span> ${r.location}</div>
+          <div class="bcb-row"><span class="bcb-ico"><span class="mi">schedule</span></span> ${r.event_time ? new Date(r.event_time).toLocaleString('id-ID') : '—'}</div>
+          ${r.action_taken ? `<div class="bcb-row"><span class="bcb-ico"><span class="mi">build</span></span> ${r.action_taken}</div>` : ''}
+          <div class="bcb-row"><span class="bcb-ico"><span class="mi">person</span></span> ${r.driver_name || r.driver_id}</div>
           ${r.photo_url ? `<img src="${r.photo_url}" alt="Foto BD"/>` : ''}
         </div>
         <div class="bd-card-footer">
@@ -274,7 +276,7 @@ async function renderHistory() {
       </div>
     `).join('');
   } catch (e) {
-    container.innerHTML = `<div class="bd-history-empty">⛔ Gagal memuat data dari server.</div>`;
+    container.innerHTML = `<div class="bd-history-empty"><span class="mi">do_not_disturb_on</span> Gagal memuat data dari server.</div>`;
   }
 }
 

@@ -42,6 +42,8 @@
 .bd-tags{display:flex;gap:4px;margin-top:6px}
 .empty-box{padding:24px;text-align:center;color:var(--text-muted);font-size:.82rem}
 </style>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+<style>.mi{font-family:'Material Icons Outlined';font-size:18px;vertical-align:middle;font-weight:normal;font-style:normal;line-height:1}.mi-sm{font-size:14px}</style>
 </head>
 <body style="background:var(--bg)">
 <div class="spv-wrap">
@@ -53,10 +55,10 @@
 
   <!-- Tabs -->
   <div class="spv-tabs">
-    <div class="spv-tab active" onclick="switchTab('reports',this)">📋 Laporan</div>
-    <div class="spv-tab" onclick="switchTab('bd',this)">⚠️ BD Report</div>
-    <div class="spv-tab" onclick="switchTab('csv',this)">📥 CSV</div>
-    <div class="spv-tab" onclick="doLogout()">🚪</div>
+    <div class="spv-tab active" onclick="switchTab('reports',this)"><span class="mi">checklist</span> Laporan</div>
+    <div class="spv-tab" onclick="switchTab('bd',this)"><span class="mi">warning_amber</span> BD Report</div>
+    <div class="spv-tab" onclick="switchTab('csv',this)"><span class="mi">download</span> CSV</div>
+    <div class="spv-tab" onclick="doLogout()"><span class="mi">logout</span></div>
   </div>
 
   <!-- TAB: REPORTS -->
@@ -83,7 +85,7 @@
 
   <!-- TAB: CSV -->
   <div id="t-csv" style="display:none;text-align:center;padding:30px">
-    <div style="font-size:2rem;margin-bottom:8px">📥</div>
+    <div style="font-size:2rem;margin-bottom:8px"><span class="mi" style="font-size:inherit">download</span></div>
     <div style="font-size:.88rem;font-weight:700;margin-bottom:4px">Download CSV Shift Report</div>
     <div style="font-size:.68rem;color:var(--text-muted);margin-bottom:16px">Data berdasarkan tanggal yang dipilih di filter</div>
     <button onclick="downloadCSV()" style="padding:12px 24px;background:linear-gradient(135deg,#00C853,#00B0FF);color:#FFF;border:none;border-radius:8px;font-family:var(--font);font-weight:700;font-size:.82rem;cursor:pointer;min-height:44px">Download CSV</button>
@@ -123,14 +125,14 @@ const vsC=vs==='Approved'?'sb-app':vs==='Rejected'?'sb-rej':'sb-pen';
 return`<div class="sr-card"><div class="sr-top"><div><div class="sr-name">${r.driver_name||r.driver_id}</div><div class="sr-meta">${r.driver_id} · ${r.unit_id} · ${r.equipment_class||''}</div></div><div class="sr-time">${tm}</div></div>
 <div class="sr-badges"><span class="sr-badge ${r.fit_status==='Fit'?'sb-fit':'sb-unfit'}">${r.fit_status}</span><span class="sr-badge ${r.p2h_status==='Passed'?'sb-pass':'sb-find'}">${r.p2h_status||'—'}</span><span class="sr-badge ${stC}">${stL}</span><span class="sr-badge ${vsC}">${vs}</span></div>
 ${r.odometer_entered?`<div class="sr-hm">HM: ${r.odometer_entered}${r.odometer_end?' → '+r.odometer_end+' (+'+( r.odometer_end-r.odometer_entered)+')':' (akhir belum diisi)'}</div>`:''}
-${isPen?`<div class="sr-actions"><button class="sr-btn btn-app" onclick="validate('${r.report_id}','Approved')">✓ Approve</button><button class="sr-btn btn-rej" onclick="validate('${r.report_id}','Rejected')">✗ Reject</button></div>`:`<div class="sr-actions"><button class="sr-btn btn-done" disabled>${vs==='Approved'?'✅ Approved':vs==='Rejected'?'❌ Rejected':'⚠️ '+stL}</button></div>`}</div>`;}).join('');}
+${isPen?`<div class="sr-actions"><button class="sr-btn btn-app" onclick="validate('${r.report_id}','Approved')"><span class="mi">check</span> Approve</button><button class="sr-btn btn-rej" onclick="validate('${r.report_id}','Rejected')"><span class="mi">close</span> Reject</button></div>`:`<div class="sr-actions"><button class="sr-btn btn-done" disabled>${vs==='Approved'?'<span class="mi">check_circle</span> Approved':vs==='Rejected'?'<span class="mi">cancel</span> Rejected':'<span class="mi">warning_amber</span> '+stL}</button></div>`}</div>`;}).join('');}
 
 async function validate(rid,status){try{const r=await fetch(`${API}/supervisor/shift-reports/${rid}/validate`,{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},body:JSON.stringify({validation_status:status,validated_by:SESSION.id})});const d=await r.json();
 if(d.success){const rp=allReports.find(x=>x.report_id===rid);if(rp)rp.validation_status=status;renderKPI();renderReports();}}catch{alert('Gagal.');}}
 
 async function loadBD(){try{const r=await fetch(`${API}/bd-reports?limit=30`,{headers:{'Authorization':'Bearer '+TOKEN}});const d=await r.json();if(d.success)bdReports=d.data.reports||d.data||[];renderBD();}catch{}}
 function renderBD(){const open=(Array.isArray(bdReports)?bdReports:[]).filter(r=>r.status!=='Resolved');$('bdCnt').textContent=open.length+' aktif';
-if(!open.length){$('bdList').innerHTML='<div class="empty-box">✅ Semua resolved</div>';return;}
+if(!open.length){$('bdList').innerHTML='<div class="empty-box"><span class="mi">check_circle</span> Semua resolved</div>';return;}
 $('bdList').innerHTML=open.map(r=>{const sl=r.severity==='Critical'?'Kritis':r.severity==='Major'?'Sedang':'Rendah';
 const sc=r.severity==='Critical'?'sb-rej':r.severity==='Major'?'sb-find':'sb-pen';
 const ss=r.status==='Open'?'sb-rej':'sb-find';

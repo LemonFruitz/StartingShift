@@ -148,6 +148,8 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
 </style>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+<style>.mi{font-family:'Material Icons Outlined';font-size:18px;vertical-align:middle;font-weight:normal;font-style:normal;line-height:1}.mi-sm{font-size:14px}</style>
 </head>
 <body>
 <div class="app">
@@ -166,7 +168,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 <!-- ═══════ STEP 1: FIT TO WORK ═══════ -->
 <div class="step-panel active" id="step1">
   <div class="step-info"><span class="step-num">Langkah 1 / 5</span><span class="step-num" id="driverBadge"></span></div>
-  <div class="step-title">🩺 Skrining Fit-to-Work</div>
+  <div class="step-title"><span class="mi">medical_services</span> Skrining Fit-to-Work</div>
   <div class="step-desc">Jawab pertanyaan kesehatan berikut dengan jujur. Jika ada jawaban tidak ideal, Anda tidak diizinkan beroperasi.</div>
   <div class="alert-box red" id="ftwAlert"></div>
   <div id="ftwList"></div>
@@ -179,7 +181,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 <!-- ═══════ STEP 2: P2H CHECKLIST ═══════ -->
 <div class="step-panel" id="step2">
   <div class="step-info"><span class="step-num">Langkah 2 / 5</span></div>
-  <div class="step-title">🔧 Inspeksi P2H</div>
+  <div class="step-title"><span class="mi">build</span> Inspeksi P2H</div>
   <div class="step-desc">Checklist sesuai jenis unit yang dipilih. Kode AA (Kritis) wajib STOP. Kode A perbaiki 12 jam. Kode B perbaiki 24 jam.</div>
   <div class="alert-box red" id="p2hAlert"></div>
   <div id="p2hList"></div>
@@ -192,7 +194,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 <!-- ═══════ STEP 3: ODOMETER + PHOTO ═══════ -->
 <div class="step-panel" id="step3">
   <div class="step-info"><span class="step-num">Langkah 3 / 5</span></div>
-  <div class="step-title">📸 Odometer & Foto</div>
+  <div class="step-title"><span class="mi">photo_camera</span> Odometer & Foto</div>
   <div class="step-desc">Catat angka HM/Odometer aktual dan ambil foto panel sebagai bukti.</div>
 
   <div class="card-s">
@@ -207,7 +209,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     <div class="card-s-head"><span style="font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em">Foto Panel Odometer</span></div>
     <div class="card-s-body">
       <div class="photo-area" id="photoArea">
-        <span class="ph-ico">📷</span>
+        <span class="ph-ico"><span class="mi">photo_camera</span></span>
         <span class="ph-text">Ketuk untuk ambil foto</span>
         <img id="photoPreview" alt=""/>
         <input type="file" accept="image/*" capture="environment" id="photoInput" onchange="handlePhoto(this)"/>
@@ -224,7 +226,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 <!-- ═══════ STEP 4: SIGNATURE ═══════ -->
 <div class="step-panel" id="step4">
   <div class="step-info"><span class="step-num">Langkah 4 / 5</span></div>
-  <div class="step-title">✍️ Tanda Tangan Digital</div>
+  <div class="step-title"><span class="mi">edit</span> Tanda Tangan Digital</div>
   <div class="step-desc">Tanda tangani deklarasi kebenaran data. Gunakan jari atau stylus di area di bawah.</div>
 
   <div class="sig-canvas-wrap" id="sigWrap">
@@ -232,7 +234,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     <div class="sig-hint">Tanda tangan di sini</div>
   </div>
   <div class="sig-actions">
-    <button class="sig-clear" onclick="clearSig()">🗑️ Hapus & Ulang</button>
+    <button class="sig-clear" onclick="clearSig()"><span class="mi">delete</span> Hapus & Ulang</button>
   </div>
 
   <div style="margin-top:14px;font-size:.78rem;color:var(--muted);line-height:1.5;background:var(--input-bg);border:1px solid var(--border);border-radius:4px;padding:10px 12px">
@@ -248,7 +250,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 <!-- ═══════ STEP 5: REVIEW & SUBMIT ═══════ -->
 <div class="step-panel" id="step5">
   <div class="step-info"><span class="step-num">Langkah 5 / 5</span></div>
-  <div class="step-title">📋 Review & Kirim</div>
+  <div class="step-title"><span class="mi">checklist</span> Review & Kirim</div>
   <div class="step-desc">Periksa ringkasan data sebelum mengirim laporan shift.</div>
 
   <div class="alert-box" id="reviewAlert"></div>
@@ -257,7 +259,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   <div class="btn-row">
     <button class="btn btn-back" onclick="prevStep(4)">← Kembali</button>
     <button class="btn btn-submit" id="btnSubmit" onclick="submitReport()">
-      <span class="btn-text">✅ Kirim Laporan</span>
+      <span class="btn-text"><span class="mi">check_circle</span> Kirim Laporan</span>
       <div class="spinner"></div>
     </button>
   </div>
@@ -352,11 +354,11 @@ function renderFTW() {
   const c = document.getElementById('ftwList');
   c.innerHTML = FTW_QUESTIONS.map(q => `
     <div class="ftw-q" id="ftw-${q.question_id}">
-      <div class="q-badge critical">⚠ Kritikal</div>
+      <div class="q-badge critical"><span class="mi">warning_amber</span> Kritikal</div>
       <div class="q-text">${q.question_id}. ${q.text}</div>
       <div class="q-btns">
-        <button class="q-btn" id="ftw-${q.question_id}-yes" onclick="answerFTW(${q.question_id},true)">✔ Ya</button>
-        <button class="q-btn" id="ftw-${q.question_id}-no" onclick="answerFTW(${q.question_id},false)">✖ Tidak</button>
+        <button class="q-btn" id="ftw-${q.question_id}-yes" onclick="answerFTW(${q.question_id},true)"><span class="mi">check</span> Ya</button>
+        <button class="q-btn" id="ftw-${q.question_id}-no" onclick="answerFTW(${q.question_id},false)"><span class="mi">close</span> Tidak</button>
       </div>
     </div>
   `).join('');
@@ -380,7 +382,7 @@ function checkFTWComplete() {
   const alert = document.getElementById('ftwAlert');
 
   if (allAnswered && !allIdeal) {
-    alert.innerHTML = '⛔ <strong>Status: TEMPORARY UNFIT</strong> — Anda tidak memenuhi syarat kesehatan. Segera laporkan ke Supervisor/HSE. Data tetap akan dicatat.';
+    alert.innerHTML = '<span class="mi">do_not_disturb_on</span> <strong>Status: TEMPORARY UNFIT</strong> — Anda tidak memenuhi syarat kesehatan. Segera laporkan ke Supervisor/HSE. Data tetap akan dicatat.';
     alert.className = 'alert-box red show';
   } else {
     alert.className = 'alert-box red';
@@ -401,7 +403,7 @@ function renderP2H() {
   });
   
   let html = `<div style="font-size:.72rem;color:var(--muted);margin-bottom:10px;padding:8px 10px;background:var(--input-bg);border:1px solid var(--border);border-radius:6px">
-    📋 Checklist <strong style="color:var(--text)">${eqClass}</strong> — ${P2H_ITEMS.length} item.
+    <span class="mi">checklist</span> Checklist <strong style="color:var(--text)">${eqClass}</strong> — ${P2H_ITEMS.length} item.
     <span style="color:var(--danger)">AA=Kritis(STOP)</span> · <span style="color:var(--warning)">A=Tinggi(12jam)</span> · <span style="color:#3B82F6">B=Sedang(24jam)</span>
   </div>`;
   
@@ -419,11 +421,11 @@ function renderP2H() {
           <div class="p2h-class" style="background:${h.bg};color:${h.color};border:1px solid ${h.color}30">${it.hazard} · ${h.level}</div>
         </div>
         <div class="q-btns">
-          <button class="q-btn" id="p2h-${it.item_id}-ok" onclick="answerP2H(${it.item_id},true)">✔ Baik</button>
-          <button class="q-btn" id="p2h-${it.item_id}-fail" onclick="answerP2H(${it.item_id},false)">✖ Rusak</button>
+          <button class="q-btn" id="p2h-${it.item_id}-ok" onclick="answerP2H(${it.item_id},true)"><span class="mi">check</span> Baik</button>
+          <button class="q-btn" id="p2h-${it.item_id}-fail" onclick="answerP2H(${it.item_id},false)"><span class="mi">close</span> Rusak</button>
         </div>
         <div class="bd-detail" id="bd-detail-${it.item_id}">
-          <div class="bd-title">📝 Detail Kerusakan — Kode ${it.hazard}: ${h.action}</div>
+          <div class="bd-title"><span class="mi">edit_note</span> Detail Kerusakan — Kode ${it.hazard}: ${h.action}</div>
           <div class="bd-field"><label>Deskripsi</label><textarea id="bd-desc-${it.item_id}" placeholder="Jelaskan kerusakan..." oninput="updateBD(${it.item_id})"></textarea></div>
           <div class="bd-field"><label>Lokasi</label><input type="text" id="bd-loc-${it.item_id}" placeholder="Lokasi unit saat ditemukan" oninput="updateBD(${it.item_id})"/></div>
           <div class="bd-field"><label>Waktu</label><input type="datetime-local" id="bd-time-${it.item_id}" oninput="updateBD(${it.item_id})"/></div>
@@ -472,10 +474,10 @@ function checkP2HComplete() {
   const alert = document.getElementById('p2hAlert');
 
   if (hasAAFail) {
-    alert.innerHTML = '⛔ <strong>KODE AA — KRITIS</strong> — Komponen kritis rusak. Unit TIDAK BOLEH dioperasikan. Lapor ke Supervisor segera. Status unit akan otomatis BREAKDOWN.';
+    alert.innerHTML = '<span class="mi">do_not_disturb_on</span> <strong>KODE AA — KRITIS</strong> — Komponen kritis rusak. Unit TIDAK BOLEH dioperasikan. Lapor ke Supervisor segera. Status unit akan otomatis BREAKDOWN.';
     alert.className = 'alert-box red show';
   } else if (aFails.length > 0) {
-    alert.innerHTML = `⚠️ <strong>KODE A — ${aFails.length} item</strong> — Unit boleh operasi sementara. Harus diperbaiki dalam 1×12 jam.`;
+    alert.innerHTML = `<span class="mi">warning_amber</span> <strong>KODE A — ${aFails.length} item</strong> — Unit boleh operasi sementara. Harus diperbaiki dalam 1×12 jam.`;
     alert.className = 'alert-box yellow show';
   } else {
     alert.className = 'alert-box red';
@@ -591,10 +593,10 @@ function renderReview() {
 
   const alert = document.getElementById('reviewAlert');
   if (predClass === 'red') {
-    alert.innerHTML = `⚠️ Status prediksi: <strong>${predicted}</strong>. Laporan tetap akan dikirim untuk dokumentasi.`;
+    alert.innerHTML = `<span class="mi">warning_amber</span> Status prediksi: <strong>${predicted}</strong>. Laporan tetap akan dikirim untuk dokumentasi.`;
     alert.className = 'alert-box yellow show';
   } else {
-    alert.innerHTML = `✅ Status prediksi: <strong>${predicted}</strong>`;
+    alert.innerHTML = `<span class="mi">check_circle</span> Status prediksi: <strong>${predicted}</strong>`;
     alert.className = 'alert-box green show';
   }
 
@@ -602,14 +604,14 @@ function renderReview() {
 
   // Driver & Unit
   html += `<div class="review-section">
-    <div class="rs-title">👤 Driver & Unit</div>
+    <div class="rs-title"><span class="mi">person</span> Driver & Unit</div>
     <div class="review-row"><span class="rr-q">Driver</span><span class="rr-a ok">${SESSION.name} (${SESSION.id})</span></div>
     <div class="review-row"><span class="rr-q">Unit</span><span class="rr-a ok">${SESSION.unit}</span></div>
     <div class="review-row"><span class="rr-q">Odometer</span><span class="rr-a ok">${state.odometer?.toLocaleString('id-ID')}</span></div>
   </div>`;
 
   // FTW
-  html += `<div class="review-section"><div class="rs-title">🩺 Fit-to-Work (${ftwIdeal ? 'FIT' : 'UNFIT'})</div>`;
+  html += `<div class="review-section"><div class="rs-title"><span class="mi">medical_services</span> Fit-to-Work (${ftwIdeal ? 'FIT' : 'UNFIT'})</div>`;
   FTW_QUESTIONS.forEach(q => {
     const ans = state.ftw[q.question_id];
     const ideal = ans === q.ideal;
@@ -618,15 +620,15 @@ function renderReview() {
   html += `</div>`;
 
   // P2H
-  html += `<div class="review-section"><div class="rs-title">🔧 P2H (${hasAAFail ? 'FAILED' : 'PASSED'})</div>`;
+  html += `<div class="review-section"><div class="rs-title"><span class="mi">build</span> P2H (${hasAAFail ? 'FAILED' : 'PASSED'})</div>`;
   P2H_ITEMS.forEach(it => {
     const r = state.p2h[it.item_id];
     html += `<div class="review-row"><span class="rr-q" style="font-size:.78rem">${it.name} <span style="color:${it.cls==='CRITICAL'?'var(--danger)':'var(--accent)'}; font-size:.65rem">${it.hazard}</span></span><span class="rr-a ${r.is_ok?'ok':'fail'}">${r.is_ok?'OK':'RUSAK'}</span></div>`;
     if (!r.is_ok && (r.bd_desc || r.bd_loc || r.bd_time)) {
       html += `<div style="margin:-2px 0 6px;padding:8px 10px;background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.15);border-radius:4px;font-size:.75rem;color:var(--muted);line-height:1.5">`;
-      if (r.bd_desc) html += `<div>📝 ${r.bd_desc}</div>`;
-      if (r.bd_loc)  html += `<div>📍 ${r.bd_loc}</div>`;
-      if (r.bd_time) html += `<div>🕐 ${r.bd_time.replace('T',' ')}</div>`;
+      if (r.bd_desc) html += `<div><span class="mi">edit_note</span> ${r.bd_desc}</div>`;
+      if (r.bd_loc)  html += `<div><span class="mi">location_on</span> ${r.bd_loc}</div>`;
+      if (r.bd_time) html += `<div><span class="mi">schedule</span> ${r.bd_time.replace('T',' ')}</div>`;
       html += `</div>`;
     }
   });
@@ -634,7 +636,7 @@ function renderReview() {
 
   if (failedItems.length > 0) {
     html += `<div style="font-size:.78rem;color:var(--accent);background:rgba(0,200,83,.08);border:1px solid rgba(0,200,83,.2);border-radius:4px;padding:10px 12px;margin-bottom:14px">
-      📝 ${failedItems.length} item rusak ditemukan — tiket perbaikan dibuat otomatis.
+      <span class="mi">edit_note</span> ${failedItems.length} item rusak ditemukan — tiket perbaikan dibuat otomatis.
     </div>`;
   }
 
@@ -702,7 +704,7 @@ async function getGPS() {
 
     if (!res.ok || !data.success) {
       btn.disabled = false;
-      alert('⛔ Gagal mengirim: ' + (data.message || 'Unknown error'));
+      alert('Gagal mengirim: ' + (data.message || 'Unknown error'));
       return;
     }
 
@@ -725,7 +727,7 @@ async function getGPS() {
         p2h_status: P2H_ITEMS.some(it => it.hazard === 'AA' && state.p2h[it.item_id] && !state.p2h[it.item_id].is_ok) ? 'Failed' : 'Passed',
       });
     } else {
-      alert('⛔ Gagal terhubung ke server. Coba lagi.');
+      alert('Gagal terhubung ke server. Coba lagi.');
     }
   }
 }
@@ -741,19 +743,19 @@ function showResult(d) {
   let icon, statusColor, statusText, msg;
   switch (d.overall_status) {
     case 'Ready to Work':
-      icon = '✅'; statusColor = 'var(--success)'; statusText = 'READY TO WORK';
+      icon = '<span class="mi" style="font-size:inherit">check_circle</span>'; statusColor = 'var(--success)'; statusText = 'READY TO WORK';
       msg = 'Semua pengecekan lolos. Anda diizinkan mengoperasikan unit. Selamat bertugas dan utamakan keselamatan!';
       break;
     case 'Saved Offline':
-      icon = '📴'; statusColor = 'var(--warning,#F59E0B)'; statusText = 'TERSIMPAN OFFLINE';
+      icon = '<span class="mi" style="font-size:inherit">mobile_off</span>'; statusColor = 'var(--warning,#F59E0B)'; statusText = 'TERSIMPAN OFFLINE';
       msg = 'Laporan tersimpan di perangkat Anda. Data akan otomatis dikirim ke server saat koneksi internet tersedia. Anda boleh melanjutkan operasi.';
       break;
     case 'Driver Unfit':
-      icon = '🚫'; statusColor = 'var(--danger)'; statusText = 'DRIVER UNFIT';
+      icon = '<span class="mi" style="font-size:inherit">block</span>'; statusColor = 'var(--danger)'; statusText = 'DRIVER UNFIT';
       msg = 'Anda tidak memenuhi syarat kesehatan untuk beroperasi. Segera laporkan ke Supervisor atau tim HSE.';
       break;
     default:
-      icon = '⚠️'; statusColor = 'var(--danger)'; statusText = 'UNIT BREAKDOWN';
+      icon = '<span class="mi" style="font-size:inherit">warning_amber</span>'; statusColor = 'var(--danger)'; statusText = 'UNIT BREAKDOWN';
       msg = 'Komponen kritikal rusak. Unit dikunci dari operasi. Hubungi tim Maintenance untuk perbaikan.';
   }
 
@@ -767,11 +769,11 @@ function showResult(d) {
       <div class="rd-row"><span class="rd-label">Unit</span><span class="rd-val">${SESSION.unit}</span></div>
       <div class="rd-row"><span class="rd-label">Fit-to-Work</span><span class="rd-val ${d.fit_status==='Fit'?'green':'red'}">${d.fit_status}</span></div>
       <div class="rd-row"><span class="rd-label">P2H</span><span class="rd-val ${d.p2h_status==='Passed'?'green':'red'}">${d.p2h_status}</span></div>
-      <div class="rd-row"><span class="rd-label">Time Drift</span><span class="rd-val ${d.time_drift_flagged?'red':'green'}">${d.time_drift_flagged?'⚠ Flagged':'Normal'}</span></div>
+      <div class="rd-row"><span class="rd-label">Time Drift</span><span class="rd-val ${d.time_drift_flagged?'red':'green'}">${d.time_drift_flagged?'<span class="mi">warning_amber</span> Flagged':'Normal'}</span></div>
       <div class="rd-row"><span class="rd-label">Submitted</span><span class="rd-val">${new Date(d.submitted_at).toLocaleString('id-ID')}</span></div>
     </div>
-    <button class="btn btn-next btn-full" onclick="window.location.href='index.html'" style="margin-bottom:10px">🏠 Kembali ke Login</button>
-    <button class="btn btn-back btn-full" onclick="window.location.reload()">🔄 Isi Shift Baru</button>
+    <button class="btn btn-next btn-full" onclick="window.location.href='index.html'" style="margin-bottom:10px"><span class="mi">home</span> Kembali ke Login</button>
+    <button class="btn btn-back btn-full" onclick="window.location.reload()"><span class="mi">swap_horiz</span> Isi Shift Baru</button>
   `;
 }
 </script>

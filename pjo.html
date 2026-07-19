@@ -75,19 +75,21 @@ body{background:var(--bg);font-family:var(--font);color:var(--text);display:flex
 @media(max-width:900px){.sidebar{display:none}.col-right{display:none}.kpi-row{grid-template-columns:repeat(3,1fr)}}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(0,176,255,.3)}50%{box-shadow:0 0 0 5px rgba(0,176,255,0)}}
 </style>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+<style>.mi{font-family:'Material Icons Outlined';font-size:18px;vertical-align:middle;font-weight:normal;font-style:normal;line-height:1}.mi-sm{font-size:14px}</style>
 </head>
 <body>
 <div class="sidebar">
   <div class="sb-brand"><img src="logo-hte.png" alt="HTE"/><div><div class="sbt-name">Starting Shift</div><div class="sbt-sub">PT HTE · MINING OPS</div></div></div>
   <div class="sb-nav">
     <div class="sb-section">Executive</div>
-    <div class="sb-item active" data-view="overview"><span class="sb-ico">📊</span> Overview</div>
-    <div class="sb-item" data-view="ranking"><span class="sb-ico">🏆</span> Driver Ranking</div>
-    <div class="sb-item" data-view="equipment"><span class="sb-ico">🚛</span> Equipment Summary</div>
+    <div class="sb-item active" data-view="overview"><span class="sb-ico"><span class="mi">dashboard</span></span> Overview</div>
+    <div class="sb-item" data-view="ranking"><span class="sb-ico"><span class="mi">emoji_events</span></span> Driver Ranking</div>
+    <div class="sb-item" data-view="equipment"><span class="sb-ico"><span class="mi">local_shipping</span></span> Equipment Summary</div>
     <div class="sb-section">Laporan</div>
-    <div class="sb-item" onclick="genPDF()"><span class="sb-ico">📄</span> PDF Executive</div>
+    <div class="sb-item" onclick="genPDF()"><span class="sb-ico"><span class="mi">picture_as_pdf</span></span> PDF Executive</div>
     <div class="sb-section">Sistem</div>
-    <div class="sb-item" onclick="doLogout()"><span class="sb-ico">🚪</span> Logout</div>
+    <div class="sb-item" onclick="doLogout()"><span class="sb-ico"><span class="mi">logout</span></span> Logout</div>
   </div>
   <div class="sb-user"><div class="sb-avatar" id="sbAv">—</div><div><div style="font-size:.78rem;font-weight:700" id="sbNm">—</div><div style="font-size:.58rem;color:var(--muted)">PJO Management</div></div></div>
 </div>
@@ -101,11 +103,11 @@ body{background:var(--bg);font-family:var(--font);color:var(--text);display:flex
   <div class="content view active" id="v-overview">
     <div class="col-main">
       <div class="kpi-row">
-        <div class="kpi"><div class="kpi-icon" style="background:rgba(0,200,83,.08)">📋</div><div class="kpi-label">P2H Compliance</div><div class="kpi-val" style="color:var(--green)" id="kP2H">—%</div><div class="kpi-bar"><div class="kpi-fill" id="kP2HB" style="width:0;background:var(--green)"></div></div><div class="kpi-sub" id="kP2HS">—</div></div>
-        <div class="kpi"><div class="kpi-icon" style="background:rgba(0,176,255,.08)">💪</div><div class="kpi-label">FTW Pass Rate</div><div class="kpi-val" style="color:var(--blue)" id="kFTW">—%</div><div class="kpi-bar"><div class="kpi-fill" id="kFTWB" style="width:0;background:var(--blue)"></div></div><div class="kpi-sub" id="kFTWS">—</div></div>
-        <div class="kpi"><div class="kpi-icon" style="background:rgba(0,200,83,.08)">🚛</div><div class="kpi-label">Fleet Readiness</div><div class="kpi-val" id="kFleet">—%</div><div class="kpi-bar"><div class="kpi-fill" id="kFleetB" style="width:0;background:var(--green)"></div></div><div class="kpi-sub" id="kFleetS">—</div></div>
-        <div class="kpi"><div class="kpi-icon" style="background:rgba(239,68,68,.08)">⚠️</div><div class="kpi-label">BD Aktif</div><div class="kpi-val" style="color:var(--red)" id="kBD">—</div><div class="kpi-sub" id="kBDS">—</div></div>
-        <div class="kpi kpi-hl"><div class="kpi-icon" style="background:rgba(255,255,255,.15)">🎯</div><div class="kpi-label">Skor Operasi</div><div class="kpi-val" id="kScore">—%</div><div class="kpi-sub">Gabungan P2H+FTW+Fleet</div></div>
+        <div class="kpi"><div class="kpi-icon" style="background:rgba(0,200,83,.08)"><span class="mi">checklist</span></div><div class="kpi-label">P2H Compliance</div><div class="kpi-val" style="color:var(--green)" id="kP2H">—%</div><div class="kpi-bar"><div class="kpi-fill" id="kP2HB" style="width:0;background:var(--green)"></div></div><div class="kpi-sub" id="kP2HS">—</div></div>
+        <div class="kpi"><div class="kpi-icon" style="background:rgba(0,176,255,.08)"><span class="mi">health_and_safety</span></div><div class="kpi-label">FTW Pass Rate</div><div class="kpi-val" style="color:var(--blue)" id="kFTW">—%</div><div class="kpi-bar"><div class="kpi-fill" id="kFTWB" style="width:0;background:var(--blue)"></div></div><div class="kpi-sub" id="kFTWS">—</div></div>
+        <div class="kpi"><div class="kpi-icon" style="background:rgba(0,200,83,.08)"><span class="mi">local_shipping</span></div><div class="kpi-label">Fleet Readiness</div><div class="kpi-val" id="kFleet">—%</div><div class="kpi-bar"><div class="kpi-fill" id="kFleetB" style="width:0;background:var(--green)"></div></div><div class="kpi-sub" id="kFleetS">—</div></div>
+        <div class="kpi"><div class="kpi-icon" style="background:rgba(239,68,68,.08)"><span class="mi">warning_amber</span></div><div class="kpi-label">BD Aktif</div><div class="kpi-val" style="color:var(--red)" id="kBD">—</div><div class="kpi-sub" id="kBDS">—</div></div>
+        <div class="kpi kpi-hl"><div class="kpi-icon" style="background:rgba(255,255,255,.15)"><span class="mi">track_changes</span></div><div class="kpi-label">Skor Operasi</div><div class="kpi-val" id="kScore">—%</div><div class="kpi-sub">Gabungan P2H+FTW+Fleet</div></div>
       </div>
       <!-- Charts -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
@@ -113,26 +115,26 @@ body{background:var(--bg);font-family:var(--font);color:var(--text);display:flex
         <div class="widget"><div class="wt">Distribusi Status</div><div class="ws">Proporsi status shift hari ini</div><div class="chart-wrap"><canvas id="statusChart"></canvas></div></div>
       </div>
       <!-- Top 5 ranking preview -->
-      <div class="panel"><div class="panel-head"><div class="panel-title">🏆 Top 5 Driver Compliance</div><a style="font-size:.72rem;color:var(--green);font-weight:600;cursor:pointer" onclick="switchView('ranking')">Lihat Semua →</a></div><div id="topRankBody"></div></div>
+      <div class="panel"><div class="panel-head"><div class="panel-title"><span class="mi">emoji_events</span> Top 5 Driver Compliance</div><a style="font-size:.72rem;color:var(--green);font-weight:600;cursor:pointer" onclick="switchView('ranking')">Lihat Semua →</a></div><div id="topRankBody"></div></div>
     </div>
     <div class="col-right">
       <div class="widget"><div class="wt">Kesiapan Hari Ini</div><div class="ws">Donut score gabungan</div><div style="display:flex;align-items:center;gap:16px"><div><canvas id="donutChart" width="110" height="110"></canvas></div><div style="flex:1"><div style="display:flex;justify-content:space-between;padding:3px 0;font-size:.7rem"><span style="color:var(--gray)">P2H</span><span style="font-weight:700" id="dP">—</span></div><div style="display:flex;justify-content:space-between;padding:3px 0;font-size:.7rem"><span style="color:var(--gray)">FTW</span><span style="font-weight:700" id="dF">—</span></div><div style="display:flex;justify-content:space-between;padding:3px 0;font-size:.7rem"><span style="color:var(--gray)">Fleet</span><span style="font-weight:700" id="dR">—</span></div></div></div></div>
       <!-- Equipment mini -->
       <div class="widget"><div style="display:flex;justify-content:space-between"><div class="wt">Fleet per Tipe</div><span style="font-size:.72rem;font-weight:700" id="fTot">—</span></div><div id="eqMini" style="margin-top:8px"></div></div>
       <!-- Alerts -->
-      <div class="widget"><div style="display:flex;justify-content:space-between;align-items:center"><div class="wt">⚠️ Alerts</div><span style="font-size:.58rem;font-weight:700;color:var(--red)" id="alertCnt">—</span></div><div id="alertList" style="max-height:200px;overflow-y:auto;margin-top:8px"></div></div>
+      <div class="widget"><div style="display:flex;justify-content:space-between;align-items:center"><div class="wt"><span class="mi">warning_amber</span> Alerts</div><span style="font-size:.58rem;font-weight:700;color:var(--red)" id="alertCnt">—</span></div><div id="alertList" style="max-height:200px;overflow-y:auto;margin-top:8px"></div></div>
     </div>
   </div>
 
   <!-- VIEW: RANKING -->
   <div class="content view" id="v-ranking" style="flex-direction:column;gap:14px">
-    <div style="display:flex;justify-content:space-between;align-items:center"><div class="panel-title">🏆 Driver Compliance Ranking — 30 Hari</div><select class="pfsel" id="rkFilter" onchange="renderRanking()"><option value="">Semua Kelas</option></select></div>
+    <div style="display:flex;justify-content:space-between;align-items:center"><div class="panel-title"><span class="mi">emoji_events</span> Driver Compliance Ranking — 30 Hari</div><select class="pfsel" id="rkFilter" onchange="renderRanking()"><option value="">Semua Kelas</option></select></div>
     <div class="panel" style="flex:1;overflow:hidden"><div style="overflow-y:auto;max-height:calc(100vh - 180px)" id="rankBody"></div></div>
   </div>
 
   <!-- VIEW: EQUIPMENT -->
   <div class="content view" id="v-equipment" style="flex-direction:column;gap:14px">
-    <div class="panel-title">🚛 Equipment Summary — Per Jenis Unit</div>
+    <div class="panel-title"><span class="mi">local_shipping</span> Equipment Summary — Per Jenis Unit</div>
     <div class="panel" style="flex:1;overflow:hidden">
       <div class="panel-head" style="font-size:.68rem;display:flex;gap:10px;color:var(--gray);font-weight:600"><span style="flex:1">Jenis Unit</span><span style="width:50px;text-align:center">Total</span><span style="width:50px;text-align:center">Ready</span><span style="width:50px;text-align:center">BD</span><span style="width:50px;text-align:center">MT</span><span style="width:50px;text-align:center">Driver</span><span style="width:80px">Readiness</span></div>
       <div style="overflow-y:auto;max-height:calc(100vh - 200px)" id="eqBody"></div>
@@ -178,17 +180,17 @@ function renderEqMini(){const cls=[...new Set(allUnits.map(u=>u.equipment_class|
 $('eqMini').innerHTML=cls.map(c=>{const u=allUnits.filter(x=>(x.equipment_class||'Other')===c),rv=u.filter(x=>x.status_unit==='Ready').length;return`<div style="display:flex;align-items:center;padding:2px 0;font-size:.68rem"><span style="flex:1">${c}</span><div style="width:60px;height:5px;border-radius:3px;background:var(--border);margin:0 6px"><div style="height:100%;border-radius:3px;background:var(--green);width:${rv/u.length*100}%"></div></div><span style="font-weight:700;min-width:28px;text-align:right">${rv}/${u.length}</span></div>`;}).join('');}
 
 function renderAlerts(){const bds=allUnits.filter(u=>u.status_unit!=='Ready');$('alertCnt').textContent=bds.length+' unit';
-if(!bds.length){$('alertList').innerHTML='<div style="padding:12px;text-align:center;color:var(--green);font-size:.75rem">✅ Semua unit ready</div>';return;}
+if(!bds.length){$('alertList').innerHTML='<div style="padding:12px;text-align:center;color:var(--green);font-size:.75rem"><span class="mi">check_circle</span> Semua unit ready</div>';return;}
 $('alertList').innerHTML=bds.map(u=>{const c=u.status_unit==='Breakdown'?'var(--red)':'var(--amber)';return`<div class="alert-item"><div class="alert-dot" style="background:${c}"></div><div><div class="alert-text">${u.unit_id} — ${u.status_unit}</div><div class="alert-meta">${u.notes||'Tidak ada keterangan'}</div></div></div>`;}).join('');}
 
 function renderTopRank(){const top=rankData.slice(0,5);if(!top.length){$('topRankBody').innerHTML='<div style="padding:16px;text-align:center;color:var(--muted);font-size:.78rem">Belum ada data ranking.</div>';return;}
-const cols=['#00C853','#00B0FF','#F59E0B','#EF4444','#8B5CF6'];const medals=['🥇','🥈','🥉','4','5'];
+const cols=['#00C853','#00B0FF','#F59E0B','#EF4444','#8B5CF6'];const medals=['<span class="mi">military_tech</span>','<span class="mi">military_tech</span>','<span class="mi">military_tech</span>','4','5'];
 $('topRankBody').innerHTML=top.map((r,i)=>{const ini=(r.driver_name||'??').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();let gc='grade-d',gl='D';if(r.score>=85){gc='grade-a';gl='A';}else if(r.score>=70){gc='grade-b';gl='B';}else if(r.score>=50){gc='grade-c';gl='C';}
 const bc=r.score>=85?'#10B981':r.score>=70?'#3B82F6':r.score>=50?'#F59E0B':'#EF4444';
 return`<div class="rk-row"><div class="rk-pos">${medals[i]}</div><div class="rk-av" style="background:${cols[i]}">${ini}</div><div class="rk-info"><div class="rk-name">${r.driver_name||r.driver_id}</div><div class="rk-meta">${r.driver_id} · ${r.equipment_class||''}</div></div><div class="rk-cell" style="color:${r.ftw_rate>=90?'var(--green)':'var(--amber)'}">${r.ftw_rate}%</div><div class="rk-cell" style="color:${r.p2h_rate>=90?'var(--green)':'var(--amber)'}">${r.p2h_rate}%</div><div class="rk-score"><div class="rk-sc-bar"><div class="rk-sc-fill" style="width:${r.score}%;background:${bc}"></div></div>${r.score}</div><div><span class="grade ${gc}">${gl}</span></div></div>`;}).join('');}
 
 function renderRanking(){const f=$('rkFilter')?.value||'';let list=rankData;if(f)list=list.filter(r=>r.equipment_class===f);const body=$('rankBody');if(!list.length){body.innerHTML='<div style="padding:20px;text-align:center;color:var(--muted)">Tidak ada data.</div>';return;}
-const cols=['#00C853','#00B0FF','#F59E0B','#EF4444','#8B5CF6','#EC4899','#14B8A6','#F97316'];const medals=['🥇','🥈','🥉'];
+const cols=['#00C853','#00B0FF','#F59E0B','#EF4444','#8B5CF6','#EC4899','#14B8A6','#F97316'];const medals=['<span class="mi">military_tech</span>','<span class="mi">military_tech</span>','<span class="mi">military_tech</span>'];
 body.innerHTML=list.map((r,i)=>{const ini=(r.driver_name||'??').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();let gc='grade-d',gl='D';if(r.score>=85){gc='grade-a';gl='A';}else if(r.score>=70){gc='grade-b';gl='B';}else if(r.score>=50){gc='grade-c';gl='C';}
 const bc=r.score>=85?'#10B981':r.score>=70?'#3B82F6':r.score>=50?'#F59E0B':'#EF4444';
 return`<div class="rk-row"><div class="rk-pos">${i<3?medals[i]:(i+1)}</div><div class="rk-av" style="background:${cols[i%8]}">${ini}</div><div class="rk-info"><div class="rk-name">${r.driver_name||r.driver_id}</div><div class="rk-meta">${r.driver_id} · ${r.equipment_class||''} · ${r.total_reports}× lapor</div></div><div class="rk-cell" style="color:${r.ftw_rate>=90?'var(--green)':'var(--amber)'}">${r.ftw_rate}%</div><div class="rk-cell" style="color:${r.p2h_rate>=90?'var(--green)':'var(--amber)'}">${r.p2h_rate}%</div><div class="rk-cell" style="color:${r.hm_rate>=80?'var(--green)':'var(--amber)'}">${r.hm_rate}%</div><div class="rk-score"><div class="rk-sc-bar"><div class="rk-sc-fill" style="width:${r.score}%;background:${bc}"></div></div>${r.score}</div><div><span class="grade ${gc}">${gl}</span></div></div>`;}).join('');}

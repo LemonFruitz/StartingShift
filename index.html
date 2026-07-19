@@ -52,6 +52,8 @@
   @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,.35)}50%{box-shadow:0 0 0 6px rgba(16,185,129,0)}}
   .dot-online{width:7px;height:7px;border-radius:50%;background:#10B981;display:inline-block;animation:pulse 2.5s ease infinite}
 </style>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+<style>.mi{font-family:'Material Icons Outlined';font-size:18px;vertical-align:middle;font-weight:normal;font-style:normal;line-height:1}.mi-sm{font-size:14px}</style>
 </head>
 <body>
 
@@ -66,7 +68,7 @@
   <div style="width:100%;max-width:400px;margin-bottom:16px">
     <div style="background:linear-gradient(135deg,rgba(0,200,83,.06),rgba(0,176,255,.06));border:1px solid rgba(0,200,83,.15);border-radius:12px;padding:12px 18px;text-align:center;min-height:56px;display:flex;align-items:center;justify-content:center">
       <div>
-        <div style="font-size:.55rem;font-weight:700;color:#00C853;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">⛑️ Pesan Keselamatan</div>
+        <div style="font-size:.55rem;font-weight:700;color:#00C853;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px"><span class="mi">health_and_safety</span> Pesan Keselamatan</div>
         <div id="safetyMsg" style="font-size:.8rem;font-weight:600;color:#1E293B;line-height:1.4">Utamakan keselamatan di setiap langkah kerja Anda.</div>
       </div>
     </div>
@@ -74,7 +76,7 @@
 
   <div class="card login-card" id="authCard">
     <div class="card-header card-header-gradient">
-      <span class="ch-title">🔐 Login Shift</span>
+      <span class="ch-title"><span class="mi">lock</span> Login Shift</span>
     </div>
     <div class="card-body">
       <div class="alert alert-error" id="loginAlert"></div>
@@ -82,7 +84,7 @@
       <div class="field">
         <label class="field-label">ID Karyawan</label>
         <div class="field-wrap">
-          <span class="field-ico">👤</span>
+          <span class="field-ico"><span class="mi">person</span></span>
           <input class="field-input upper" type="text" id="loginId" placeholder="Nomor NIK / Badge" autocomplete="off"/>
         </div>
         <span class="field-err" id="loginIdErr"></span>
@@ -91,7 +93,7 @@
       <div class="field">
         <label class="field-label">PIN</label>
         <div class="field-wrap">
-          <span class="field-ico">🔑</span>
+          <span class="field-ico"><span class="mi">key</span></span>
           <input class="field-input" type="password" id="loginPin" placeholder="Masukkan 4-6 digit PIN" inputmode="numeric" maxlength="6" autocomplete="off"/>
         </div>
         <span class="field-err" id="loginPinErr"></span>
@@ -132,7 +134,7 @@
     </div>
 
     <div class="unit-box" id="unitSection">
-      <div class="unit-box-title">🚛 Pilih Unit Operasi</div>
+      <div class="unit-box-title"><span class="mi">local_shipping</span> Pilih Unit Operasi</div>
       <div class="unit-row">
         <input type="text" id="unitInput" placeholder="Nomor lambung..." list="unitList"/>
         <datalist id="unitList"></datalist>
@@ -150,21 +152,21 @@
 
     <div class="status-bar" id="dashStatus" style="display:none">
       <span class="status-dot"></span>
-      <span class="status-text">✅ Unit siap — sesi aktif</span>
+      <span class="status-text"><span class="mi">check_circle</span> Unit siap — sesi aktif</span>
     </div>
 
     <!-- Offline Bar -->
     <div id="offlineBar" style="display:none;background:var(--warning-bg,#FFFBEB);border:1px solid rgba(245,158,11,.25);border-radius:8px;padding:12px 14px;margin-bottom:10px;align-items:center;gap:8px">
-      <span style="font-size:1.1rem">📴</span>
+      <span style="font-size:1.1rem"><span class="mi">mobile_off</span></span>
       <span class="ob-text" style="flex:1;font-size:.78rem;font-weight:600;color:var(--warning,#F59E0B)">—</span>
       <button onclick="manualSync()" style="padding:6px 12px;border:none;border-radius:6px;background:var(--warning,#F59E0B);color:white;font-family:inherit;font-weight:700;font-size:.72rem;cursor:pointer">Sync</button>
     </div>
 
-    <button class="btn btn-primary mb-8" id="btnFTW" onclick="goToFTW()" disabled>▶ Mulai Fit-to-Work & P2H</button>
-    <button class="btn btn-outline danger mb-8" id="btnBD" onclick="window.location.href='bd-report.html'" disabled>🔴 Lapor Breakdown</button>
+    <button class="btn btn-primary mb-8" id="btnFTW" onclick="goToFTW()" disabled><span class="mi">play_arrow</span> Mulai Fit-to-Work & P2H</button>
+    <button class="btn btn-outline danger mb-8" id="btnBD" onclick="window.location.href='bd-report.html'" disabled><span class="mi">error</span> Lapor Breakdown</button>
 
     <div class="end-shift-box" id="endShiftBox">
-      <div class="es-title">⏱️ Akhiri Shift — Input HM Akhir</div>
+      <div class="es-title"><span class="mi">timer</span> Akhiri Shift — Input HM Akhir</div>
       <div class="es-row">
         <input type="number" id="hmEndInput" placeholder="HM Akhir" inputmode="numeric"/>
         <button onclick="submitEndShift()">Simpan</button>
@@ -172,7 +174,7 @@
       <div id="hmEndMsg" style="font-size:.7rem;margin-top:5px;min-height:16px"></div>
     </div>
 
-    <button class="btn btn-outline" onclick="doLogout()">🚪 Akhiri Sesi</button>
+    <button class="btn btn-outline" onclick="doLogout()"><span class="mi">logout</span> Akhiri Sesi</button>
   </div>
 </div>
 
@@ -251,10 +253,10 @@ async function loadUnits(ec){try{const token=localStorage.getItem(TOKEN_KEY);
 
 async function pickUnit(){const unit_id=document.getElementById('unitInput').value.trim().toUpperCase();
   if(!unit_id){document.getElementById('unitErr').textContent='Masukkan nomor unit.';return;}
-  const btn=document.getElementById('btnPickUnit');btn.disabled=true;btn.textContent='⏳';document.getElementById('unitErr').innerHTML='';
+  const btn=document.getElementById('btnPickUnit');btn.disabled=true;btn.innerHTML='<span class="mi">hourglass_empty</span>';document.getElementById('unitErr').innerHTML='';
   try{const token=localStorage.getItem(TOKEN_KEY);
   const vr=await fetch(`${API}/vehicles/${encodeURIComponent(unit_id)}`,{headers:{'Authorization':'Bearer '+token}});const vdata=await vr.json();
-  if(!vr.ok||!vdata.success){let e=vdata.message||'Unit tidak ditemukan.';if(vdata.data&&vdata.data.notes)e+='<br>📝 <strong>Keterangan:</strong> '+vdata.data.notes;
+  if(!vr.ok||!vdata.success){let e=vdata.message||'Unit tidak ditemukan.';if(vdata.data&&vdata.data.notes)e+='<br><span class="mi">edit_note</span> <strong>Keterangan:</strong> '+vdata.data.notes;
   document.getElementById('unitErr').innerHTML=e;btn.disabled=false;btn.textContent='Pilih';return;}
   const v=vdata.data,sess=JSON.parse(localStorage.getItem(SESSION_KEY));sess.unit=unit_id;sess.type=v.vehicle_type||'—';sess.eq_class=v.equipment_class||'Dump Truck';
   localStorage.setItem(SESSION_KEY,JSON.stringify(sess));activateUnit(unit_id,v.vehicle_type||'—');
@@ -281,13 +283,13 @@ async function checkActiveShift(){try{const token=localStorage.getItem(TOKEN_KEY
   const done=d.data.reports.filter(r=>r.overall_status==='Ready to Work'&&r.odometer_end);
   if(open.length===0&&done.length>0){
     box.style.display='block';
-    box.innerHTML=done.map(r=>`<div style="font-size:.78rem;color:var(--success,#10B981);padding:4px;margin-bottom:4px">✅ ${r.unit_id}: HM ${r.odometer_entered} → ${r.odometer_end} (+${r.odometer_end-r.odometer_entered})</div>`).join('');
+    box.innerHTML=done.map(r=>`<div style="font-size:.78rem;color:var(--success,#10B981);padding:4px;margin-bottom:4px"><span class="mi">check_circle</span> ${r.unit_id}: HM ${r.odometer_entered} → ${r.odometer_end} (+${r.odometer_end-r.odometer_entered})</div>`).join('');
     return;
   }
   if(open.length>0){
     box.style.display='block';
     activeReportId=open[0].report_id;
-    let html=`<div class="es-title">⏱️ Akhiri Shift — Input HM Akhir</div>`;
+    let html=`<div class="es-title"><span class="mi">timer</span> Akhiri Shift — Input HM Akhir</div>`;
     open.forEach((rpt,i)=>{
       const tag=rpt.shift_ended_at?'<span style="color:var(--warning,#F59E0B);font-size:.6rem;font-weight:600"> (auto-closed)</span>':'';
       html+=`<div style="margin-bottom:8px;padding:8px;background:var(--input-bg,#F8FAFC);border:1px solid var(--border,#E2E8F0);border-radius:6px">
@@ -298,22 +300,22 @@ async function checkActiveShift(){try{const token=localStorage.getItem(TOKEN_KEY
       </div>`;
     });
     if(done.length>0){
-      html+=done.map(r=>`<div style="font-size:.72rem;color:var(--success,#10B981);padding:3px 0">✅ ${r.unit_id}: HM ${r.odometer_entered} → ${r.odometer_end} (+${r.odometer_end-r.odometer_entered})</div>`).join('');
+      html+=done.map(r=>`<div style="font-size:.72rem;color:var(--success,#10B981);padding:3px 0"><span class="mi">check_circle</span> ${r.unit_id}: HM ${r.odometer_entered} → ${r.odometer_end} (+${r.odometer_end-r.odometer_entered})</div>`).join('');
     }
     box.innerHTML=html;
   }}catch{}}
 async function submitHMFor(rid){const val=parseInt(document.getElementById('hmEnd-'+rid).value),msg=document.getElementById('hmMsg-'+rid);
   if(!val||val<=0){msg.textContent='Masukkan angka HM akhir.';msg.style.color='var(--danger,#EF4444)';return;}
   try{const r=await fetch(`${API}/supervisor/shift-reports/${rid}/end-shift`,{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+localStorage.getItem(TOKEN_KEY)},body:JSON.stringify({odometer_end:val})});
-  const d=await r.json();if(d.success){msg.textContent='✅ Tersimpan!';msg.style.color='var(--success,#10B981)';setTimeout(()=>checkActiveShift(),1000);}
+  const d=await r.json();if(d.success){msg.innerHTML='<span class="mi">check_circle</span> Tersimpan!';msg.style.color='var(--success,#10B981)';setTimeout(()=>checkActiveShift(),1000);}
   else{msg.textContent=d.message||'Gagal.';msg.style.color='var(--danger,#EF4444)';}}catch{msg.textContent='Gagal terhubung.';msg.style.color='var(--danger,#EF4444)';}}
 async function submitEndShift(){const val=parseInt(document.getElementById('hmEndInput')?.value),msg=document.getElementById('hmEndMsg');
   if(!val||val<=0){if(msg){msg.textContent='Masukkan angka HM akhir.';msg.style.color='var(--danger)';}return;}
   if(activeReportId)submitHMFor(activeReportId);}
 async function manualSync(){
   const r=await OfflineSync.syncAll();
-  if(r.synced>0) OfflineSync.showToast(`✅ ${r.synced} laporan berhasil disinkronkan!`);
-  else if(r.failed>0) OfflineSync.showToast('⚠️ Gagal sync — cek koneksi internet.');
+  if(r.synced>0) OfflineSync.showToast(`${r.synced} laporan berhasil disinkronkan!`);
+  else if(r.failed>0) OfflineSync.showToast('Gagal sync — cek koneksi internet.');
   else OfflineSync.showToast('Tidak ada data pending.');
 }
 
