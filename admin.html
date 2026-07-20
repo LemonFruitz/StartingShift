@@ -296,7 +296,7 @@ body{background:var(--bg);font-family:var(--font);color:var(--text);display:flex
       <div id="absStatus" style="padding:8px 16px;font-size:.72rem;min-height:20px"></div>
       <!-- Table header -->
       <div style="display:flex;padding:6px 16px;font-size:.58rem;font-weight:600;color:var(--muted);border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.05em">
-        <span style="width:30px">No</span><span style="flex:1">Nama</span><span style="width:70px">Unit</span><span style="width:55px">Status</span><span style="width:50px">Jam</span><span style="width:55px">Source</span><span style="width:50px">Aksi</span>
+        <span style="width:30px">No</span><span style="flex:1">Nama</span><span style="width:70px">Unit</span><span style="width:55px">Status</span><span style="width:50px">Jam</span><span style="width:55px">Source</span><span style="width:70px;text-align:right">Aksi</span>
       </div>
       <div id="absListBody" style="max-height:300px;overflow-y:auto"></div>
     </div>
@@ -324,6 +324,7 @@ body{background:var(--bg);font-family:var(--font);color:var(--text);display:flex
 <!-- MODALS -->
 <div class="modal-ov" id="modalBD"><div class="modal"><div class="modal-h" id="mdTt"><span class="mi">error</span> Keterangan Breakdown</div><div class="modal-b"><div class="mf"><label>Deskripsi</label><textarea id="mdDesc" placeholder="Jelaskan kerusakan..."></textarea></div><div class="mf"><label>Lokasi Unit</label><input type="text" id="mdLoc" placeholder="Contoh: Hauling Road KM 3"/></div></div><div class="modal-f"><button class="mbtn-c" onclick="closeMd()">Batal</button><button class="mbtn-o" onclick="confirmBD()">Konfirmasi</button></div></div></div>
 <div class="modal-ov" id="modalEdit"><div class="modal"><div class="modal-h"><span class="mi">edit</span> Edit Keterangan</div><div class="modal-b"><div class="mf"><label>Keterangan</label><textarea id="edNotes"></textarea></div></div><div class="modal-f"><button class="mbtn-c" onclick="closeEd()">Batal</button><button class="mbtn-o" onclick="saveNotes()">Simpan</button></div></div></div>
+<div class="modal-ov" id="modalEditReport"><div class="modal"><div class="modal-h"><span class="mi">edit</span> Edit Report</div><div class="modal-b"><div class="mf"><label>Unit ID</label><input type="text" id="erUnit"/></div><div class="mf" style="display:flex;gap:8px"><div style="flex:1"><label>HM Awal</label><input type="number" id="erHmAwal"/></div><div style="flex:1"><label>HM Akhir</label><input type="number" id="erHmAkhir"/></div></div><div class="mf"><label>Status FTW</label><select id="erFtw" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-size:.82rem;font-family:var(--font);outline:none"><option value="Fit">Fit</option><option value="Unfit">Unfit</option></select></div><div id="erStatus" style="font-size:.72rem;min-height:16px"></div></div><div class="modal-f"><button class="mbtn-c" onclick="closeEditReport()">Batal</button><button class="mbtn-o" onclick="saveEditReport()">Simpan</button></div></div></div>
 
 <script>
 const API='https://starting-hte.my.id/api/v1',TOKEN=localStorage.getItem('fms_token'),SESSION=JSON.parse(localStorage.getItem('fms_session')||'null');
@@ -585,13 +586,32 @@ const d=await r.json();if(d.success){manualAbs.push({did,uid,ftw,reason,notes,hm
 function renderAbsList(){if(!allReports)allReports=[];if(!manualAbs)manualAbs=[];const c=$('absListBody');
 // Combine: allReports (web) + manualAbs (manual) for current shift
 const combined=[];
-(absReports||allReports||[]).forEach(r=>{combined.push({name:r.driver_name||r.driver_id,id:r.driver_id,uid:r.unit_id,ftw:r.fit_status,time:r.timestamp_filled?new Date(r.timestamp_filled).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}):'—',src:r.submitted_by==='CCR-Manual'?'MANUAL':'WEB',notes:''});});
-(manualAbs||[]).forEach(a=>{if(!combined.find(x=>x.id===a.did)){combined.push({name:a.did,id:a.did,uid:a.uid,ftw:a.ftw,time:a.time,src:'MANUAL',notes:a.notes||''});}});
+(absReports||allReports||[]).forEach(r=>{combined.push({name:r.driver_name||r.driver_id,id:r.driver_id,uid:r.unit_id,ftw:r.fit_status,time:r.timestamp_filled?new Date(r.timestamp_filled).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}):'—',src:r.submitted_by==='CCR-Manual'?'MANUAL':'WEB',notes:'',rid:r.report_id});});
+(manualAbs||[]).forEach(a=>{if(!combined.find(x=>x.id===a.did)){combined.push({name:a.did,id:a.did,uid:a.uid,ftw:a.ftw,time:a.time,src:'MANUAL',notes:a.notes||'',rid:null});}});
 if(!combined.length){c.innerHTML='<div style="padding:16px;text-align:center;color:var(--muted);font-size:.78rem">Belum ada data absensi shift ini.</div>';return;}
 c.innerHTML=combined.map((a,i)=>{const stColor=a.ftw==='Fit'?'bg-fit':a.ftw==='Unfit'?'bg-unfit':'bg-find';
 const srcStyle=a.src==='WEB'?'background:rgba(0,200,83,.08);color:var(--green)':'background:rgba(245,158,11,.08);color:var(--amber)';
-return`<div style="display:flex;padding:8px 16px;border-bottom:1px solid var(--border);align-items:center;font-size:.72rem;gap:4px"><span style="width:30px;color:var(--muted);font-weight:600">${i+1}</span><span style="flex:1"><span style="font-weight:700">${a.name}</span>${a.notes?`<br><span style="font-size:.58rem;color:var(--muted)">${a.notes}</span>`:''}</span><span style="width:70px;font-weight:600">${a.uid}</span><span style="width:55px"><span class="badge-s ${stColor}">${a.ftw}</span></span><span style="width:50px;color:var(--muted)">${a.time}</span><span style="width:55px"><span class="badge-s" style="${srcStyle}">${a.src}</span></span><span style="width:50px">${a.src==='MANUAL'?`<button onclick="removeAbs('${a.id}')" style="background:none;border:none;cursor:pointer;font-size:.8rem" title="Hapus"><span class="mi">delete</span></button>`:''}</span></div>`;}).join('');}
+return`<div style="display:flex;padding:8px 16px;border-bottom:1px solid var(--border);align-items:center;font-size:.72rem;gap:4px"><span style="width:30px;color:var(--muted);font-weight:600">${i+1}</span><span style="flex:1"><span style="font-weight:700">${a.name}</span>${a.notes?`<br><span style="font-size:.58rem;color:var(--muted)">${a.notes}</span>`:''}</span><span style="width:70px;font-weight:600">${a.uid}</span><span style="width:55px"><span class="badge-s ${stColor}">${a.ftw}</span></span><span style="width:50px;color:var(--muted)">${a.time}</span><span style="width:55px"><span class="badge-s" style="${srcStyle}">${a.src}</span></span><span style="width:70px;display:flex;gap:6px;justify-content:flex-end">${a.rid?`<button onclick="openEditReport('${a.rid}')" style="background:none;border:none;cursor:pointer;font-size:.8rem;color:var(--info)" title="Edit"><span class="mi mi-sm">edit</span></button>`:''}${a.src==='MANUAL'?`<button onclick="removeAbs('${a.id}')" style="background:none;border:none;cursor:pointer;font-size:.8rem;color:var(--red)" title="Hapus"><span class="mi mi-sm">delete</span></button>`:''}</span></div>`;}).join('');}
 function removeAbs(did){const i=manualAbs.findIndex(a=>a.did===did);if(i>=0&&confirm('Hapus entry manual ini?')){manualAbs.splice(i,1);renderAbsList();updateHmSummary();}}
+
+// ── EDIT REPORT (Absensi Manual table) ──
+let editingReportId=null;
+function openEditReport(rid){const r=(absReports||allReports||[]).find(x=>String(x.report_id)===String(rid));if(!r)return;editingReportId=rid;
+  $('erUnit').value=r.unit_id||'';
+  $('erHmAwal').value=(r.odometer_entered!=null&&r.odometer_entered!=='')?r.odometer_entered:'';
+  $('erHmAkhir').value=(r.odometer_end!=null&&r.odometer_end!=='')?r.odometer_end:'';
+  $('erFtw').value=(r.fit_status==='Fit')?'Fit':'Unfit';
+  $('erStatus').textContent='';$('modalEditReport').classList.add('show');}
+function closeEditReport(){$('modalEditReport').classList.remove('show');editingReportId=null;}
+async function saveEditReport(){const rid=editingReportId;if(!rid)return;
+  const unit=$('erUnit').value.trim();const hmAwal=parseInt($('erHmAwal').value)||0;const hmAkhir=$('erHmAkhir').value===''?null:(parseInt($('erHmAkhir').value)||0);const ftw=$('erFtw').value;
+  const overall=(ftw==='Fit')?'Ready to Work':'Driver Unfit';const st=$('erStatus');st.style.color='var(--info)';st.textContent='Menyimpan...';
+  try{const r=await fetch(`${API}/shift-reports/${rid}/edit`,{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},body:JSON.stringify({unit_id:unit,odometer_entered:hmAwal,odometer_end:hmAkhir,fit_status:ftw,overall_status:overall})});
+  const d=await r.json();
+  if(d.success){const rp=(absReports||allReports||[]).find(x=>String(x.report_id)===String(rid));if(rp){rp.unit_id=unit;rp.odometer_entered=hmAwal;rp.odometer_end=hmAkhir;rp.fit_status=ftw;rp.overall_status=overall;}
+    closeEditReport();renderAbsList();updateHmSummary();renderHmView();
+    const ast=$('absStatus');if(ast){ast.style.color='var(--green)';ast.innerHTML='<span style="color:var(--green)"><span class="mi">check_circle</span> Berhasil diupdate</span>';setTimeout(()=>{if(ast.textContent.includes('Berhasil'))ast.innerHTML='';},4000);}
+  }else{st.style.color='var(--red)';st.textContent=d.message||'Gagal update';}}catch(e){st.style.color='var(--red)';st.textContent='Error koneksi';}}
 
 // ── BELUM LAPOR (driver aktif yg belum submit shift report hari ini) ──
 // Kategori operasi berdasarkan equipment class + unit id
