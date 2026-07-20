@@ -7,6 +7,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 :root{--bg:#F0F4F8;--card:#FFF;--border:#E5E9F0;--text:#1E293B;--muted:#94A3B8;--gray:#64748B;--green:#00C853;--blue:#00B0FF;--red:#EF4444;--amber:#F59E0B;--info:#3B82F6;--success:#10B981;--sidebar:#1E293B;--font:'Plus Jakarta Sans',sans-serif}
@@ -531,15 +532,24 @@ function renderHmTable(){
   }).join('');
 }
 // Download HM report (CSV UTF-8 BOM, ikut filter aktif)
-function downloadHmExcel(){
-  const list=hmFilteredList();const cell=v=>{v=(v==null?'':String(v));return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
-  const header=['Tanggal','Unit','Driver','ID Driver','Role','Equipment Class','HM Awal','HM Akhir','Selisih','Status'];
-  const rows=list.map(r=>{const awal=r.odometer_entered||0;const done=isHmDone(r);const akhir=done?r.odometer_end:'';const selisih=done?(r.odometer_end-awal):'';const status=done?(r.submitted_by==='CCR-Manual'?'Manual':'Sudah'):'Belum';return [hmFmtDate(r.timestamp_filled),r.unit_id||'',r.driver_name||'',r.driver_id||'',hmRole(r),r.equipment_class||'',awal||'',akhir,selisih,status].map(cell).join(',');});
-  const csv='﻿'+header.join(',')+'\n'+rows.join('\n');
-  dl(csv,`HM_Report_${new Date().toISOString().slice(0,10)}.csv`);
+// Helper: download array-of-arrays sebagai file .xlsx (auto-width kolom)
+function downloadExcel(data,headers,filename){
+  if(typeof XLSX==='undefined'){alert('Library Excel belum termuat, coba lagi sebentar.');return;}
+  const ws=XLSX.utils.aoa_to_sheet([headers,...data]);
+  ws['!cols']=headers.map((h,i)=>({wch:Math.max(String(h).length,...data.map(r=>String(r[i]!=null?r[i]:'').length))+2}));
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Data');
+  XLSX.writeFile(wb,filename+'.xlsx');
 }
-// Download template CSV upload HM
-function downloadHmTemplate(){dl('﻿unit_id,hm_akhir\nHDT001,4230\nHAVV003,1250\n','Template_HM_Upload.csv');}
+// Download HM report (.xlsx, ikut filter aktif)
+function downloadHmExcel(){
+  const list=hmFilteredList();
+  const headers=['Tanggal','Unit','Driver','ID Driver','Role','Equipment Class','HM Awal','HM Akhir','Selisih','Status'];
+  const data=list.map(r=>{const awal=r.odometer_entered||0;const done=isHmDone(r);const akhir=done?r.odometer_end:'';const selisih=done?(r.odometer_end-awal):'';const status=done?(r.submitted_by==='CCR-Manual'?'Manual':'Sudah'):'Belum';return [hmFmtDate(r.timestamp_filled),r.unit_id||'',r.driver_name||'',r.driver_id||'',hmRole(r),r.equipment_class||'',awal||'',akhir,selisih,status];});
+  downloadExcel(data,headers,`HM_Report_${new Date().toISOString().slice(0,10)}`);
+}
+// Download template upload HM (.xlsx: header + 2 contoh row)
+function downloadHmTemplate(){downloadExcel([['HDT001',4230],['HAVV003',1250]],['unit_id','hm_akhir'],'Template_HM_Upload');}
 function hmRowInput(rid,awal){
   const el=$('hmi-'+rid),d=$('hmd-'+rid);if(!el)return;
   if(el.value===''){el.classList.remove('err');if(d){d.textContent='—';d.style.color='var(--muted)';}return;}
@@ -649,12 +659,12 @@ function renderAbsList(){const c=$('absListBody');if(!c)return;
   const srcStyle=a.src==='WEB'?'background:rgba(0,200,83,.08);color:var(--green)':'background:rgba(245,158,11,.08);color:var(--amber)';
   return`<div style="display:flex;padding:8px 16px;border-bottom:1px solid var(--border);align-items:center;font-size:.72rem;gap:4px"><span style="width:30px;color:var(--muted);font-weight:600">${i+1}</span><span style="flex:1"><span style="font-weight:700">${a.name}</span>${a.notes?`<br><span style="font-size:.58rem;color:var(--muted)">${a.notes}</span>`:''}</span><span style="width:70px;font-weight:600">${a.uid}</span><span style="width:55px"><span class="badge-s ${stColor}">${a.ftw}</span></span><span style="width:50px;color:var(--muted)">${a.time}</span><span style="width:55px"><span class="badge-s" style="${srcStyle}">${a.src}</span></span><span style="width:70px;display:flex;gap:6px;justify-content:flex-end">${a.rid?`<button onclick="openEditReport('${a.rid}')" style="background:none;border:none;cursor:pointer;font-size:.8rem;color:var(--info)" title="Edit"><span class="mi mi-sm">edit</span></button>`:''}${a.src==='MANUAL'?`<button onclick="removeAbs('${a.id}')" style="background:none;border:none;cursor:pointer;font-size:.8rem;color:var(--red)" title="Hapus"><span class="mi mi-sm">delete</span></button>`:''}</span></div>`;}).join('');}
 // Download absensi (CSV UTF-8 BOM, ikut filter aktif)
+// Download absensi (.xlsx, ikut filter aktif)
 function downloadAbsExcel(){
-  const list=absFilteredList();const cell=v=>{v=(v==null?'':String(v));return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
-  const header=['No','Nama','ID','Unit','Equipment Class','Status','Jam','Source','Alasan','Catatan'];
-  const rows=list.map((a,i)=>[i+1,a.name||'',a.id||'',a.uid||'',a.eq||'',a.ftw||'',a.time||'',a.src||'',a.reason||'',a.notes||''].map(cell).join(','));
-  const csv='﻿'+header.join(',')+'\n'+rows.join('\n');
-  dl(csv,`Absensi_Manual_${new Date().toISOString().slice(0,10)}.csv`);
+  const list=absFilteredList();
+  const headers=['No','Nama','ID','Unit','Equipment Class','Status','Jam','Source','Alasan','Catatan'];
+  const data=list.map((a,i)=>[i+1,a.name||'',a.id||'',a.uid||'',a.eq||'',a.ftw||'',a.time||'',a.src||'',a.reason||'',a.notes||'']);
+  downloadExcel(data,headers,`Absensi_${new Date().toISOString().slice(0,10)}`);
 }
 function removeAbs(did){const i=manualAbs.findIndex(a=>a.did===did);if(i>=0&&confirm('Hapus entry manual ini?')){manualAbs.splice(i,1);renderAbsList();updateHmSummary();}}
 
