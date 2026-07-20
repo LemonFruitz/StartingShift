@@ -303,7 +303,7 @@ body{background:var(--bg);font-family:var(--font);color:var(--text);display:flex
 
     <!-- Tab 4: Belum Lapor -->
     <div id="hmPane4" class="panel" style="display:none;flex:1;overflow-y:auto">
-      <div class="panel-head"><div class="panel-title"><span class="mi">person_off</span> Belum Lapor Hari Ini</div><select class="pfsel" id="blFilter" onchange="renderBelumLapor()"><option value="">Semua Fleet</option></select></div>
+      <div class="panel-head"><div class="panel-title"><span class="mi">person_off</span> Belum Lapor Hari Ini</div><select class="pfsel" id="blFilter" onchange="renderBelumLapor()"><option value="">Semua Kategori</option></select></div>
       <!-- Summary -->
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 16px">
         <div class="kpi" style="padding:10px"><div class="kpi-val" style="font-size:1.3rem" id="blTotal">—</div><div class="kpi-sub">Total Driver</div></div>
@@ -529,10 +529,10 @@ let manualAbs=[];let allDriversList=[];let driversLoaded=false;let absReports=nu
 async function loadDriverList(){if(driversLoaded)return;try{
 const r=await fetch(`${API}/manpower`,{headers:{'Authorization':'Bearer '+TOKEN}});
 const d=await r.json();
-if(d.success){allDriversList=d.data.map(m=>({name:m.name||'',id:m.driver_id,cls:m.equipment_class||'',dept:m.department||''}));driversLoaded=true;}
+if(d.success){allDriversList=d.data.map(m=>({name:m.name||'',id:m.driver_id,cls:m.equipment_class||'',dept:m.department||'',unit:m.unit_id||m.unit||m.default_unit||''}));driversLoaded=true;}
 }catch(e){console.log('Manpower load error, fallback to reports');
 // Fallback: pakai allReports kalau endpoint belum ada
-const map={};allReports.forEach(r=>{if(r.driver_id&&!map[r.driver_id])map[r.driver_id]={name:r.driver_name||'',id:r.driver_id,cls:r.equipment_class||''};});
+const map={};allReports.forEach(r=>{if(r.driver_id&&!map[r.driver_id])map[r.driver_id]={name:r.driver_name||'',id:r.driver_id,cls:r.equipment_class||'',dept:'',unit:r.unit_id||''};});
 allDriversList=Object.values(map);}}
 
 function searchDriver(q){const dd=$('driverDropdown');if(q.length<1){dd.style.display='none';return;}
@@ -594,11 +594,42 @@ return`<div style="display:flex;padding:8px 16px;border-bottom:1px solid var(--b
 function removeAbs(did){const i=manualAbs.findIndex(a=>a.did===did);if(i>=0&&confirm('Hapus entry manual ini?')){manualAbs.splice(i,1);renderAbsList();updateHmSummary();}}
 
 // ── BELUM LAPOR (driver aktif yg belum submit shift report hari ini) ──
+// Kategori operasi berdasarkan equipment class + unit id
+const getCategory = (equipmentClass, unitId) => {
+  const uid = (unitId || '').toUpperCase();
+  const cls = (equipmentClass || '').toLowerCase();
+
+  // MINING: semua ADT — dicek lebih dulu agar "articulate(d) dump truck" tidak salah masuk HAULING
+  if (cls.includes('articulate')) return 'MINING';
+
+  // HAULING: semua Dump Truck + 5 excavator tertentu
+  if (cls.includes('dump truck')) return 'HAULING';
+  const haulingExca = ['HEXK001','HEXK002','HEXK003','CAT03','CAT04'];
+  if (cls.includes('excavator') && haulingExca.some(h => uid.includes(h))) return 'HAULING';
+
+  // MINING: semua excavator selain 5 di atas, semua bulldozer, + HGDK002, HCDK002, HWLC002
+  if (cls.includes('excavator')) return 'MINING';
+  if (cls.includes('bulldozer')) return 'MINING';
+  if (uid.includes('HGDK002')) return 'MINING';
+  if (uid.includes('HCDK002')) return 'MINING';
+  if (uid.includes('HWLC002')) return 'MINING';
+
+  // HRM: grader (kecuali HGDK002), compactor (kecuali HCDK002), wheel loader (kecuali HWLC002), water truck
+  if (cls.includes('grader')) return 'HRM';
+  if (cls.includes('compactor')) return 'HRM';
+  if (cls.includes('wheel loader')) return 'HRM';
+  if (cls.includes('water truck')) return 'HRM';
+
+  // SUPPORT: LV, manhaul, crane, fuel, lube, tire, dll
+  return 'SUPPORT';
+};
+const HM_CATS=['HAULING','MINING','HRM','SUPPORT'];
 function renderBelumLapor(){
-  const fil=$('blFilter');if(fil&&fil.options.length<=1){const cls=[...new Set((allDriversList||[]).map(d=>d.cls).filter(Boolean))].sort();fil.innerHTML='<option value="">Semua Fleet</option>'+cls.map(c=>`<option>${c}</option>`).join('');}
+  const fil=$('blFilter');if(fil&&fil.options.length<=1){fil.innerHTML='<option value="">Semua Kategori</option>'+HM_CATS.map(c=>`<option>${c}</option>`).join('');}
   const reported=new Set((allReports||[]).map(r=>String(r.driver_id)));
   const f=$('blFilter')?.value||'';
-  let scoped=(allDriversList||[]).filter(d=>!f||(d.cls||'')===f);
+  const withCat=(allDriversList||[]).map(d=>({...d,cat:getCategory(d.cls,d.unit||'')}));
+  const scoped=withCat.filter(d=>!f||d.cat===f);
   const total=scoped.length,sudah=scoped.filter(d=>reported.has(String(d.id))).length,belum=total-sudah;
   $('blTotal').textContent=total;$('blSudah').textContent=sudah;$('blBelum').textContent=belum;
   const pct=total?Math.round(sudah/total*100):0;$('blProgBar').style.width=pct+'%';$('blProgPct').textContent=`${sudah}/${total} (${pct}%)`;
@@ -607,9 +638,16 @@ function renderBelumLapor(){
   const body=$('blListBody');
   if(!(allDriversList||[]).length){body.innerHTML='<div style="padding:20px;text-align:center;color:var(--muted);font-size:.8rem">Memuat data driver...</div>';return;}
   if(!belumList.length){body.innerHTML='<div style="padding:20px;text-align:center;color:var(--green);font-size:.8rem"><span class="mi">check_circle</span> Semua driver sudah lapor</div>';return;}
-  body.innerHTML=belumList.map((d,i)=>{const nm=(d.name||'').replace(/'/g,"\\'");
-    return`<div style="display:flex;padding:8px 16px;border-bottom:1px solid var(--border);align-items:center;font-size:.72rem;gap:4px"><span style="width:30px;color:var(--muted);font-weight:600">${i+1}</span><span style="flex:1;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${d.name||'—'}</span><span style="width:80px;color:var(--gray)">${d.id}</span><span style="width:90px;color:var(--gray)">${d.dept||'—'}</span><span style="width:100px;color:var(--gray)">${d.cls||'—'}</span><span style="width:120px"><button onclick="inputAbsensiFor('${d.id}','${nm}')" style="padding:5px 10px;background:var(--green);color:#fff;border:none;border-radius:6px;font-size:.66rem;font-weight:700;cursor:pointer;font-family:var(--font)"><span class="mi mi-sm">how_to_reg</span> Input Absensi</button></span></div>`;
-  }).join('');
+  let html='';
+  HM_CATS.forEach(cat=>{
+    const rows=belumList.filter(d=>d.cat===cat);
+    if(!rows.length)return;
+    html+=`<div class="cat-hdr"><span>${cat} (${rows.length})</span></div>`;
+    html+=rows.map((d,i)=>{const nm=(d.name||'').replace(/'/g,"\\'");
+      return`<div style="display:flex;padding:8px 16px;border-bottom:1px solid var(--border);align-items:center;font-size:.72rem;gap:4px"><span style="width:30px;color:var(--muted);font-weight:600">${i+1}</span><span style="flex:1;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${d.name||'—'}</span><span style="width:80px;color:var(--gray)">${d.id}</span><span style="width:90px;color:var(--gray)">${d.dept||'—'}</span><span style="width:100px;color:var(--gray)">${d.cls||'—'}</span><span style="width:120px"><button onclick="inputAbsensiFor('${d.id}','${nm}')" style="padding:5px 10px;background:var(--green);color:#fff;border:none;border-radius:6px;font-size:.66rem;font-weight:700;cursor:pointer;font-family:var(--font)"><span class="mi mi-sm">how_to_reg</span> Input Absensi</button></span></div>`;
+    }).join('');
+  });
+  body.innerHTML=html;
 }
 // Auto-fill Nama & ID di tab Absensi Manual, lalu pindah ke tab tsb
 function inputAbsensiFor(id,name){switchHmTab(3);$('absDriverId').value=id;$('absDriverInfo').innerHTML=`<span style="color:var(--green)"><span class="mi">check</span> ${name}</span>`;$('driverDropdown').style.display='none';setTimeout(()=>$('absUnit')?.focus(),60);}
