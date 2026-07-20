@@ -224,6 +224,7 @@ body{background:var(--bg);font-family:var(--font);color:var(--text);display:flex
       <button class="pfsel" style="cursor:pointer;font-weight:700" id="hmTab1" onclick="switchHmTab(1)"><span class="mi">bolt</span> Queue Input</button>
       <button class="pfsel" style="cursor:pointer" id="hmTab2" onclick="switchHmTab(2)"><span class="mi">upload_file</span> Upload CSV</button>
       <button class="pfsel" style="cursor:pointer" id="hmTab3" onclick="switchHmTab(3)"><span class="mi">person</span> Absensi Manual</button>
+      <button class="pfsel" style="cursor:pointer" id="hmTab4" onclick="switchHmTab(4)"><span class="mi">person_off</span> Belum Lapor</button>
     </div>
 
     <!-- Tab 1: Queue Input HM -->
@@ -298,6 +299,24 @@ body{background:var(--bg);font-family:var(--font);color:var(--text);display:flex
         <span style="width:30px">No</span><span style="flex:1">Nama</span><span style="width:70px">Unit</span><span style="width:55px">Status</span><span style="width:50px">Jam</span><span style="width:55px">Source</span><span style="width:50px">Aksi</span>
       </div>
       <div id="absListBody" style="max-height:300px;overflow-y:auto"></div>
+    </div>
+
+    <!-- Tab 4: Belum Lapor -->
+    <div id="hmPane4" class="panel" style="display:none;flex:1;overflow-y:auto">
+      <div class="panel-head"><div class="panel-title"><span class="mi">person_off</span> Belum Lapor Hari Ini</div><select class="pfsel" id="blFilter" onchange="renderBelumLapor()"><option value="">Semua Fleet</option></select></div>
+      <!-- Summary -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 16px">
+        <div class="kpi" style="padding:10px"><div class="kpi-val" style="font-size:1.3rem" id="blTotal">—</div><div class="kpi-sub">Total Driver</div></div>
+        <div class="kpi" style="padding:10px"><div class="kpi-val" style="font-size:1.3rem;color:var(--green)" id="blSudah">—</div><div class="kpi-sub">Sudah Lapor</div></div>
+        <div class="kpi" style="padding:10px"><div class="kpi-val" style="font-size:1.3rem;color:var(--red)" id="blBelum">—</div><div class="kpi-sub">Belum Lapor</div></div>
+      </div>
+      <!-- Progress -->
+      <div style="display:flex;align-items:center;gap:8px;font-size:.68rem;color:var(--gray);padding:0 16px 10px"><span>Progress</span><div style="flex:1;height:6px;border-radius:3px;background:var(--border)"><div id="blProgBar" style="height:100%;border-radius:3px;background:var(--green);transition:width .3s;width:0"></div></div><span id="blProgPct" style="font-weight:700">—</span></div>
+      <!-- Table header -->
+      <div style="display:flex;padding:6px 16px;font-size:.58rem;font-weight:600;color:var(--muted);border-top:1px solid var(--border);border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.05em">
+        <span style="width:30px">No</span><span style="flex:1">Nama</span><span style="width:80px">ID</span><span style="width:90px">Dept</span><span style="width:100px">Fleet</span><span style="width:120px">Aksi</span>
+      </div>
+      <div id="blListBody" style="overflow-y:auto"></div>
     </div>
   </div>
 </div>
@@ -381,7 +400,7 @@ async function commitHm(rid,val){
     alert(d.message||'Gagal simpan HM');return false;
   }catch(e){alert('Error koneksi');return false;}
 }
-function switchHmTab(n){[1,2,3].forEach(i=>{$('hmPane'+i).style.display=i===n?'':'none';$('hmTab'+i).style.fontWeight=i===n?'700':'400';});if(n===1)renderHmView();if(n===3){loadDriverList();renderAbsList();const now=new Date();$('absTime').value=now.toTimeString().slice(0,5);if(!$('absDate').value)$('absDate').value=absDate||new Date().toISOString().slice(0,10);if(!absShift){absShift=curShift;$('absShift').value=curShift;}}}
+function switchHmTab(n){[1,2,3,4].forEach(i=>{$('hmPane'+i).style.display=i===n?'':'none';$('hmTab'+i).style.fontWeight=i===n?'700':'400';});if(n===1)renderHmView();if(n===3){loadDriverList();renderAbsList();const now=new Date();$('absTime').value=now.toTimeString().slice(0,5);if(!$('absDate').value)$('absDate').value=absDate||new Date().toISOString().slice(0,10);if(!absShift){absShift=curShift;$('absShift').value=curShift;}}if(n===4){Promise.resolve(loadDriverList()).then(()=>renderBelumLapor());}}
 function renderHmView(){updateHmSummary();renderHmQueue(false);renderOutstanding();renderHmTable();}
 function updateHmSummary(){
   const base=hmBaseList();const total=base.length;const done=base.filter(isHmDone).length;const pending=total-done;
@@ -573,6 +592,27 @@ c.innerHTML=combined.map((a,i)=>{const stColor=a.ftw==='Fit'?'bg-fit':a.ftw==='U
 const srcStyle=a.src==='WEB'?'background:rgba(0,200,83,.08);color:var(--green)':'background:rgba(245,158,11,.08);color:var(--amber)';
 return`<div style="display:flex;padding:8px 16px;border-bottom:1px solid var(--border);align-items:center;font-size:.72rem;gap:4px"><span style="width:30px;color:var(--muted);font-weight:600">${i+1}</span><span style="flex:1"><span style="font-weight:700">${a.name}</span>${a.notes?`<br><span style="font-size:.58rem;color:var(--muted)">${a.notes}</span>`:''}</span><span style="width:70px;font-weight:600">${a.uid}</span><span style="width:55px"><span class="badge-s ${stColor}">${a.ftw}</span></span><span style="width:50px;color:var(--muted)">${a.time}</span><span style="width:55px"><span class="badge-s" style="${srcStyle}">${a.src}</span></span><span style="width:50px">${a.src==='MANUAL'?`<button onclick="removeAbs('${a.id}')" style="background:none;border:none;cursor:pointer;font-size:.8rem" title="Hapus"><span class="mi">delete</span></button>`:''}</span></div>`;}).join('');}
 function removeAbs(did){const i=manualAbs.findIndex(a=>a.did===did);if(i>=0&&confirm('Hapus entry manual ini?')){manualAbs.splice(i,1);renderAbsList();updateHmSummary();}}
+
+// ── BELUM LAPOR (driver aktif yg belum submit shift report hari ini) ──
+function renderBelumLapor(){
+  const fil=$('blFilter');if(fil&&fil.options.length<=1){const cls=[...new Set((allDriversList||[]).map(d=>d.cls).filter(Boolean))].sort();fil.innerHTML='<option value="">Semua Fleet</option>'+cls.map(c=>`<option>${c}</option>`).join('');}
+  const reported=new Set((allReports||[]).map(r=>String(r.driver_id)));
+  const f=$('blFilter')?.value||'';
+  let scoped=(allDriversList||[]).filter(d=>!f||(d.cls||'')===f);
+  const total=scoped.length,sudah=scoped.filter(d=>reported.has(String(d.id))).length,belum=total-sudah;
+  $('blTotal').textContent=total;$('blSudah').textContent=sudah;$('blBelum').textContent=belum;
+  const pct=total?Math.round(sudah/total*100):0;$('blProgBar').style.width=pct+'%';$('blProgPct').textContent=`${sudah}/${total} (${pct}%)`;
+  $('blProgBar').style.background=pct>=100?'var(--green)':pct>=50?'var(--blue)':'var(--amber)';
+  const belumList=scoped.filter(d=>!reported.has(String(d.id)));
+  const body=$('blListBody');
+  if(!(allDriversList||[]).length){body.innerHTML='<div style="padding:20px;text-align:center;color:var(--muted);font-size:.8rem">Memuat data driver...</div>';return;}
+  if(!belumList.length){body.innerHTML='<div style="padding:20px;text-align:center;color:var(--green);font-size:.8rem"><span class="mi">check_circle</span> Semua driver sudah lapor</div>';return;}
+  body.innerHTML=belumList.map((d,i)=>{const nm=(d.name||'').replace(/'/g,"\\'");
+    return`<div style="display:flex;padding:8px 16px;border-bottom:1px solid var(--border);align-items:center;font-size:.72rem;gap:4px"><span style="width:30px;color:var(--muted);font-weight:600">${i+1}</span><span style="flex:1;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${d.name||'—'}</span><span style="width:80px;color:var(--gray)">${d.id}</span><span style="width:90px;color:var(--gray)">${d.dept||'—'}</span><span style="width:100px;color:var(--gray)">${d.cls||'—'}</span><span style="width:120px"><button onclick="inputAbsensiFor('${d.id}','${nm}')" style="padding:5px 10px;background:var(--green);color:#fff;border:none;border-radius:6px;font-size:.66rem;font-weight:700;cursor:pointer;font-family:var(--font)"><span class="mi mi-sm">how_to_reg</span> Input Absensi</button></span></div>`;
+  }).join('');
+}
+// Auto-fill Nama & ID di tab Absensi Manual, lalu pindah ke tab tsb
+function inputAbsensiFor(id,name){switchHmTab(3);$('absDriverId').value=id;$('absDriverInfo').innerHTML=`<span style="color:var(--green)"><span class="mi">check</span> ${name}</span>`;$('driverDropdown').style.display='none';setTimeout(()=>$('absUnit')?.focus(),60);}
 
 // SHIFT PDF REPORT
 async function genShiftPDF(){if(!window.jspdf){alert('Library PDF sedang dimuat, coba lagi.');return;}
