@@ -898,71 +898,187 @@ function renderBelumLapor(){
 function inputAbsensiFor(id,name){switchHmTab(3);$('absDriverId').value=id;$('absDriverInfo').innerHTML=`<span style="color:var(--green)"><span class="mi">check</span> ${name}</span>`;$('driverDropdown').style.display='none';setTimeout(()=>$('absUnit')?.focus(),60);}
 
 // SHIFT PDF REPORT
+// Load logo-hte.png → base64 (via canvas). Resolve null jika gagal supaya PDF tetap tergenerate.
+function loadLogo(){return new Promise(resolve=>{try{const img=new Image();img.crossOrigin='anonymous';img.onload=()=>{try{const canvas=document.createElement('canvas');canvas.width=img.naturalWidth||img.width;canvas.height=img.naturalHeight||img.height;canvas.getContext('2d').drawImage(img,0,0);resolve({data:canvas.toDataURL('image/png'),w:canvas.width,h:canvas.height});}catch(e){resolve(null);}};img.onerror=()=>resolve(null);img.src='logo-hte.png';}catch(e){resolve(null);}});}
+
 async function genShiftPDF(){if(!window.jspdf){alert('Library PDF sedang dimuat, coba lagi.');return;}
 const{jsPDF}=window.jspdf;const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
 const pw=doc.internal.pageSize.getWidth(),ph=doc.internal.pageSize.getHeight();
+const M=14;// margin
+// Palet
+const C={green:[0,200,83],red:[239,68,68],amber:[245,158,11],blue:[0,176,255],orange:[249,115,22],sep:[229,233,240],body:[30,41,59],muted:[148,163,184],rowAlt:[247,249,252]};
 const today=new Date(),todayStr=today.toISOString().slice(0,10);
 const shLabel=curShift==='1'?'Shift 1 (07:00-19:00)':'Shift 2 (19:00-07:00)';
+const shShort=curShift==='1'?'Shift 1':'Shift 2';
 const todayFmt=today.toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+const printTime=today.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+const printBy=(SESSION&&(SESSION.name||SESSION.id))||'CCR';
 
-// Header
-doc.setFillColor(0,200,83);doc.rect(0,0,pw*0.55,22,'F');
-doc.setFillColor(0,176,255);doc.rect(pw*0.55,0,pw*0.45,22,'F');
-doc.setTextColor(255);doc.setFontSize(12);doc.setFont(undefined,'bold');
-doc.text('PT HALMAHERA TRANSPORTASI ENERGI',14,9);
-doc.setFontSize(8);doc.setFont(undefined,'normal');
-doc.text('Starting Shift Web App — Laporan Shift',14,15);
-doc.setFontSize(7);doc.text('Site HSM · Pit Cendana Extend',14,20);
-
-// Shift info
-doc.setFillColor(240,244,248);doc.roundedRect(14,26,pw-28,14,3,3,'F');
-doc.setFontSize(13);doc.setFont(undefined,'bold');doc.setTextColor(0,200,83);
-doc.text(shLabel,20,35);
-doc.setFontSize(8);doc.setFont(undefined,'normal');doc.setTextColor(30,41,59);
-doc.text(`Tanggal: ${todayFmt}  |  Dicetak: ${today.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})}`,pw/2-10,35);
-
-// KPI
-let y=45;doc.setFontSize(11);doc.setFont(undefined,'bold');doc.text('1. Ringkasan',14,y);y+=4;
+// ── DATA & METRIK (konsisten dgn dashboard renderKPI) ──
+const totUnit=allUnits.length||1;
 const td=allReports.length,fc=allReports.filter(r=>r.fit_status==='Fit').length,pp=allReports.filter(r=>r.p2h_status==='Passed').length;
-const rdy=allUnits.filter(u=>u.status_unit==='Ready').length,bd=allUnits.filter(u=>u.status_unit==='Breakdown').length;
+const rdy=allUnits.filter(u=>u.status_unit==='Ready').length,bd=allUnits.filter(u=>u.status_unit==='Breakdown').length,mt=allUnits.filter(u=>u.status_unit==='Maintenance').length;
 const hmDone=allReports.filter(r=>r.odometer_end).length;
-doc.autoTable({startY:y,body:[['Operator Hadir','FTW Fit','P2H Lulus','Unit Ready','BD Aktif','HM Terisi'],[td,fc,pp,rdy,bd,hmDone]],styles:{fontSize:8,cellPadding:3,halign:'center'},didParseCell:function(d){if(d.row.index===0){d.cell.styles.fontStyle='bold';d.cell.styles.textColor=[100,116,139];d.cell.styles.fontSize=7;}if(d.row.index===1){d.cell.styles.fontStyle='bold';d.cell.styles.fontSize=16;d.cell.styles.textColor=[0,200,83];}d.cell.styles.fillColor=[240,244,248];}});
-y=doc.lastAutoTable.finalY+6;
+const tm=Math.max(td,totUnit);
+const aP=Math.round(td/tm*100),fP=td?Math.round(fc/td*100):0,pP=td?Math.round(pp/td*100):0,rP=Math.round(rdy/totUnit*100),hP=td?Math.round(hmDone/td*100):0;
+const score=Math.round((aP+fP+pP+rP)/4);
 
-// Operator table
-doc.setFontSize(11);doc.setFont(undefined,'bold');doc.text('2. Data Operator',14,y);y+=3;
-doc.autoTable({startY:y,head:[['No','Driver','Unit','Tipe','FTW','P2H','HM Awal','HM Akhir','Status']],body:(allReports||[]).map((r,i)=>[i+1,r.driver_name||r.driver_id,r.unit_id,r.equipment_class||'',r.fit_status,r.p2h_status||'—',r.odometer_entered||'—',r.odometer_end||'—',r.overall_status]),styles:{fontSize:7,cellPadding:2},headStyles:{fillColor:[0,200,83],textColor:255,fontStyle:'bold'},alternateRowStyles:{fillColor:[245,247,250]}});
-y=doc.lastAutoTable.finalY+6;
+const logo=await loadLogo();
 
-// BD section
-if(y>ph-50){doc.addPage();y=14;}
+// ── Helper: section header bar (rounded rect + judul putih) ──
+function sectionBar(title,rgb,yy){doc.setFillColor(rgb[0],rgb[1],rgb[2]);doc.roundedRect(M,yy,pw-2*M,7,1.6,1.6,'F');doc.setTextColor(255);doc.setFontSize(9.5);doc.setFont('helvetica','bold');doc.text(title.toUpperCase(),M+3,yy+4.8);return yy+7+3;}
+// ── Helper: pastikan ruang cukup, kalau tidak addPage ──
+function ensure(need,yy){if(yy+need>ph-16){doc.addPage();return 20;}return yy;}
+
+// ═══ HEADER (gradient hijau→biru) ═══
+doc.setFillColor(C.green[0],C.green[1],C.green[2]);doc.rect(0,0,pw*0.6,28,'F');
+doc.setFillColor(C.blue[0],C.blue[1],C.blue[2]);doc.rect(pw*0.6,0,pw*0.4,28,'F');
+let txtX=M;
+if(logo){const lh=17,lw=logo.w&&logo.h?Math.min(lh*(logo.w/logo.h),22):lh;try{doc.addImage(logo.data,'PNG',M,5.5,lw,lh);txtX=M+lw+4;}catch(e){txtX=M;}}
+doc.setTextColor(255);doc.setFontSize(13);doc.setFont('helvetica','bold');
+doc.text('PT HALMAHERA TRANSPORTASI ENERGI',txtX,11);
+doc.setFontSize(9);doc.setFont('helvetica','normal');
+doc.text('Starting Shift Report',txtX,17.5);
+doc.setFontSize(7.5);doc.text('Site HSM · Mining Operations',txtX,22.5);
+
+// Info bar
+const ibY=31,ibH=14;
+doc.setFillColor(240,244,248);doc.roundedRect(M,ibY,pw-2*M,ibH,2.5,2.5,'F');
+doc.setDrawColor(C.sep[0],C.sep[1],C.sep[2]);doc.setLineWidth(0.3);doc.line(pw/2,ibY+2.5,pw/2,ibY+ibH-2.5);
+doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(C.green[0],C.green[1],C.green[2]);
+doc.text(shLabel,M+5,ibY+6);
+doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(C.body[0],C.body[1],C.body[2]);
+doc.text(`Dicetak: ${printTime} WITA`,M+5,ibY+11);
+doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(C.body[0],C.body[1],C.body[2]);
+doc.text(todayFmt,pw/2+5,ibY+6);
+doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(C.muted[0],C.muted[1],C.muted[2]);
+doc.text(`Dicetak oleh: ${printBy}`,pw/2+5,ibY+11);
+
+let y=ibY+ibH+5;
+
+// ═══ SECTION 1 — RINGKASAN OPERASI (6 KPI boxes) ═══
+y=sectionBar('1. Ringkasan Operasi',C.green,y);
+const kpis=[
+  {l:'Hadir',v:String(td),p:aP+'%',c:C.green},
+  {l:'FTW Fit',v:String(fc),p:fP+'%',c:C.green},
+  {l:'P2H Pass',v:String(pp),p:pP+'%',c:C.blue},
+  {l:'Ready',v:`${rdy}/${totUnit}`,p:rP+'%',c:C.blue},
+  {l:'BD',v:String(bd),p:`${mt} MT`,c:C.red},
+  {l:'HM Done',v:String(hmDone),p:hP+'%',c:C.amber},
+];
+const gapK=3,boxW=(pw-2*M-gapK*5)/6,boxH=20;
+kpis.forEach((k,i)=>{const bx=M+i*(boxW+gapK);
+  doc.setFillColor(248,250,252);doc.setDrawColor(C.sep[0],C.sep[1],C.sep[2]);doc.setLineWidth(0.3);doc.roundedRect(bx,y,boxW,boxH,2,2,'FD');
+  doc.setFillColor(k.c[0],k.c[1],k.c[2]);doc.roundedRect(bx,y,boxW,1.6,0.8,0.8,'F');
+  doc.setFont('helvetica','bold');doc.setFontSize(6.2);doc.setTextColor(C.muted[0],C.muted[1],C.muted[2]);
+  doc.text(k.l.toUpperCase(),bx+boxW/2,y+5,{align:'center'});
+  doc.setFontSize(14);doc.setTextColor(C.body[0],C.body[1],C.body[2]);
+  doc.text(k.v,bx+boxW/2,y+12.5,{align:'center'});
+  doc.setFontSize(7);doc.setTextColor(k.c[0],k.c[1],k.c[2]);
+  doc.text(k.p,bx+boxW/2,y+17.5,{align:'center'});
+});
+y+=boxH+6;
+
+// ═══ SECTION 2 — SKOR KESIAPAN SHIFT ═══
+y=sectionBar('2. Skor Kesiapan Shift',C.blue,y);
+const scoreCol=score>=90?C.green:score>=70?C.amber:C.red;
+const barX=M,barW=pw-2*M-22,barH=9;
+doc.setFillColor(C.sep[0],C.sep[1],C.sep[2]);doc.roundedRect(barX,y,barW,barH,2,2,'F');
+doc.setFillColor(scoreCol[0],scoreCol[1],scoreCol[2]);doc.roundedRect(barX,y,Math.max(barW*score/100,3),barH,2,2,'F');
+doc.setFont('helvetica','bold');doc.setFontSize(15);doc.setTextColor(scoreCol[0],scoreCol[1],scoreCol[2]);
+doc.text(score+'%',barX+barW+3,y+barH-1.5);
+y+=barH+5;
+doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(C.muted[0],C.muted[1],C.muted[2]);
+doc.text(`Komponen:  Kehadiran ${aP}%   |   FTW ${fP}%   |   P2H ${pP}%   |   Fleet ${rP}%`,M,y);
+y+=6;
+
+// ═══ SECTION 3 — DATA OPERATOR ═══
+y=ensure(20,y);
+y=sectionBar('3. Data Operator',C.green,y);
+doc.autoTable({startY:y,margin:{left:M,right:M,bottom:16},
+  head:[['No','Driver','ID','Unit','Equipment','FTW','P2H','HM Awal','HM Akhir','Selisih','Status']],
+  body:(allReports||[]).map((r,i)=>{const awal=r.odometer_entered,akhir=r.odometer_end;const sel=(akhir!=null&&akhir!==''&&awal!=null&&awal!=='')?(Number(akhir)-Number(awal)):'—';return [i+1,r.driver_name||r.driver_id||'—',r.driver_id||'—',r.unit_id||'—',r.equipment_class||'—',r.fit_status||'—',r.p2h_status||'—',awal!=null&&awal!==''?awal:'—',akhir!=null&&akhir!==''?akhir:'—',sel,r.overall_status||'—'];}),
+  styles:{fontSize:7,cellPadding:1.8,textColor:C.body,lineColor:C.sep,lineWidth:0.1},
+  headStyles:{fillColor:C.green,textColor:255,fontStyle:'bold',fontSize:7,halign:'center'},
+  alternateRowStyles:{fillColor:C.rowAlt},
+  columnStyles:{0:{halign:'center',cellWidth:8},5:{halign:'center'},6:{halign:'center'},7:{halign:'right'},8:{halign:'right'},9:{halign:'right'},10:{halign:'center'}}});
+y=doc.lastAutoTable.finalY+7;
+
+// ═══ SECTION 4 — BREAKDOWN REPORT ═══
 const openBD=(Array.isArray(bdReports)?bdReports:[]).filter(r=>r.status!=='Resolved');
-doc.setFontSize(11);doc.setFont(undefined,'bold');doc.text(`3. Breakdown Report (${openBD.length} aktif)`,14,y);y+=3;
-if(openBD.length>0){doc.autoTable({startY:y,head:[['Unit','Komponen','Severity','Deskripsi','Status']],body:openBD.map(r=>[r.unit_id,r.component,r.severity,r.description||'',r.status]),styles:{fontSize:7,cellPadding:2},headStyles:{fillColor:[239,68,68],textColor:255}});}
-else{doc.setFontSize(8);doc.setFont(undefined,'normal');doc.text('Tidak ada breakdown aktif.',14,y+3);}
+y=ensure(20,y);
+y=sectionBar(`4. Breakdown Report (${openBD.length} aktif)`,C.red,y);
+if(openBD.length){doc.autoTable({startY:y,margin:{left:M,right:M,bottom:16},
+  head:[['No','Unit','Komponen','Severity','Deskripsi','Status','Dilaporkan oleh']],
+  body:openBD.map((r,i)=>[i+1,r.unit_id||'—',r.component||'—',r.severity||'—',r.description||'—',r.status||'—',r.driver_name||r.driver_id||'—']),
+  styles:{fontSize:7,cellPadding:1.8,textColor:C.body,lineColor:C.sep,lineWidth:0.1},
+  headStyles:{fillColor:C.red,textColor:255,fontStyle:'bold',fontSize:7},
+  alternateRowStyles:{fillColor:[254,242,242]},columnStyles:{0:{halign:'center',cellWidth:8}}});
+  y=doc.lastAutoTable.finalY+7;}
+else{doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(C.muted[0],C.muted[1],C.muted[2]);doc.text('Tidak ada breakdown aktif.',M,y+1);y+=8;}
 
-// Unit carryover
-if(y>ph-40){doc.addPage();y=14;}else y=doc.lastAutoTable?doc.lastAutoTable.finalY+6:y+10;
-const bdUnits=allUnits.filter(u=>u.status_unit!=='Ready');
-doc.setFontSize(11);doc.setFont(undefined,'bold');doc.text(`4. Unit Carryover (${bdUnits.length})`,14,y);y+=3;
-if(bdUnits.length>0){doc.autoTable({startY:y,head:[['Unit','Tipe','Status','Keterangan']],body:bdUnits.map(u=>[u.unit_id,u.vehicle_type||'',u.status_unit,u.notes||'-']),styles:{fontSize:7,cellPadding:2},headStyles:{fillColor:[245,158,11],textColor:255}});}
+// ═══ SECTION 5 — UNIT CARRYOVER (BD/MT) ═══
+const carry=allUnits.filter(u=>u.status_unit==='Breakdown'||u.status_unit==='Maintenance');
+y=ensure(20,y);
+y=sectionBar(`5. Unit Carryover (${carry.length})`,C.amber,y);
+if(carry.length){doc.autoTable({startY:y,margin:{left:M,right:M,bottom:16},
+  head:[['Unit','Tipe','Status','Keterangan']],
+  body:carry.map(u=>[u.unit_id||'—',u.vehicle_type||u.equipment_class||'—',u.status_unit||'—',u.notes||'-']),
+  styles:{fontSize:7,cellPadding:1.8,textColor:C.body,lineColor:C.sep,lineWidth:0.1},
+  headStyles:{fillColor:C.amber,textColor:255,fontStyle:'bold',fontSize:7},
+  alternateRowStyles:{fillColor:[255,251,235]}});
+  y=doc.lastAutoTable.finalY+7;}
+else{doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(C.muted[0],C.muted[1],C.muted[2]);doc.text('Semua unit Ready — tidak ada carryover.',M,y+1);y+=8;}
 
-// Sign-off
-if(doc.lastAutoTable)y=doc.lastAutoTable.finalY+10;else y+=10;
-if(y>ph-50){doc.addPage();y=14;}
-doc.setFontSize(10);doc.setFont(undefined,'bold');doc.text('Serah Terima:',14,y);y+=6;
-const sigW=(pw-28-20)/2;
-doc.setDrawColor(180);doc.roundedRect(14,y,sigW,35,2,2);doc.roundedRect(14+sigW+20,y,sigW,35,2,2);
-doc.setFontSize(7);doc.setFont(undefined,'bold');doc.setTextColor(100);
-doc.text('DISERAHKAN OLEH',14+sigW/2,y+4,{align:'center'});
-doc.text('DITERIMA OLEH',14+sigW+20+sigW/2,y+4,{align:'center'});
-doc.setFont(undefined,'normal');
-doc.text('Nama: ___________________',20,y+22);doc.text('Nama: ___________________',14+sigW+26,y+22);
-doc.text('TTD:',20,y+30);doc.text('TTD:',14+sigW+26,y+30);
+// ═══ SECTION 6 — EXCEPTION (kalau ada) ═══
+const exList=(typeof computeExceptions==='function')?computeExceptions():[];
+if(exList.length){
+  y=ensure(20,y);
+  y=sectionBar(`6. Exception Terdeteksi (${exList.length})`,C.orange,y);
+  doc.autoTable({startY:y,margin:{left:M,right:M,bottom:16},
+    head:[['#','Level','Kategori','Keterangan']],
+    body:exList.map((e,i)=>[i+1,(e.lvl==='kritis'?'KRITIS':'WARNING'),e.label||'—',e.desc||'—']),
+    styles:{fontSize:7,cellPadding:1.8,textColor:C.body,lineColor:C.sep,lineWidth:0.1},
+    headStyles:{fillColor:C.orange,textColor:255,fontStyle:'bold',fontSize:7},
+    alternateRowStyles:{fillColor:[255,247,237]},
+    columnStyles:{0:{halign:'center',cellWidth:8},1:{cellWidth:22}},
+    didParseCell:function(d){if(d.section==='body'&&d.column.index===1){const kritis=String(d.cell.raw)==='KRITIS';d.cell.styles.textColor=kritis?C.red:C.amber;d.cell.styles.fontStyle='bold';}}});
+  y=doc.lastAutoTable.finalY+7;
+}
 
-// Footer
-const pages=doc.internal.getNumberOfPages();for(let i=1;i<=pages;i++){doc.setPage(i);doc.setFontSize(6.5);doc.setTextColor(180);doc.text('Starting Shift — PT HTE',14,ph-5);doc.text(`Hal ${i}/${pages}`,pw-14,ph-5,{align:'right'});}
-doc.save(`Shift_Report_${shLabel.replace(/\s/g,'_')}_${todayStr}.pdf`);}
+// ═══ SECTION 7 — SERAH TERIMA (selalu di halaman terakhir, cukup ruang) ═══
+if(y>ph-80){doc.addPage();y=20;}
+doc.setFillColor(248,250,252);doc.setDrawColor(C.sep[0],C.sep[1],C.sep[2]);doc.setLineWidth(0.3);
+const boxTop=y,boxBottom=ph-22,boxHh=Math.min(70,boxBottom-boxTop);
+doc.roundedRect(M,boxTop,pw-2*M,boxHh,3,3,'FD');
+doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(C.body[0],C.body[1],C.body[2]);
+doc.text('SERAH TERIMA',pw/2,boxTop+8,{align:'center'});
+// Catatan
+doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(C.muted[0],C.muted[1],C.muted[2]);
+doc.text('Catatan:',M+6,boxTop+16);
+doc.setDrawColor(C.muted[0],C.muted[1],C.muted[2]);doc.setLineWidth(0.2);
+doc.line(M+6,boxTop+22,pw-M-6,boxTop+22);doc.line(M+6,boxTop+28,pw-M-6,boxTop+28);
+// Kartu tanda tangan
+const sy=boxTop+34,sh=boxBottom>boxTop+70?30:(boxBottom-sy-4),sigW=(pw-2*M-12-10)/2;
+doc.setDrawColor(C.sep[0],C.sep[1],C.sep[2]);doc.setLineWidth(0.3);
+doc.roundedRect(M+6,sy,sigW,sh,2,2);doc.roundedRect(M+6+sigW+10,sy,sigW,sh,2,2);
+doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.setTextColor(C.muted[0],C.muted[1],C.muted[2]);
+doc.text('DISERAHKAN OLEH',M+6+sigW/2,sy+5,{align:'center'});
+doc.text('DITERIMA OLEH',M+6+sigW+10+sigW/2,sy+5,{align:'center'});
+doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(C.body[0],C.body[1],C.body[2]);
+doc.text('Nama: __________________',M+10,sy+13);doc.text('Nama: __________________',M+10+sigW+10,sy+13);
+doc.text('Jabatan: ________________',M+10,sy+19);doc.text('Jabatan: ________________',M+10+sigW+10,sy+19);
+doc.text('TTD:',M+10,sy+25);doc.text('TTD:',M+10+sigW+10,sy+25);
+
+// ═══ FOOTER setiap halaman ═══
+const pages=doc.internal.getNumberOfPages();
+for(let i=1;i<=pages;i++){doc.setPage(i);
+  doc.setDrawColor(C.sep[0],C.sep[1],C.sep[2]);doc.setLineWidth(0.3);doc.line(M,ph-11,pw-M,ph-11);
+  doc.setFontSize(6.5);doc.setFont('helvetica','normal');doc.setTextColor(C.muted[0],C.muted[1],C.muted[2]);
+  doc.text('Starting Shift Report — PT HTE',M,ph-6);
+  doc.setFont('helvetica','bold');doc.text('CONFIDENTIAL',pw/2,ph-6,{align:'center'});
+  doc.setFont('helvetica','normal');doc.text(`Hal ${i}/${pages}`,pw-M,ph-6,{align:'right'});}
+doc.save(`Shift_Report_${shShort.replace(/\s/g,'_')}_${todayStr}.pdf`);}
 
 // CSV
 async function downloadAll(){try{const today=new Date().toISOString().slice(0,10),B='\uFEFF';let c1='Unit ID,Tipe,Kelas,Status,Keterangan\n';allUnits.forEach(u=>{c1+=`${u.unit_id},"${u.vehicle_type||''}",${u.equipment_class||''},${u.status_unit},"${(u.notes||'').replace(/"/g,'""')}"\n`;});dl(B+c1,`Unit_Status_${today}.csv`);
