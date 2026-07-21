@@ -134,6 +134,11 @@ body{background:var(--bg);font-family:var(--font);color:var(--text);display:flex
 
   <!-- VIEW: EQUIPMENT -->
   <div class="content view" id="v-equipment" style="flex-direction:column;gap:14px">
+    <div class="panel-title"><span class="mi">category</span> Ringkasan Per Kategori Operasional</div>
+    <div class="panel" style="overflow:hidden">
+      <div class="panel-head" style="font-size:.68rem;display:flex;gap:10px;color:var(--gray);font-weight:600"><span style="flex:1">Kategori</span><span style="width:50px;text-align:center">Total</span><span style="width:50px;text-align:center">Ready</span><span style="width:50px;text-align:center">BD</span><span style="width:50px;text-align:center">MT</span><span style="width:80px">Readiness</span></div>
+      <div id="eqCatBody"></div>
+    </div>
     <div class="panel-title"><span class="mi">local_shipping</span> Equipment Summary — Per Jenis Unit</div>
     <div class="panel" style="flex:1;overflow:hidden">
       <div class="panel-head" style="font-size:.68rem;display:flex;gap:10px;color:var(--gray);font-weight:600"><span style="flex:1">Jenis Unit</span><span style="width:50px;text-align:center">Total</span><span style="width:50px;text-align:center">Ready</span><span style="width:50px;text-align:center">BD</span><span style="width:50px;text-align:center">MT</span><span style="width:50px;text-align:center">Driver</span><span style="width:80px">Readiness</span></div>
@@ -149,6 +154,32 @@ let allUnits=[],allReports=[],trendData=[],rankData=[],bdReports=[];
 const _h=new Date().getHours(),curShift=(_h>=7&&_h<19)?'1':'2';
 function $(id){return document.getElementById(id);}
 function getRoleLabel(equipmentClass){const cls=(equipmentClass||'').toLowerCase();if(cls.includes('articulate'))return'Operator';if(cls.includes('dump truck'))return'Driver';if(cls.includes('light vehicle'))return'Driver';if(cls.includes('manhaul'))return'Driver';if(cls.includes('water truck'))return'Driver';return'Operator';}
+function getCategory(equipmentClass, unitId) {
+  const uid = (unitId || '').toUpperCase();
+  const cls = (equipmentClass || '').toLowerCase();
+  if (cls.includes('dump truck')) return 'HAULING';
+  const haulingExca = ['HEXK001','HEXK002','HEXK003','CAT03','CAT04'];
+  if (cls.includes('excavator') && haulingExca.some(h => uid.includes(h))) return 'HAULING';
+  if (cls.includes('articulate')) return 'MINING';
+  if (cls.includes('excavator')) return 'MINING';
+  if (cls.includes('bulldozer')) return 'MINING';
+  if (uid.includes('HGDK002')) return 'MINING';
+  if (uid.includes('HCDK002')) return 'MINING';
+  if (uid.includes('HWLC002')) return 'MINING';
+  if (cls.includes('grader')) return 'HRM';
+  if (cls.includes('compactor')) return 'HRM';
+  if (cls.includes('wheel loader')) return 'HRM';
+  if (cls.includes('water truck')) return 'HRM';
+  return 'SUPPORT';
+}
+const CAT_ORDER=['HAULING','MINING','HRM','SUPPORT'];
+const CAT_COLOR={HAULING:'var(--blue)',MINING:'var(--green)',HRM:'var(--amber)',SUPPORT:'var(--muted)'};
+// Ringkasan per kategori dari allUnits → [{cat,total,ready,bd,mt,pct}], + baris TOTAL
+function categorySummary(){
+  const rows=CAT_ORDER.map(cat=>{const u=(allUnits||[]).filter(x=>getCategory(x.equipment_class,x.unit_id)===cat);const ready=u.filter(x=>x.status_unit==='Ready').length;const bd=u.filter(x=>x.status_unit==='Breakdown').length;const mt=u.filter(x=>x.status_unit==='Maintenance').length;return{cat,total:u.length,ready,bd,mt,pct:u.length?Math.round(ready/u.length*100):0};});
+  const tot=rows.reduce((a,r)=>({total:a.total+r.total,ready:a.ready+r.ready,bd:a.bd+r.bd,mt:a.mt+r.mt}),{total:0,ready:0,bd:0,mt:0});
+  return{rows,total:{cat:'TOTAL',...tot,pct:tot.total?Math.round(tot.ready/tot.total*100):0}};
+}
 function switchView(v){document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));document.querySelectorAll('.sb-item[data-view="'+v+'"]').forEach(i=>i.classList.add('active'));document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));$('v-'+v).classList.add('active');}
 document.querySelectorAll('.sb-item[data-view]').forEach(el=>{el.addEventListener('click',()=>switchView(el.dataset.view));});
 document.addEventListener('DOMContentLoaded',()=>{const i=(SESSION.name||'??').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();$('sbAv').textContent=i;$('sbNm').textContent=SESSION.name||SESSION.id;updateClock();setInterval(updateClock,1000);loadAll();});
@@ -197,7 +228,13 @@ const bc=r.score>=85?'#10B981':r.score>=70?'#3B82F6':r.score>=50?'#F59E0B':'#EF4
 return`<div class="rk-row"><div class="rk-pos">${i<3?medals[i]:(i+1)}</div><div class="rk-av" style="background:${cols[i%8]}">${ini}</div><div class="rk-info"><div class="rk-name">${r.driver_name||r.driver_id}</div><div class="rk-meta">${r.driver_id} · ${getRoleLabel(r.equipment_class)} · ${r.equipment_class||''} · ${r.total_reports}× lapor</div></div><div class="rk-cell" style="color:${r.ftw_rate>=90?'var(--green)':'var(--amber)'}">${r.ftw_rate}%</div><div class="rk-cell" style="color:${r.p2h_rate>=90?'var(--green)':'var(--amber)'}">${r.p2h_rate}%</div><div class="rk-cell" style="color:${r.hm_rate>=80?'var(--green)':'var(--amber)'}">${r.hm_rate}%</div><div class="rk-score"><div class="rk-sc-bar"><div class="rk-sc-fill" style="width:${r.score}%;background:${bc}"></div></div>${r.score}</div><div><span class="grade ${gc}">${gl}</span></div></div>`;}).join('');}
 function popRkFilter(){const d=[...new Set(rankData.map(r=>r.equipment_class).filter(Boolean))].sort();$('rkFilter').innerHTML='<option value="">Semua Kelas</option>'+d.map(x=>`<option>${x}</option>`).join('');}
 
-function renderEquipment(){const cls=[...new Set(allUnits.map(u=>u.equipment_class||'Other'))].sort();
+function renderEquipment(){
+// Ringkasan per kategori operasional
+const cb=$('eqCatBody');if(cb){const{rows,total}=categorySummary();
+  const rowHtml=(x,isTotal)=>{const pctCol=x.pct>=85?'var(--green)':x.pct>=70?'var(--amber)':'var(--red)';const col=isTotal?'var(--text)':CAT_COLOR[x.cat];
+    return`<div class="eq-row"${isTotal?' style="font-weight:800;border-top:2px solid var(--border)"':''}><span class="eq-name" style="color:${col};font-weight:800">${x.cat}</span><span class="eq-cell">${x.total}</span><span class="eq-cell" style="color:var(--green)">${x.ready}</span><span class="eq-cell" style="color:var(--red)">${x.bd}</span><span class="eq-cell" style="color:var(--amber)">${x.mt}</span><span style="width:80px;display:flex;align-items:center;gap:4px"><div class="eq-bar"><div class="eq-fill" style="width:${x.pct}%;background:${pctCol}"></div></div><span style="font-size:.65rem;font-weight:700;color:${pctCol}">${x.pct}%</span></span></div>`;};
+  cb.innerHTML=rows.map(r=>rowHtml(r,false)).join('')+rowHtml(total,true);}
+const cls=[...new Set(allUnits.map(u=>u.equipment_class||'Other'))].sort();
 $('eqBody').innerHTML=cls.map(c=>{const u=allUnits.filter(x=>(x.equipment_class||'Other')===c),r=u.filter(x=>x.status_unit==='Ready').length,bd=u.filter(x=>x.status_unit==='Breakdown').length,mt=u.filter(x=>x.status_unit==='Maintenance').length;
 const drivers=allReports.filter(x=>(x.equipment_class||'')==c).length;const pct=Math.round(r/u.length*100);
 return`<div class="eq-row"><span class="eq-name">${c}</span><span class="eq-cell">${u.length}</span><span class="eq-cell" style="color:var(--green)">${r}</span><span class="eq-cell" style="color:var(--red)">${bd}</span><span class="eq-cell" style="color:var(--amber)">${mt}</span><span class="eq-cell" style="color:var(--blue)">${drivers}</span><span style="width:80px;display:flex;align-items:center;gap:4px"><div class="eq-bar"><div class="eq-fill" style="width:${pct}%"></div></div><span style="font-size:.65rem;font-weight:700">${pct}%</span></span></div>`;}).join('');}
@@ -273,7 +310,20 @@ doc.autoTable({startY:y,margin:{left:M,right:M,bottom:16},
 y=doc.lastAutoTable.finalY+8;
 
 // ═══ SECTION 3 — EQUIPMENT SUMMARY ═══
-y=ensure(26,y);y=sectionTitle('3. Equipment Summary',y);
+y=ensure(30,y);y=sectionTitle('3. Equipment Summary',y);
+// Tabel 1: ringkasan per kategori operasional (+ baris TOTAL)
+const catSum=categorySummary();
+doc.autoTable({startY:y,margin:{left:M,right:M,bottom:16},
+  head:[['Kategori','Total','Ready','BD','MT','Readiness']],
+  body:[...catSum.rows.map(x=>[x.cat,x.total,x.ready,x.bd,x.mt,x.pct+'%']),[catSum.total.cat,catSum.total.total,catSum.total.ready,catSum.total.bd,catSum.total.mt,catSum.total.pct+'%']],
+  styles:{fontSize:8,cellPadding:2.4,textColor:C.body,lineColor:C.sep,lineWidth:0.1},
+  headStyles:{fillColor:[51,65,85],textColor:255,fontStyle:'bold'},alternateRowStyles:{fillColor:C.rowAlt},
+  columnStyles:{0:{fontStyle:'bold'},1:{halign:'center'},2:{halign:'center'},3:{halign:'center'},4:{halign:'center'},5:{halign:'center'}},
+  didParseCell:function(d){if(d.section==='body'){const isTotal=d.row.index===catSum.rows.length;if(isTotal){d.cell.styles.fontStyle='bold';d.cell.styles.fillColor=[226,232,240];}if(d.column.index===5){const v=parseInt(d.cell.raw)||0;d.cell.styles.fontStyle='bold';d.cell.styles.textColor=v>=85?[5,150,105]:v>=70?C.amber:[220,38,38];}}}});
+y=doc.lastAutoTable.finalY+6;
+// Tabel 2: detail per equipment_class
+y=ensure(26,y);
+doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(C.muted[0],C.muted[1],C.muted[2]);doc.text('Detail per Jenis Unit',M,y);y+=3;
 const cls=[...new Set(allUnits.map(u=>u.equipment_class||'Other'))].sort();
 doc.autoTable({startY:y,margin:{left:M,right:M,bottom:16},
   head:[['Jenis Unit','Total','Ready','BD','MT','Driver','Readiness']],

@@ -53,6 +53,9 @@ body{background:var(--bg);font-family:var(--font);color:var(--text);overflow:hid
 .cat-header:first-child{margin-top:0}
 .cat-stats{font-weight:700;font-size:.72rem;display:flex;gap:10px}
 .cat-stats .cs-g{color:var(--green)}.cat-stats .cs-r{color:var(--red)}.cat-stats .cs-y{color:var(--amber)}
+.cat-bar{height:6px;border-radius:4px;background:var(--border);overflow:hidden;margin:0 2px 8px}
+.cat-bar-f{height:100%;border-radius:4px;transition:width .5s}
+.sub-header{font-size:.68rem;font-weight:800;color:var(--gray);text-transform:uppercase;letter-spacing:.04em;margin:6px 2px 5px;padding-left:2px}
 .unit-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:6px;margin-bottom:8px}
 .ug{border-radius:9px;padding:9px 7px;border:1px solid var(--border);border-left-width:3px;transition:all .3s;background:var(--card);min-height:62px;display:flex;flex-direction:column;gap:2px}
 .ug.ready{background:rgba(0,200,83,.08);border-left-color:var(--green)}
@@ -179,6 +182,26 @@ const AUTH={'Authorization':'Bearer '+(localStorage.getItem('fms_token'))};
 let allUnits=[],driverMap={},allReports=[],bdReports=[],prevBDUnits=new Set(),firstLoad=true,flashUnits=new Set();
 
 function getRoleLabel(equipmentClass){const cls=(equipmentClass||'').toLowerCase();if(cls.includes('articulate'))return'Operator';if(cls.includes('dump truck'))return'Driver';if(cls.includes('light vehicle'))return'Driver';if(cls.includes('manhaul'))return'Driver';if(cls.includes('water truck'))return'Driver';return'Operator';}
+function getCategory(equipmentClass, unitId) {
+  const uid = (unitId || '').toUpperCase();
+  const cls = (equipmentClass || '').toLowerCase();
+  if (cls.includes('dump truck')) return 'HAULING';
+  const haulingExca = ['HEXK001','HEXK002','HEXK003','CAT03','CAT04'];
+  if (cls.includes('excavator') && haulingExca.some(h => uid.includes(h))) return 'HAULING';
+  if (cls.includes('articulate')) return 'MINING';
+  if (cls.includes('excavator')) return 'MINING';
+  if (cls.includes('bulldozer')) return 'MINING';
+  if (uid.includes('HGDK002')) return 'MINING';
+  if (uid.includes('HCDK002')) return 'MINING';
+  if (uid.includes('HWLC002')) return 'MINING';
+  if (cls.includes('grader')) return 'HRM';
+  if (cls.includes('compactor')) return 'HRM';
+  if (cls.includes('wheel loader')) return 'HRM';
+  if (cls.includes('water truck')) return 'HRM';
+  return 'SUPPORT';
+}
+const CAT_ORDER=['HAULING','MINING','HRM','SUPPORT'];
+const CAT_COLOR={HAULING:'var(--blue)',MINING:'var(--green)',HRM:'var(--amber)',SUPPORT:'var(--muted)'};
 function curShift(){const h=new Date().getHours();return(h>=7&&h<19)?'1':'2';}
 function inCurShift(ts){if(!ts)return true;const h=new Date(ts).getHours();return curShift()==='1'?(h>=7&&h<19):(h>=19||h<7);}
 function timeAgo(ts){if(!ts)return'';const ms=Date.now()-new Date(ts).getTime();if(isNaN(ms))return'';const min=Math.floor(ms/60000);if(min<1)return'baru saja';if(min<60)return`${min} menit lalu`;const h=Math.floor(min/60);if(h<24)return`${h} jam lalu`;const d=Math.floor(h/24);return`${d} hari lalu`;}
@@ -242,27 +265,35 @@ function renderKPI(){
   $('kScore').textContent=score+'%';$('kScore').style.color=sc;$('kScoreBar').style.width=score+'%';$('kScoreBar').style.background=sc;
 }
 
+function ugCard(u){
+  const s=u.status_unit;const st=s==='Ready'?'ready':s==='Breakdown'?'bd':'mt';
+  const dot=s==='Ready'?'var(--green)':s==='Breakdown'?'var(--red)':'var(--amber)';
+  const drv=driverMap[u.unit_id];const note=u.notes?String(u.notes).split(' | ')[0]:'';
+  let sub='';
+  if(s==='Ready')sub=drv&&drv.driver_name?drv.driver_name:'Ready';
+  else if(s==='Breakdown')sub='BD: '+(note||'—');
+  else sub='MT: '+(note||'—');
+  return`<div class="ug ${st}" title="${u.unit_id}"><div class="ug-top"><span class="ug-id">${u.unit_id}</span><span class="ug-dot" style="background:${dot}"></span></div><div class="ug-sub">${sub}</div></div>`;
+}
 function renderUnits(){
   const panel=document.getElementById('unitPanel');
-  const classes=[...new Set(allUnits.map(u=>u.equipment_class||'Other'))].sort();
-  if(!classes.length){panel.innerHTML='<div class="empty-msg">Tidak ada unit.</div>';return;}
+  if(!allUnits.length){panel.innerHTML='<div class="empty-msg">Tidak ada unit.</div>';return;}
+  const sortUnits=arr=>arr.sort((a,b)=>{const o={'Breakdown':0,'Maintenance':1,'Ready':2};return(o[a.status_unit]??2)-(o[b.status_unit]??2)||String(a.unit_id).localeCompare(String(b.unit_id),undefined,{numeric:true});});
   let html='';
-  classes.forEach(cls=>{
-    const units=allUnits.filter(u=>(u.equipment_class||'Other')===cls);
-    units.sort((a,b)=>{const o={'Breakdown':0,'Maintenance':1,'Ready':2};return(o[a.status_unit]??2)-(o[b.status_unit]??2)||String(a.unit_id).localeCompare(String(b.unit_id),undefined,{numeric:true});});
-    const rdy=units.filter(u=>u.status_unit==='Ready').length,bd=units.filter(u=>u.status_unit==='Breakdown').length,mt=units.filter(u=>u.status_unit==='Maintenance').length;
-    html+=`<div class="cat-header"><span>${cls} (${units.length})</span><span class="cat-stats"><span class="cs-g">${rdy} R</span><span class="cs-r">${bd} BD</span><span class="cs-y">${mt} MT</span></span></div><div class="unit-grid">`;
-    units.forEach(u=>{
-      const s=u.status_unit;const st=s==='Ready'?'ready':s==='Breakdown'?'bd':'mt';
-      const dot=s==='Ready'?'var(--green)':s==='Breakdown'?'var(--red)':'var(--amber)';
-      const drv=driverMap[u.unit_id];const note=u.notes?String(u.notes).split(' | ')[0]:'';
-      let sub='';
-      if(s==='Ready')sub=drv&&drv.driver_name?drv.driver_name:'Ready';
-      else if(s==='Breakdown')sub='BD: '+(note||'—');
-      else sub='MT: '+(note||'—');
-      html+=`<div class="ug ${st}" title="${u.unit_id}"><div class="ug-top"><span class="ug-id">${u.unit_id}</span><span class="ug-dot" style="background:${dot}"></span></div><div class="ug-sub">${sub}</div></div>`;
+  // Group per kategori operasional (HAULING→MINING→HRM→SUPPORT), sub-group by equipment_class
+  CAT_ORDER.forEach(cat=>{
+    const catUnits=allUnits.filter(u=>getCategory(u.equipment_class,u.unit_id)===cat);if(!catUnits.length)return;
+    const rdy=catUnits.filter(u=>u.status_unit==='Ready').length,bd=catUnits.filter(u=>u.status_unit==='Breakdown').length,mt=catUnits.filter(u=>u.status_unit==='Maintenance').length;
+    const pct=catUnits.length?Math.round(rdy/catUnits.length*100):0;const col=CAT_COLOR[cat];
+    html+=`<div class="cat-header" style="border-left:4px solid ${col};padding-left:8px"><span style="color:${col}">${cat} (${rdy}/${catUnits.length} Ready)</span><span class="cat-stats"><span class="cs-r">${bd} BD</span><span class="cs-y">${mt} MT</span></span></div>`;
+    html+=`<div class="cat-bar"><div class="cat-bar-f" style="width:${pct}%;background:${col}"></div></div>`;
+    const classes=[...new Set(catUnits.map(u=>u.equipment_class||'Other'))].sort();
+    classes.forEach(cls=>{
+      const units=sortUnits(catUnits.filter(u=>(u.equipment_class||'Other')===cls));
+      html+=`<div class="sub-header">${cls} (${units.length})</div><div class="unit-grid">`;
+      units.forEach(u=>{html+=ugCard(u);});
+      html+='</div>';
     });
-    html+='</div>';
   });
   panel.innerHTML=html;
 }

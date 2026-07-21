@@ -72,6 +72,7 @@
     <div class="spv-filters">
       <input type="date" class="sf" id="fDate" onchange="loadReports()"/>
       <select class="sf" id="fShift" onchange="loadReports()"><option value="">Semua Shift</option><option value="1">Shift 1</option><option value="2">Shift 2</option></select>
+      <select class="sf" id="fCat" onchange="renderReports()"><option value="">Semua Kategori</option><option value="HAULING">Hauling</option><option value="MINING">Mining</option><option value="HRM">HRM</option><option value="SUPPORT">Support</option></select>
       <select class="sf" id="fStatus" onchange="renderReports()"><option value="">Semua</option><option value="Pending">Pending</option><option value="Approved">Approved</option></select>
     </div>
     <div class="spv-list" id="reportList"></div>
@@ -98,6 +99,24 @@ if(!SESSION||!TOKEN)window.location.href='index.html';
 let allReports=[],bdReports=[];
 function $(id){return document.getElementById(id);}
 function getRoleLabel(equipmentClass){const cls=(equipmentClass||'').toLowerCase();if(cls.includes('articulate'))return'Operator';if(cls.includes('dump truck'))return'Driver';if(cls.includes('light vehicle'))return'Driver';if(cls.includes('manhaul'))return'Driver';if(cls.includes('water truck'))return'Driver';return'Operator';}
+function getCategory(equipmentClass, unitId) {
+  const uid = (unitId || '').toUpperCase();
+  const cls = (equipmentClass || '').toLowerCase();
+  if (cls.includes('dump truck')) return 'HAULING';
+  const haulingExca = ['HEXK001','HEXK002','HEXK003','CAT03','CAT04'];
+  if (cls.includes('excavator') && haulingExca.some(h => uid.includes(h))) return 'HAULING';
+  if (cls.includes('articulate')) return 'MINING';
+  if (cls.includes('excavator')) return 'MINING';
+  if (cls.includes('bulldozer')) return 'MINING';
+  if (uid.includes('HGDK002')) return 'MINING';
+  if (uid.includes('HCDK002')) return 'MINING';
+  if (uid.includes('HWLC002')) return 'MINING';
+  if (cls.includes('grader')) return 'HRM';
+  if (cls.includes('compactor')) return 'HRM';
+  if (cls.includes('wheel loader')) return 'HRM';
+  if (cls.includes('water truck')) return 'HRM';
+  return 'SUPPORT';
+}
 
 function switchTab(t,el){['reports','bd','csv'].forEach(x=>$('t-'+x).style.display='none');$('t-'+t).style.display='';document.querySelectorAll('.spv-tab').forEach(x=>x.classList.remove('active'));if(el)el.classList.add('active');if(t==='bd')loadBD();}
 
@@ -116,7 +135,7 @@ try{const r=await fetch(url,{headers:{'Authorization':'Bearer '+TOKEN}});const d
 function renderKPI(){const t=allReports.length,a=allReports.filter(r=>r.validation_status==='Approved').length,rj=allReports.filter(r=>r.validation_status==='Rejected').length,uf=allReports.filter(r=>r.overall_status==='Driver Unfit').length;
 $('kTotal').textContent=t;$('kApp').textContent=a;$('kPen').textContent=t-a-rj;$('kRej').textContent=rj+uf;}
 
-function renderReports(){const sf=$('fStatus').value;let list=allReports;if(sf)list=list.filter(r=>(r.validation_status||'Pending')===sf);
+function renderReports(){const sf=$('fStatus').value;const cf=$('fCat')?.value||'';let list=allReports;if(sf)list=list.filter(r=>(r.validation_status||'Pending')===sf);if(cf)list=list.filter(r=>getCategory(r.equipment_class,r.unit_id)===cf);
 if(!list.length){$('reportList').innerHTML='<div class="empty-box">Tidak ada laporan.</div>';return;}
 $('reportList').innerHTML=list.map(r=>{const tm=r.timestamp_filled?new Date(r.timestamp_filled).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}):'—';
 const vs=r.validation_status||'Pending';const isPen=vs==='Pending'&&r.overall_status!=='Driver Unfit';

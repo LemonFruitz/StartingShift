@@ -158,6 +158,8 @@ body{background:var(--bg);font-family:var(--font);color:var(--text);display:flex
         <div class="kpi"><div class="kpi-icon" style="background:rgba(239,68,68,.08)"><span class="mi">warning_amber</span></div><div class="kpi-label">Breakdown</div><div class="kpi-val" style="color:var(--red)" id="kB">—</div><div class="kpi-bar"><div class="kpi-fill" id="kBB" style="width:0;background:var(--red)"></div></div><div class="kpi-sub" id="kBS">—</div></div>
         <div class="kpi kpi-hl"><div class="kpi-icon" style="background:rgba(255,255,255,.15)"><span class="mi">track_changes</span></div><div class="kpi-label">Kesiapan Shift</div><div class="kpi-val" id="kSc">—%</div><div class="kpi-sub">Skor gabungan</div></div>
       </div>
+      <!-- Category breakdown mini-cards -->
+      <div id="catCards" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px"></div>
       <!-- Exception Center -->
       <div class="panel" id="excPanel">
         <div class="panel-head" style="cursor:pointer" onclick="toggleExc()">
@@ -192,7 +194,8 @@ body{background:var(--bg);font-family:var(--font);color:var(--text);display:flex
       #v-fleet .fl-ghdr:hover{background:var(--bg)}
       #v-fleet .fl-gtitle{font-size:.74rem;font-weight:800;display:flex;align-items:center;gap:6px}
       #v-fleet .fl-gstat{font-size:.6rem;color:var(--muted);font-weight:600;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-      #v-fleet .fl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;padding:10px 2px 4px}
+      #v-fleet .fl-subhdr{font-size:.64rem;font-weight:800;color:var(--gray);text-transform:uppercase;letter-spacing:.05em;margin:8px 2px 0;padding-left:4px}
+      #v-fleet .fl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;padding:8px 2px 4px}
       @media(max-width:1100px){#v-fleet .fl-grid{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}}
       @media(max-width:640px){#v-fleet .fl-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}}
       #v-fleet .flc{position:relative;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;border-left:4px solid var(--muted);transition:all .2s}
@@ -342,6 +345,7 @@ body{background:var(--bg);font-family:var(--font);color:var(--text);display:flex
     <style>
       #v-hm .hm-grid{display:grid;grid-template-columns:84px 80px minmax(100px,1.2fr) 66px 96px 66px 126px 62px 78px;align-items:center;gap:6px}
       #v-hm .hm-thead{padding:9px 14px;font-size:.55rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:0;z-index:2}
+      #v-hm .hm-catsep{padding:7px 14px;font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;background:var(--bg);border-bottom:1px solid var(--border);position:sticky;top:34px;z-index:1}
       #v-hm .hm-row{padding:8px 14px;border-bottom:1px solid var(--border);font-size:.72rem;transition:background .12s;border-left:3px solid transparent}
       #v-hm .hm-row:hover{background:var(--bg)}
       #v-hm .hm-row.pending{border-left-color:var(--red);background:rgba(239,68,68,.04)}
@@ -597,7 +601,11 @@ $('kSc').textContent=sc+'%';$('dA').textContent=aP+'%';$('dF').textContent=fP+'%
 // Fleet widget
 $('fTot').textContent=t+' unit';$('fBar').innerHTML=`<div class="fseg" style="width:${r/t*100}%;background:var(--green)"></div><div class="fseg" style="width:${mt/t*100}%;background:var(--muted)"></div><div class="fseg" style="width:${bd/t*100}%;background:var(--red)"></div>`;
 const cls=[...new Set(allUnits.map(u=>u.equipment_class||'Other'))].sort();
-$('fTypes').innerHTML=cls.map(c=>{const u=allUnits.filter(x=>(x.equipment_class||'Other')===c),rv=u.filter(x=>x.status_unit==='Ready').length;return`<div class="ftype"><span>${c}</span><div class="ftbar"><div class="ftfill" style="width:${rv/u.length*100}%"></div></div><span class="ftc">${rv}/${u.length}</span></div>`;}).join('');}
+$('fTypes').innerHTML=cls.map(c=>{const u=allUnits.filter(x=>(x.equipment_class||'Other')===c),rv=u.filter(x=>x.status_unit==='Ready').length;return`<div class="ftype"><span>${c}</span><div class="ftbar"><div class="ftfill" style="width:${rv/u.length*100}%"></div></div><span class="ftc">${rv}/${u.length}</span></div>`;}).join('');
+renderCatCards();}
+function renderCatCards(){const el=$('catCards');if(!el)return;
+  el.innerHTML=CAT_ORDER.map(cat=>{const u=(allUnits||[]).filter(x=>getCategory(x.equipment_class,x.unit_id)===cat);const tot=u.length;const rv=u.filter(x=>x.status_unit==='Ready').length;const bv=u.filter(x=>x.status_unit==='Breakdown').length;const mv=u.filter(x=>x.status_unit==='Maintenance').length;const pct=tot?Math.round(rv/tot*100):0;const col=CAT_COLOR[cat];
+    return`<div class="kpi" style="border-left:4px solid ${col};text-align:left"><div class="kpi-label" style="color:${col};font-weight:800">${cat}</div><div style="font-size:1.15rem;font-weight:800;margin:2px 0">${rv}/${tot}<small style="font-size:.62rem;font-weight:600;color:var(--muted)"> unit</small></div><div class="kpi-bar"><div class="kpi-fill" style="width:${pct}%;background:${col}"></div></div><div class="kpi-sub" style="margin-top:3px">Ready ${pct}% · <span style="color:var(--red)">BD ${bv}</span> · <span style="color:var(--amber)">MT ${mv}</span></div></div>`;}).join('');}
 function renderDonut(){const t=allUnits.length||1,r=allUnits.filter(u=>u.status_unit==='Ready').length,td=allReports.length||1,fc=allReports.filter(r=>r.fit_status==='Fit').length,pp=allReports.filter(r=>r.p2h_status==='Passed').length,sc=Math.round(((td/Math.max(td,t)*100)+(fc/td*100)+(pp/td*100)+(r/t*100))/4);const c=document.getElementById('donut');if(c._c)c._c.destroy();c._c=new Chart(c,{type:'doughnut',data:{datasets:[{data:[sc,100-sc],backgroundColor:[sc>=90?'#00C853':sc>=70?'#F59E0B':'#EF4444','#E5E9F0'],borderWidth:0}]},options:{cutout:'78%',responsive:false,plugins:{legend:{display:false},tooltip:{enabled:false}}}});}
 function renderOps(){const df=$('fDept').value;let list=allReports;if(df)list=list.filter(r=>(r.equipment_class||'')==df);const c=$('opTbl');if(!list.length){c.innerHTML='<div style="padding:20px;text-align:center;color:var(--muted)">Belum ada operator.</div>';$('opCnt').textContent='0';return;}const cols=['#00C853','#00B0FF','#F59E0B','#EF4444','#8B5CF6','#EC4899','#14B8A6','#F97316'];c.innerHTML=list.map((r,i)=>{const ini=(r.driver_name||'??').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();const tm=r.timestamp_filled?new Date(r.timestamp_filled).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}):'—';let st='Siap',sc='background:var(--blue)';if(r.validation_status==='Approved'){st='Beroperasi';sc='background:var(--green)';}else if(r.overall_status==='Driver Unfit'){st='Kendala';sc='background:var(--red)';}return`<div class="op-row"><div class="op-av" style="background:${cols[i%8]}">${ini}</div><div class="op-info"><div class="op-name">${r.driver_name||r.driver_id}</div><div class="op-dept">${getRoleLabel(r.equipment_class)} · ${r.equipment_class||'—'}</div></div><div class="op-unit"><div class="op-uid">${r.unit_id}</div><div class="op-utype">${r.vehicle_type||''}</div></div><div class="op-cell"><span class="badge-s ${r.fit_status==='Fit'?'bg-fit':'bg-unfit'}">${r.fit_status}</span></div><div class="op-cell"><span class="badge-s ${r.p2h_status==='Passed'?'bg-pass':'bg-find'}">${r.p2h_status||'—'}</span></div><div class="op-cell" style="color:var(--muted)">${tm}</div><div class="op-cell"><span class="sdot" style="${sc}"></span>${st}</div></div>`;}).join('');$('opCnt').textContent=`${list.length} operator`;}
 function popFilter(){const d=[...new Set((allReports||[]).map(r=>r.equipment_class).filter(Boolean))].sort();$('fDept').innerHTML='<option value="">Semua</option>'+d.map(x=>`<option>${x}</option>`).join('');}
@@ -616,6 +624,33 @@ function fleetFmtDur(ms){const min=Math.floor(ms/60000);if(min<1)return 'baru sa
 function fleetSplitNotes(notes){if(!notes)return{note:'',loc:''};const parts=String(notes).split(' | ');let loc='';const rest=[];parts.forEach(p=>{const m=p.match(/^Lokasi:\s*(.*)$/i);if(m)loc=m[1];else rest.push(p);});return{note:rest.join(' | '),loc};}
 function fleetFilteredUnits(){const q=($('uSearch')?.value||'').toUpperCase();const fSt=$('flStatus')?.value||'';const fCat=$('flCat')?.value||'';
   return (allUnits||[]).filter(u=>{if(q&&!String(u.unit_id||'').toUpperCase().includes(q))return false;if(fSt&&u.status_unit!==fSt)return false;if(fCat&&getCategory(u.equipment_class,u.unit_id)!==fCat)return false;return true;});}
+function fleetCardHtml(u,hm,now){
+  const s=u.status_unit;const drv=driverMap[u.unit_id];const dot=s==='Ready'?'var(--green)':s==='Breakdown'?'var(--red)':s==='Maintenance'?'var(--amber)':'var(--muted)';
+  const hmv=hm[u.unit_id];const start=(s!=='Ready')?fleetDurStart(u):null;const dur=start?fleetFmtDur(now-start):'';
+  const{note,loc}=fleetSplitNotes(u.notes);
+  let meta='';
+  if(s==='Ready'){
+    if(drv&&drv.driver_name)meta+=`<div class="flc-drv"><span class="mi mi-sm">person</span> ${drv.driver_name}</div>`;
+    if(hmv!=null)meta+=`<div class="flc-hm"><span class="mi mi-sm">timer</span> HM: ${hmv}</div>`;
+  }else{
+    const isBd=s==='Breakdown';
+    if(note)meta+=`<div class="flc-note ${isBd?'n-bd':'n-mt'}"><span class="mi mi-sm">${isBd?'warning':'build'}</span> ${note}</div>`;
+    if(loc)meta+=`<div class="flc-loc"><span class="mi mi-sm">place</span> ${loc}</div>`;
+    if(dur)meta+=`<div class="flc-dur"><span class="mi mi-sm">schedule</span> ${dur}</div>`;
+  }
+  return`<div class="flc s-${s}"><span class="flc-dot" style="background:${dot}"></span>`+
+    `<div class="flc-id">${u.unit_id}</div>`+
+    `${u.vehicle_type?`<div class="flc-type">${u.vehicle_type}</div>`:''}`+
+    `${u.equipment_class?`<div class="flc-cls">${u.equipment_class}</div>`:''}`+
+    `${meta?`<div class="flc-meta">${meta}</div>`:''}`+
+    `<div class="flc-btns">`+
+      `<button class="flc-btn r ${s==='Ready'?'on':''}" onclick="clickSt('${u.unit_id}','Ready')" ${s==='Ready'?'disabled':''}><span class="mi mi-sm">check</span> Ready</button>`+
+      `<button class="flc-btn b ${s==='Breakdown'?'on':''}" onclick="clickSt('${u.unit_id}','Breakdown')" ${s==='Breakdown'?'disabled':''}>BD</button>`+
+      `<button class="flc-btn m ${s==='Maintenance'?'on':''}" onclick="clickSt('${u.unit_id}','Maintenance')" ${s==='Maintenance'?'disabled':''}>MT</button>`+
+    `</div>`+
+    `${s!=='Ready'?`<button class="flc-edit" onclick="openEd('${u.unit_id}')"><span class="mi mi-sm">edit_note</span> Edit Notes</button>`:''}`+
+  `</div>`;
+}
 function renderFleet(){
   // Summary bar — selalu dari semua unit (tidak ikut filter)
   const all=allUnits||[];const tot=all.length;const rdy=all.filter(u=>u.status_unit==='Ready').length;const bd=all.filter(u=>u.status_unit==='Breakdown').length;const mt=all.filter(u=>u.status_unit==='Maintenance').length;const avail=tot?Math.round(rdy/tot*100):0;
@@ -623,46 +658,24 @@ function renderFleet(){
   const grid=$('fleetGrid');if(!grid)return;
   const hm=fleetHmMap();const now=Date.now();
   const list=fleetFilteredUnits();
-  const cls=[...new Set(list.map(u=>u.equipment_class||'Other'))].sort();
+  const sortUnits=arr=>arr.sort((a,b)=>{const o={'Breakdown':0,'Maintenance':1,'Ready':2};return(o[a.status_unit]??2)-(o[b.status_unit]??2)||String(a.unit_id).localeCompare(String(b.unit_id),undefined,{numeric:true});});
   let html='';
-  cls.forEach(c=>{
-    let units=list.filter(u=>(u.equipment_class||'Other')===c);if(!units.length)return;
-    units.sort((a,b)=>{const o={'Breakdown':0,'Maintenance':1,'Ready':2};return(o[a.status_unit]??2)-(o[b.status_unit]??2)||String(a.unit_id).localeCompare(String(b.unit_id),undefined,{numeric:true});});
-    const r=units.filter(u=>u.status_unit==='Ready').length,gbd=units.filter(u=>u.status_unit==='Breakdown').length,gmt=units.filter(u=>u.status_unit==='Maintenance').length;
+  // Outer group: kategori operasional (HAULING→MINING→HRM→SUPPORT); inner sub-group: equipment_class
+  CAT_ORDER.forEach(cat=>{
+    const catUnits=list.filter(u=>getCategory(u.equipment_class,u.unit_id)===cat);if(!catUnits.length)return;
+    const r=catUnits.filter(u=>u.status_unit==='Ready').length,gbd=catUnits.filter(u=>u.status_unit==='Breakdown').length,gmt=catUnits.filter(u=>u.status_unit==='Maintenance').length;
     const hasIssue=gbd+gmt>0;
-    if(fleetCollapsed[c]===undefined)fleetCollapsed[c]=!hasIssue; // default: expand kalau ada BD/MT
-    const collapsed=fleetCollapsed[c];
-    html+=`<div class="fl-ghdr" onclick="fleetToggleGroup('${c.replace(/'/g,"\\'")}')"><div class="fl-gtitle"><span class="mi mi-sm">${collapsed?'chevron_right':'expand_more'}</span> ${c} (${units.length})</div><div class="fl-gstat"><span style="color:var(--green)">● ${r} Ready</span><span style="color:var(--red)">● ${gbd} BD</span><span style="color:var(--amber)">● ${gmt} MT</span></div></div>`;
+    if(fleetCollapsed[cat]===undefined)fleetCollapsed[cat]=!hasIssue; // default: expand kalau ada BD/MT
+    const collapsed=fleetCollapsed[cat];const col=CAT_COLOR[cat];
+    html+=`<div class="fl-ghdr" style="border-left:4px solid ${col}" onclick="fleetToggleGroup('${cat}')"><div class="fl-gtitle" style="color:${col}"><span class="mi mi-sm">${collapsed?'chevron_right':'expand_more'}</span> ${cat} (${catUnits.length} unit)</div><div class="fl-gstat"><span style="color:var(--green)">● ${r} Ready</span><span style="color:var(--red)">● ${gbd} BD</span><span style="color:var(--amber)">● ${gmt} MT</span></div></div>`;
     if(collapsed)return;
-    html+='<div class="fl-grid">';
-    units.forEach(u=>{
-      const s=u.status_unit;const drv=driverMap[u.unit_id];const dot=s==='Ready'?'var(--green)':s==='Breakdown'?'var(--red)':s==='Maintenance'?'var(--amber)':'var(--muted)';
-      const hmv=hm[u.unit_id];const start=(s!=='Ready')?fleetDurStart(u):null;const dur=start?fleetFmtDur(now-start):'';
-      const{note,loc}=fleetSplitNotes(u.notes);
-      let meta='';
-      if(s==='Ready'){
-        if(drv&&drv.driver_name)meta+=`<div class="flc-drv"><span class="mi mi-sm">person</span> ${drv.driver_name}</div>`;
-        if(hmv!=null)meta+=`<div class="flc-hm"><span class="mi mi-sm">timer</span> HM: ${hmv}</div>`;
-      }else{
-        const isBd=s==='Breakdown';
-        if(note)meta+=`<div class="flc-note ${isBd?'n-bd':'n-mt'}"><span class="mi mi-sm">${isBd?'warning':'build'}</span> ${note}</div>`;
-        if(loc)meta+=`<div class="flc-loc"><span class="mi mi-sm">place</span> ${loc}</div>`;
-        if(dur)meta+=`<div class="flc-dur"><span class="mi mi-sm">schedule</span> ${dur}</div>`;
-      }
-      html+=`<div class="flc s-${s}"><span class="flc-dot" style="background:${dot}"></span>`+
-        `<div class="flc-id">${u.unit_id}</div>`+
-        `${u.vehicle_type?`<div class="flc-type">${u.vehicle_type}</div>`:''}`+
-        `${u.equipment_class?`<div class="flc-cls">${u.equipment_class}</div>`:''}`+
-        `${meta?`<div class="flc-meta">${meta}</div>`:''}`+
-        `<div class="flc-btns">`+
-          `<button class="flc-btn r ${s==='Ready'?'on':''}" onclick="clickSt('${u.unit_id}','Ready')" ${s==='Ready'?'disabled':''}><span class="mi mi-sm">check</span> Ready</button>`+
-          `<button class="flc-btn b ${s==='Breakdown'?'on':''}" onclick="clickSt('${u.unit_id}','Breakdown')" ${s==='Breakdown'?'disabled':''}>BD</button>`+
-          `<button class="flc-btn m ${s==='Maintenance'?'on':''}" onclick="clickSt('${u.unit_id}','Maintenance')" ${s==='Maintenance'?'disabled':''}>MT</button>`+
-        `</div>`+
-        `${s!=='Ready'?`<button class="flc-edit" onclick="openEd('${u.unit_id}')"><span class="mi mi-sm">edit_note</span> Edit Notes</button>`:''}`+
-      `</div>`;
+    const cls=[...new Set(catUnits.map(u=>u.equipment_class||'Other'))].sort();
+    cls.forEach(c=>{
+      const units=sortUnits(catUnits.filter(u=>(u.equipment_class||'Other')===c));
+      html+=`<div class="fl-subhdr">${c} (${units.length})</div><div class="fl-grid">`;
+      units.forEach(u=>{html+=fleetCardHtml(u,hm,now);});
+      html+='</div>';
     });
-    html+='</div>';
   });
   grid.innerHTML=html||'<div style="padding:20px;text-align:center;color:var(--muted)">Tidak ada unit sesuai filter.</div>';
 }
@@ -794,21 +807,30 @@ function hmFilteredList(){
   if(fStat)list=list.filter(r=>fStat==='done'?isHmDone(r):!isHmDone(r));
   return list.slice().sort((a,b)=>(isHmDone(a)?1:0)-(isHmDone(b)?1:0));
 }
+function hmRowHtml(r){
+  const awal=r.odometer_entered||0;const done=isHmDone(r);const manual=r.submitted_by==='CCR-Manual';
+  const cls=done?(manual?'manual':'done'):'pending';
+  const diff=done?(r.odometer_end-awal):null;
+  const diffHtml=done?`<span class="${diff<0?'hm-diff-neg':'hm-diff-pos'}">${diff>=0?'+':''}${diff}</span>`:`<span id="hmd-${r.report_id}" style="color:var(--muted)">—</span>`;
+  const statusBadge=done?(manual?'<span class="badge-s" style="background:rgba(245,158,11,.1);color:var(--amber)">Manual</span>':'<span class="badge-s bg-fit">Sudah</span>'):'<span class="badge-s bg-unfit">Belum</span>';
+  const akhirCell=done?`<span style="font-weight:700;color:var(--green)">${r.odometer_end}</span>`:`<div style="display:flex;gap:4px"><input id="hmi-${r.report_id}" class="hm-inp" type="number" inputmode="numeric" min="${awal}" placeholder="HM akhir" oninput="hmRowInput('${r.report_id}',${awal})" onkeydown="hmRowKey(event,'${r.report_id}',${awal})"/><button class="hm-mini" onclick="saveHm('${r.report_id}',${awal})"><span class="mi">check</span></button></div>`;
+  return `<div class="hm-row ${cls} hm-grid"><span style="color:var(--gray)">${hmFmtDate(r.timestamp_filled)}</span><span class="hm-u">${r.unit_id}</span><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.driver_name||r.driver_id}</span><span style="color:var(--gray)">${hmRole(r)}</span><span style="color:var(--gray);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.equipment_class||'—'}</span><span>${awal||'—'}</span><span>${akhirCell}</span><span>${diffHtml}</span><span>${statusBadge}</span></div>`;
+}
 function renderHmTable(){
   if(!allReports)allReports=[];
   const eqf=$('hf-eq');if(eqf&&eqf.options.length<=1){const d=[...new Set((allReports||[]).map(r=>r.equipment_class).filter(Boolean))].sort();eqf.innerHTML='<option value="">Semua</option>'+d.map(x=>`<option>${x}</option>`).join('');}
   const list=hmFilteredList();
   const body=$('hmTableBody');if(!body)return;
   if(!list.length){body.innerHTML='<div style="padding:20px;text-align:center;color:var(--muted)">Tidak ada data.</div>';return;}
-  body.innerHTML=list.map(r=>{
-    const awal=r.odometer_entered||0;const done=isHmDone(r);const manual=r.submitted_by==='CCR-Manual';
-    const cls=done?(manual?'manual':'done'):'pending';
-    const diff=done?(r.odometer_end-awal):null;
-    const diffHtml=done?`<span class="${diff<0?'hm-diff-neg':'hm-diff-pos'}">${diff>=0?'+':''}${diff}</span>`:`<span id="hmd-${r.report_id}" style="color:var(--muted)">—</span>`;
-    const statusBadge=done?(manual?'<span class="badge-s" style="background:rgba(245,158,11,.1);color:var(--amber)">Manual</span>':'<span class="badge-s bg-fit">Sudah</span>'):'<span class="badge-s bg-unfit">Belum</span>';
-    const akhirCell=done?`<span style="font-weight:700;color:var(--green)">${r.odometer_end}</span>`:`<div style="display:flex;gap:4px"><input id="hmi-${r.report_id}" class="hm-inp" type="number" inputmode="numeric" min="${awal}" placeholder="HM akhir" oninput="hmRowInput('${r.report_id}',${awal})" onkeydown="hmRowKey(event,'${r.report_id}',${awal})"/><button class="hm-mini" onclick="saveHm('${r.report_id}',${awal})"><span class="mi">check</span></button></div>`;
-    return `<div class="hm-row ${cls} hm-grid"><span style="color:var(--gray)">${hmFmtDate(r.timestamp_filled)}</span><span class="hm-u">${r.unit_id}</span><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.driver_name||r.driver_id}</span><span style="color:var(--gray)">${hmRole(r)}</span><span style="color:var(--gray);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.equipment_class||'—'}</span><span>${awal||'—'}</span><span>${akhirCell}</span><span>${diffHtml}</span><span>${statusBadge}</span></div>`;
-  }).join('');
+  // Group per kategori operasional dengan header separator
+  let html='';
+  CAT_ORDER.forEach(cat=>{
+    const rows=list.filter(r=>getCategory(r.equipment_class,r.unit_id)===cat);if(!rows.length)return;
+    const col=CAT_COLOR[cat];const done=rows.filter(isHmDone).length;
+    html+=`<div class="hm-catsep" style="border-left:3px solid ${col};color:${col}">${cat} · ${rows.length} unit <span style="color:var(--muted);font-weight:600">(${done} sudah · ${rows.length-done} belum)</span></div>`;
+    html+=rows.map(hmRowHtml).join('');
+  });
+  body.innerHTML=html;
 }
 // Download HM report (CSV UTF-8 BOM, ikut filter aktif)
 // Helper: download array-of-arrays sebagai file .xlsx (auto-width kolom)
@@ -1004,34 +1026,27 @@ async function saveEditReport(){const rid=editingReportId;if(!rid)return;
 
 // ── BELUM LAPOR (driver aktif yg belum submit shift report hari ini) ──
 // Kategori operasi berdasarkan equipment class + unit id
-const getCategory = (equipmentClass, unitId) => {
+function getCategory(equipmentClass, unitId) {
   const uid = (unitId || '').toUpperCase();
   const cls = (equipmentClass || '').toLowerCase();
-
-  // MINING: semua ADT — dicek lebih dulu agar "articulate(d) dump truck" tidak salah masuk HAULING
-  if (cls.includes('articulate')) return 'MINING';
-
-  // HAULING: semua Dump Truck + 5 excavator tertentu
   if (cls.includes('dump truck')) return 'HAULING';
   const haulingExca = ['HEXK001','HEXK002','HEXK003','CAT03','CAT04'];
   if (cls.includes('excavator') && haulingExca.some(h => uid.includes(h))) return 'HAULING';
-
-  // MINING: semua excavator selain 5 di atas, semua bulldozer, + HGDK002, HCDK002, HWLC002
+  if (cls.includes('articulate')) return 'MINING';
   if (cls.includes('excavator')) return 'MINING';
   if (cls.includes('bulldozer')) return 'MINING';
   if (uid.includes('HGDK002')) return 'MINING';
   if (uid.includes('HCDK002')) return 'MINING';
   if (uid.includes('HWLC002')) return 'MINING';
-
-  // HRM: grader (kecuali HGDK002), compactor (kecuali HCDK002), wheel loader (kecuali HWLC002), water truck
   if (cls.includes('grader')) return 'HRM';
   if (cls.includes('compactor')) return 'HRM';
   if (cls.includes('wheel loader')) return 'HRM';
   if (cls.includes('water truck')) return 'HRM';
-
-  // SUPPORT: LV, manhaul, crane, fuel, lube, tire, dll
   return 'SUPPORT';
-};
+}
+const CAT_ORDER=['HAULING','MINING','HRM','SUPPORT'];
+const CAT_COLOR={HAULING:'var(--blue)',MINING:'var(--green)',HRM:'var(--amber)',SUPPORT:'var(--muted)'};
+const CAT_LABEL={HAULING:'Hauling',MINING:'Mining',HRM:'HRM',SUPPORT:'Support'};
 const HM_CATS=['HAULING','MINING','HRM','SUPPORT'];
 function renderBelumLapor(){
   const fil=$('blFilter');if(fil&&fil.options.length<=1){fil.innerHTML='<option value="">Semua Kategori</option>'+HM_CATS.map(c=>`<option>${c}</option>`).join('');}
