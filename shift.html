@@ -300,7 +300,7 @@ const FTW_QUESTIONS = [
 
 // P2H items loaded dynamically based on unit type from p2h-data.js
 const eqClass = SESSION.eq_class || SESSION.type || 'Dump Truck';
-function getRoleLabel(equipmentClass){const cls=(equipmentClass||'').toLowerCase();if(cls.includes('dump truck'))return'Driver';if(cls.includes('light vehicle'))return'Driver';if(cls.includes('manhaul'))return'Driver';if(cls.includes('water truck'))return'Driver';return'Operator';}
+function getRoleLabel(equipmentClass){const cls=(equipmentClass||'').toLowerCase();if(cls.includes('articulate'))return'Operator';if(cls.includes('dump truck'))return'Driver';if(cls.includes('light vehicle'))return'Driver';if(cls.includes('manhaul'))return'Driver';if(cls.includes('water truck'))return'Driver';return'Operator';}
 const rawP2H = getP2HItems(eqClass);
 const P2H_ITEMS = rawP2H.map(it => ({
   item_id: it.id,

@@ -97,7 +97,7 @@ const API='https://starting-hte.my.id/api/v1',TOKEN=localStorage.getItem('fms_to
 if(!SESSION||!TOKEN)window.location.href='index.html';
 let allReports=[],bdReports=[];
 function $(id){return document.getElementById(id);}
-function getRoleLabel(equipmentClass){const cls=(equipmentClass||'').toLowerCase();if(cls.includes('dump truck'))return'Driver';if(cls.includes('light vehicle'))return'Driver';if(cls.includes('manhaul'))return'Driver';if(cls.includes('water truck'))return'Driver';return'Operator';}
+function getRoleLabel(equipmentClass){const cls=(equipmentClass||'').toLowerCase();if(cls.includes('articulate'))return'Operator';if(cls.includes('dump truck'))return'Driver';if(cls.includes('light vehicle'))return'Driver';if(cls.includes('manhaul'))return'Driver';if(cls.includes('water truck'))return'Driver';return'Operator';}
 
 function switchTab(t,el){['reports','bd','csv'].forEach(x=>$('t-'+x).style.display='none');$('t-'+t).style.display='';document.querySelectorAll('.spv-tab').forEach(x=>x.classList.remove('active'));if(el)el.classList.add('active');if(t==='bd')loadBD();}
 

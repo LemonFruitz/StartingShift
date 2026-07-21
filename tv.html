@@ -134,7 +134,7 @@ if(!TOKEN){const p=new URLSearchParams(location.search);if(p.get('token'))localS
 const AUTH={'Authorization':'Bearer '+(localStorage.getItem('fms_token'))};
 
 let allUnits=[],driverMap={},prevBDUnits=new Set(),prevBDOpen=0,firstLoad=true;
-function getRoleLabel(equipmentClass){const cls=(equipmentClass||'').toLowerCase();if(cls.includes('dump truck'))return'Driver';if(cls.includes('light vehicle'))return'Driver';if(cls.includes('manhaul'))return'Driver';if(cls.includes('water truck'))return'Driver';return'Operator';}
+function getRoleLabel(equipmentClass){const cls=(equipmentClass||'').toLowerCase();if(cls.includes('articulate'))return'Operator';if(cls.includes('dump truck'))return'Driver';if(cls.includes('light vehicle'))return'Driver';if(cls.includes('manhaul'))return'Driver';if(cls.includes('water truck'))return'Driver';return'Operator';}
 
 function playAlert(){try{const ctx=new(window.AudioContext||window.webkitAudioContext)();[0,0.25,0.5].forEach(t=>{const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=880;o.type='square';g.gain.setValueAtTime(0.15,ctx.currentTime+t);g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+t+0.2);o.start(ctx.currentTime+t);o.stop(ctx.currentTime+t+0.2);});}catch{}}
 function showNotif(msg){const el=document.getElementById('notifBar');el.querySelector('.notif-text').textContent=msg;el.classList.add('show');playAlert();setTimeout(()=>el.classList.remove('show'),12000);}

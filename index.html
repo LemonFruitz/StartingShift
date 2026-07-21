@@ -206,6 +206,7 @@ document.addEventListener('DOMContentLoaded',function(){var el=document.getEleme
 // Role label selalu diturunkan dari equipment_class (bukan field role dari DB)
 function getRoleLabel(equipmentClass){
   const cls=(equipmentClass||'').toLowerCase();
+  if(cls.includes('articulate'))return'Operator';
   if(cls.includes('dump truck'))return'Driver';
   if(cls.includes('light vehicle'))return'Driver';
   if(cls.includes('manhaul'))return'Driver';

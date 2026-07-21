@@ -148,7 +148,7 @@ if(!SESSION||!TOKEN)window.location.href='index.html';
 let allUnits=[],allReports=[],trendData=[],rankData=[],bdReports=[];
 const _h=new Date().getHours(),curShift=(_h>=7&&_h<19)?'1':'2';
 function $(id){return document.getElementById(id);}
-function getRoleLabel(equipmentClass){const cls=(equipmentClass||'').toLowerCase();if(cls.includes('dump truck'))return'Driver';if(cls.includes('light vehicle'))return'Driver';if(cls.includes('manhaul'))return'Driver';if(cls.includes('water truck'))return'Driver';return'Operator';}
+function getRoleLabel(equipmentClass){const cls=(equipmentClass||'').toLowerCase();if(cls.includes('articulate'))return'Operator';if(cls.includes('dump truck'))return'Driver';if(cls.includes('light vehicle'))return'Driver';if(cls.includes('manhaul'))return'Driver';if(cls.includes('water truck'))return'Driver';return'Operator';}
 function switchView(v){document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));document.querySelectorAll('.sb-item[data-view="'+v+'"]').forEach(i=>i.classList.add('active'));document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));$('v-'+v).classList.add('active');}
 document.querySelectorAll('.sb-item[data-view]').forEach(el=>{el.addEventListener('click',()=>switchView(el.dataset.view));});
 document.addEventListener('DOMContentLoaded',()=>{const i=(SESSION.name||'??').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();$('sbAv').textContent=i;$('sbNm').textContent=SESSION.name||SESSION.id;updateClock();setInterval(updateClock,1000);loadAll();});

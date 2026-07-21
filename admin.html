@@ -560,7 +560,7 @@ function renderOutstanding(){
   c.innerHTML=p.map(r=>`<div class="hm-out-row ${r.report_id===curId?'active':''}" onclick="jumpToQueue('${r.report_id}')"><div style="min-width:0"><div style="font-weight:800;font-size:.76rem">${r.unit_id}</div><div style="font-size:.58rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.driver_name||r.driver_id}</div></div><div style="text-align:right;flex-shrink:0"><div style="font-size:.55rem;color:var(--muted)">HM awal</div><div style="font-size:.72rem;font-weight:700">${r.odometer_entered||'—'}</div></div></div>`).join('');
 }
 // --- Full HM table ---
-function getRoleLabel(equipmentClass){const cls=(equipmentClass||'').toLowerCase();if(cls.includes('dump truck'))return'Driver';if(cls.includes('light vehicle'))return'Driver';if(cls.includes('manhaul'))return'Driver';if(cls.includes('water truck'))return'Driver';return'Operator';}
+function getRoleLabel(equipmentClass){const cls=(equipmentClass||'').toLowerCase();if(cls.includes('articulate'))return'Operator';if(cls.includes('dump truck'))return'Driver';if(cls.includes('light vehicle'))return'Driver';if(cls.includes('manhaul'))return'Driver';if(cls.includes('water truck'))return'Driver';return'Operator';}
 function hmRole(r){return getRoleLabel(r.equipment_class);}
 function hmFmtDate(ts){if(!ts)return '—';const d=new Date(ts);if(isNaN(d.getTime()))return '—';const p=n=>String(n).padStart(2,'0');return `${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()}`;}
 function hmFilteredList(){
