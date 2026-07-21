@@ -131,6 +131,7 @@ body{background:var(--bg);font-family:var(--font);color:var(--text);display:flex
     <div class="sb-item" data-view="hm"><span class="sb-ico"><span class="mi">timer</span></span> Update HM</div>
     <div class="sb-item" data-view="fleet"><span class="sb-ico"><span class="mi">local_shipping</span></span> Fleet & Alat</div>
     <div class="sb-item" data-view="bd"><span class="sb-ico"><span class="mi">warning_amber</span></span> Breakdown Report</div>
+    <div class="sb-item" data-view="p2h"><span class="sb-ico"><span class="mi">build_circle</span></span> P2H Follow-up</div>
     <div class="sb-item" data-view="historis"><span class="sb-ico"><span class="mi">history</span></span> Historis</div>
     <div class="sb-section">Laporan</div>
     <div class="sb-item" onclick="genShiftPDF()"><span class="sb-ico"><span class="mi">picture_as_pdf</span></span> PDF Shift Report</div>
@@ -231,6 +232,46 @@ body{background:var(--bg);font-family:var(--font);color:var(--text);display:flex
       <div class="his-scroll"><div style="min-width:640px">
         <div class="his-thead his-grid"><span>Tanggal</span><span>Total Lapor</span><span>RTW</span><span>Unfit</span><span>BD Unit</span><span>BD Report</span><span>Active Drivers</span><span>Skor</span></div>
         <div id="hisTableBody"></div>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- VIEW: P2H FOLLOW-UP -->
+  <div class="content view" id="v-p2h" style="flex-direction:column;gap:12px;overflow-y:auto">
+    <style>
+      #v-p2h .p2h-grid{display:grid;grid-template-columns:34px 92px 90px 120px 110px 1fr 96px 110px 74px;align-items:center;gap:8px}
+      #v-p2h .p2h-thead{padding:9px 14px;font-size:.55rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);background:var(--bg)}
+      #v-p2h .p2h-row{padding:9px 14px;border-bottom:1px solid var(--border);font-size:.72rem}
+      #v-p2h .p2h-row:hover{background:var(--bg)}
+      #v-p2h .p2h-scroll{overflow-x:auto}
+      #v-p2h .p2h-badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:.6rem;font-weight:800;white-space:nowrap}
+    </style>
+    <div class="panel-title"><span class="mi">build_circle</span> P2H Follow-up</div>
+
+    <!-- Section 1: Summary Cards -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+      <div class="kpi"><div class="kpi-label">Total Temuan</div><div class="kpi-val" id="p2hTot">—</div><div class="kpi-sub">seluruh tiket</div></div>
+      <div class="kpi"><div class="kpi-label">Open</div><div class="kpi-val" style="color:var(--red)" id="p2hOpen">—</div><div class="kpi-sub">belum ditangani</div></div>
+      <div class="kpi"><div class="kpi-label">In Progress</div><div class="kpi-val" style="color:var(--amber)" id="p2hProg">—</div><div class="kpi-sub">sedang dikerjakan</div></div>
+      <div class="kpi"><div class="kpi-label">Resolved</div><div class="kpi-val" style="color:var(--green)" id="p2hDone">—</div><div class="kpi-sub">selesai</div></div>
+    </div>
+
+    <!-- Section 2: Filter -->
+    <div class="panel" style="padding:12px 16px">
+      <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+        <div><label style="font-size:.6rem;font-weight:600;color:var(--gray);display:block;margin-bottom:2px">Status</label><select id="p2hFStatus" onchange="renderP2H()" style="padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-family:var(--font);font-size:.78rem"><option value="">Semua</option><option value="Open">Open</option><option value="In Progress">In Progress</option><option value="Resolved">Resolved</option></select></div>
+        <div><label style="font-size:.6rem;font-weight:600;color:var(--gray);display:block;margin-bottom:2px">Unit</label><input type="text" id="p2hFUnit" oninput="renderP2H()" placeholder="Cari unit..." style="padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-family:var(--font);font-size:.78rem"/></div>
+        <div style="flex:1"></div>
+        <button onclick="downloadP2HExcel()" style="padding:8px 12px;background:var(--card);color:var(--gray);border:1px solid var(--border);border-radius:6px;font-family:var(--font);font-size:.7rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:4px"><span class="mi mi-sm">download</span> Download Excel</button>
+      </div>
+    </div>
+
+    <!-- Section 3: Tabel Tiket -->
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">Tiket Temuan P2H</div><span class="badge-s" style="background:var(--bg);color:var(--gray)" id="p2hRowCount">—</span></div>
+      <div class="p2h-scroll"><div style="min-width:900px">
+        <div class="p2h-thead p2h-grid"><span>No</span><span>Tanggal</span><span>Unit</span><span>Driver</span><span>Komponen</span><span>Deskripsi</span><span>Status</span><span>Assigned</span><span>Aksi</span></div>
+        <div id="p2hTableBody"></div>
       </div></div>
     </div>
   </div>
@@ -409,6 +450,7 @@ body{background:var(--bg);font-family:var(--font);color:var(--text);display:flex
 <div class="modal-ov" id="modalBD"><div class="modal"><div class="modal-h" id="mdTt"><span class="mi">error</span> Keterangan Breakdown</div><div class="modal-b"><div class="mf"><label>Deskripsi</label><textarea id="mdDesc" placeholder="Jelaskan kerusakan..."></textarea></div><div class="mf"><label>Lokasi Unit</label><input type="text" id="mdLoc" placeholder="Contoh: Hauling Road KM 3"/></div></div><div class="modal-f"><button class="mbtn-c" onclick="closeMd()">Batal</button><button class="mbtn-o" onclick="confirmBD()">Konfirmasi</button></div></div></div>
 <div class="modal-ov" id="modalEdit"><div class="modal"><div class="modal-h"><span class="mi">edit</span> Edit Keterangan</div><div class="modal-b"><div class="mf"><label>Keterangan</label><textarea id="edNotes"></textarea></div></div><div class="modal-f"><button class="mbtn-c" onclick="closeEd()">Batal</button><button class="mbtn-o" onclick="saveNotes()">Simpan</button></div></div></div>
 <div class="modal-ov" id="modalEditReport"><div class="modal"><div class="modal-h"><span class="mi">edit</span> Edit Report</div><div class="modal-b"><div class="mf"><label>Unit ID</label><input type="text" id="erUnit"/></div><div class="mf" style="display:flex;gap:8px"><div style="flex:1"><label>HM Awal</label><input type="number" id="erHmAwal"/></div><div style="flex:1"><label>HM Akhir</label><input type="number" id="erHmAkhir"/></div></div><div class="mf"><label>Status FTW</label><select id="erFtw" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-size:.82rem;font-family:var(--font);outline:none"><option value="Fit">Fit</option><option value="Unfit">Unfit</option></select></div><div id="erStatus" style="font-size:.72rem;min-height:16px"></div></div><div class="modal-f"><button class="mbtn-c" onclick="closeEditReport()">Batal</button><button class="mbtn-o" onclick="saveEditReport()">Simpan</button></div></div></div>
+<div class="modal-ov" id="modalP2H"><div class="modal" style="max-width:440px"><div class="modal-h"><span class="mi">build_circle</span> Update Tiket P2H</div><div class="modal-b"><div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:.72rem;line-height:1.7"><div><span style="color:var(--gray);font-weight:600">Unit:</span> <span id="p2hmUnit" style="font-weight:700"></span></div><div><span style="color:var(--gray);font-weight:600">Komponen:</span> <span id="p2hmItem" style="font-weight:700"></span></div><div><span style="color:var(--gray);font-weight:600">Temuan:</span> <span id="p2hmDesc"></span></div></div><div class="mf"><label>Status</label><select id="p2hmStatus" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-size:.82rem;font-family:var(--font);outline:none"><option value="Open">Open</option><option value="In Progress">In Progress</option><option value="Resolved">Resolved</option></select></div><div class="mf"><label>Ditugaskan ke</label><input type="text" id="p2hmAssigned" placeholder="Nama mekanik / PIC"/></div><div class="mf"><label>Resolusi</label><textarea id="p2hmResolution" placeholder="Tindakan / perbaikan yang dilakukan..."></textarea></div><div id="p2hmStatusMsg" style="font-size:.72rem;min-height:16px"></div></div><div class="modal-f"><button class="mbtn-c" onclick="closeP2HModal()">Batal</button><button class="mbtn-o" onclick="saveP2H()"><span class="mi mi-sm">save</span> Simpan</button></div></div></div>
 <div class="modal-ov" id="modalClosing"><div class="modal" style="max-width:460px"><div class="modal-h"><span class="mi">lock</span> <span id="clsTitle">Closing Shift</span></div><div class="modal-b"><div style="font-size:.72rem;font-weight:700;margin-bottom:6px">Checklist sebelum closing:</div><div id="clsChecklist" style="font-size:.74rem;line-height:1.9"></div><div style="font-size:.72rem;font-weight:700;margin:12px 0 4px">Outstanding:</div><div id="clsOutstanding" style="font-size:.72rem;color:var(--gray);line-height:1.7"></div><div class="mf" style="margin-top:12px"><label>Catatan Serah Terima</label><textarea id="clsNotes" placeholder="Catatan untuk shift berikutnya..."></textarea></div><div id="clsStatus" style="font-size:.72rem;min-height:16px"></div></div><div class="modal-f"><button class="mbtn-c" onclick="closeClosing()">Batal</button><button class="mbtn-o" id="clsConfirmBtn" onclick="confirmClosing()"><span class="mi mi-sm">lock</span> Tutup & Generate PDF</button></div></div></div>
 
 <script>
@@ -422,7 +464,7 @@ document.querySelectorAll('.sb-item[data-view]').forEach(el=>{el.addEventListene
   document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));el.classList.add('active');
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById('v-'+el.dataset.view).classList.add('active');
-  if(el.dataset.view==='fleet')renderFleet();if(el.dataset.view==='bd')renderBD2();if(el.dataset.view==='historis')initHistoris();
+  if(el.dataset.view==='fleet')renderFleet();if(el.dataset.view==='bd')renderBD2();if(el.dataset.view==='historis')initHistoris();if(el.dataset.view==='p2h')loadP2H();
 });});
 
 document.addEventListener('DOMContentLoaded',()=>{
@@ -1057,6 +1099,55 @@ function downloadHistorisExcel(){
   const headers=['Tanggal','Total Lapor','RTW','Unfit','BD Unit','BD Report','Active Drivers','Skor %'];
   const data=hisRows.map(t=>[t.date,t.total,t.rtw,t.unfit,t.breakdown,t.bdReports,t.activeDrivers,hisScore(t)]);
   downloadExcel(data,headers,`Rekap_Historis_${$('hisStart').value}_s.d_${$('hisEnd').value}`);
+}
+// ── P2H FOLLOW-UP ──
+let p2hTickets=[],editingTicket=null;
+function p2hEsc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function p2hFmtDate(dstr){if(!dstr)return '—';const d=new Date(dstr);if(isNaN(d.getTime()))return String(dstr).slice(0,10);const p=n=>String(n).padStart(2,'0');return `${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()}`;}
+function p2hStatusStyle(st){if(st==='Resolved')return 'background:rgba(16,185,129,.14);color:var(--green)';if(st==='In Progress')return 'background:rgba(245,158,11,.16);color:var(--amber)';return 'background:rgba(239,68,68,.14);color:var(--red)';}
+async function loadP2H(){
+  try{const r=await fetch(`${API}/maintenance`,{headers:{'Authorization':'Bearer '+TOKEN}});const d=await r.json();p2hTickets=(d.success&&Array.isArray(d.data))?d.data:[];}
+  catch(e){console.error(e);p2hTickets=[];}
+  renderP2H();
+}
+function renderP2H(){
+  const tot=p2hTickets.length;
+  const open=p2hTickets.filter(t=>t.status==='Open').length;
+  const prog=p2hTickets.filter(t=>t.status==='In Progress').length;
+  const done=p2hTickets.filter(t=>t.status==='Resolved').length;
+  if($('p2hTot'))$('p2hTot').textContent=tot;if($('p2hOpen'))$('p2hOpen').textContent=open;if($('p2hProg'))$('p2hProg').textContent=prog;if($('p2hDone'))$('p2hDone').textContent=done;
+  const fSt=$('p2hFStatus')?$('p2hFStatus').value:'';const fUn=($('p2hFUnit')?$('p2hFUnit').value:'').trim().toLowerCase();
+  const list=p2hTickets.filter(t=>(!fSt||t.status===fSt)&&(!fUn||String(t.unit_id||'').toLowerCase().includes(fUn)));
+  if($('p2hRowCount'))$('p2hRowCount').textContent=list.length+' tiket';
+  const body=$('p2hTableBody');if(!body)return;
+  if(!list.length){body.innerHTML='<div style="padding:20px;text-align:center;color:var(--muted)">Tidak ada tiket sesuai filter.</div>';return;}
+  body.innerHTML=list.map((t,i)=>{const st=t.status||'Open';const assigned=t.assigned_to||'—';
+    return`<div class="p2h-row p2h-grid"><span style="color:var(--gray)">${i+1}</span><span>${p2hFmtDate(t.created_at)}</span><span style="font-weight:600">${p2hEsc(t.unit_id)}</span><span>${p2hEsc(t.driver_name||t.driver_id||'—')}</span><span>${p2hEsc(t.item_id||'—')}</span><span style="color:var(--gray)">${p2hEsc(t.description||'—')}</span><span><span class="p2h-badge" style="${p2hStatusStyle(st)}">${p2hEsc(st)}</span></span><span>${p2hEsc(assigned)}</span><span><button onclick="openP2HModal('${p2hEsc(t.ticket_id)}')" style="padding:5px 12px;background:linear-gradient(135deg,var(--green),var(--blue));color:#fff;border:none;border-radius:6px;font-family:var(--font);font-size:.66rem;font-weight:700;cursor:pointer">Update</button></span></div>`;
+  }).join('');
+}
+function openP2HModal(id){
+  const t=p2hTickets.find(x=>String(x.ticket_id)===String(id));if(!t)return;editingTicket=t;
+  $('p2hmUnit').textContent=t.unit_id||'—';$('p2hmItem').textContent=t.item_id||'—';$('p2hmDesc').textContent=t.description||'—';
+  $('p2hmStatus').value=t.status||'Open';$('p2hmAssigned').value=t.assigned_to||'';$('p2hmResolution').value=t.resolution||'';
+  $('p2hmStatusMsg').textContent='';$('modalP2H').classList.add('show');
+}
+function closeP2HModal(){$('modalP2H').classList.remove('show');editingTicket=null;}
+async function saveP2H(){
+  if(!editingTicket)return;const msg=$('p2hmStatusMsg');
+  const body={status:$('p2hmStatus').value,assigned_to:$('p2hmAssigned').value.trim(),resolution:$('p2hmResolution').value.trim(),resolved_by:SESSION.id};
+  msg.style.color='var(--gray)';msg.textContent='Menyimpan...';
+  try{const r=await fetch(`${API}/maintenance/${editingTicket.ticket_id}`,{method:'PATCH',headers:{'Authorization':'Bearer '+TOKEN,'Content-Type':'application/json'},body:JSON.stringify(body)});const d=await r.json();
+    if(r.ok&&(d.success!==false)){closeP2HModal();showClosingToast('Tiket P2H diperbarui');loadP2H();}
+    else{msg.style.color='var(--red)';msg.textContent=(d&&d.message)||'Gagal menyimpan tiket.';}
+  }catch(e){msg.style.color='var(--red)';msg.textContent='Gagal terhubung ke server.';}
+}
+function downloadP2HExcel(){
+  const fSt=$('p2hFStatus')?$('p2hFStatus').value:'';const fUn=($('p2hFUnit')?$('p2hFUnit').value:'').trim().toLowerCase();
+  const list=p2hTickets.filter(t=>(!fSt||t.status===fSt)&&(!fUn||String(t.unit_id||'').toLowerCase().includes(fUn)));
+  if(!list.length){alert('Tidak ada tiket untuk diunduh.');return;}
+  const headers=['No','Tanggal','Unit','Driver','Komponen','Deskripsi','Status','Assigned','Resolusi'];
+  const data=list.map((t,i)=>[i+1,p2hFmtDate(t.created_at),t.unit_id||'',t.driver_name||t.driver_id||'',t.item_id||'',t.description||'',t.status||'Open',t.assigned_to||'',t.resolution||'']);
+  downloadExcel(data,headers,`P2H_Followup_${new Date().toISOString().slice(0,10)}`);
 }
 function doLogout(){localStorage.removeItem('fms_token');localStorage.removeItem('fms_session');window.location.href='index.html';}
 function $(id){return document.getElementById(id);}
