@@ -136,6 +136,7 @@ body{background:var(--bg);font-family:var(--font);color:var(--text);display:flex
     <div class="sb-section">Laporan</div>
     <div class="sb-item" onclick="genShiftPDF()"><span class="sb-ico"><span class="mi">picture_as_pdf</span></span> PDF Shift Report</div>
     <div class="sb-section">Sistem</div>
+    <div class="sb-item" id="sbManage" data-view="manage" style="display:none"><span class="sb-ico"><span class="mi">settings</span></span> Kelola Data</div>
     <div class="sb-item" onclick="window.open('tv.html','_blank')"><span class="sb-ico"><span class="mi">tv</span></span> TV Monitor</div>
     <div class="sb-item" onclick="doLogout()"><span class="sb-ico"><span class="mi">logout</span></span> Logout</div>
   </div>
@@ -510,6 +511,112 @@ body{background:var(--bg);font-family:var(--font);color:var(--text);display:flex
       <div id="blListBody" style="overflow-y:auto"></div>
     </div>
   </div>
+
+  <!-- VIEW: KELOLA DATA -->
+  <div class="content view" id="v-manage" style="flex-direction:column;gap:12px;overflow-y:auto">
+    <style>
+      #v-manage .mg-tabs{display:flex;gap:6px;border-bottom:1px solid var(--border);padding-bottom:2px}
+      #v-manage .mg-tab{padding:8px 16px;border:none;background:transparent;border-bottom:2px solid transparent;font-family:var(--font);font-size:.78rem;font-weight:700;color:var(--muted);cursor:pointer;display:inline-flex;align-items:center;gap:5px}
+      #v-manage .mg-tab.active{color:var(--green);border-bottom-color:var(--green)}
+      #v-manage .mg-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+      #v-manage .mg-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+      #v-manage .mg-tools input,#v-manage .mg-tools select{padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-family:var(--font);font-size:.74rem;outline:none}
+      #v-manage .mg-btn{padding:8px 14px;border:none;border-radius:6px;font-family:var(--font);font-size:.72rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:4px}
+      #v-manage .mg-btn.primary{background:linear-gradient(135deg,var(--green),var(--blue));color:#fff}
+      #v-manage .mg-btn.ghost{background:var(--card);color:var(--gray);border:1px solid var(--border)}
+      #v-manage .mg-scroll{overflow-x:auto}
+      #v-manage .mg-thead,#v-manage .mg-row{display:grid;align-items:center;gap:8px;padding:8px 12px}
+      #v-manage .mg-thead{font-size:.55rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);background:var(--bg)}
+      #v-manage .mg-row{font-size:.73rem;border-bottom:1px solid var(--border)}
+      #v-manage .mg-row:hover{background:var(--bg)}
+      #v-manage .mp-grid{grid-template-columns:34px 90px 1fr 74px 84px 120px 78px 96px}
+      #v-manage .un-grid{grid-template-columns:34px 92px 130px 130px 84px 84px 110px}
+      #v-manage .mg-act{padding:4px 9px;border-radius:5px;font-size:.62rem;font-weight:700;cursor:pointer;border:1px solid var(--border);background:var(--card);font-family:var(--font)}
+      #v-manage .mg-badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:.6rem;font-weight:800}
+      #v-manage .pin-drop{border:1px solid var(--border);border-radius:8px;margin-top:4px;max-height:220px;overflow-y:auto;background:var(--card)}
+      #v-manage .pin-opt{padding:8px 12px;font-size:.76rem;cursor:pointer;border-bottom:1px solid var(--border)}
+      #v-manage .pin-opt:hover{background:var(--bg)}
+    </style>
+    <div class="panel-title"><span class="mi">settings</span> Kelola Data</div>
+    <div class="mg-tabs">
+      <button id="mgTab1" class="mg-tab active" onclick="switchManageTab(1)"><span class="mi mi-sm">group</span> Manpower</button>
+      <button id="mgTab2" class="mg-tab" onclick="switchManageTab(2)"><span class="mi mi-sm">local_shipping</span> Unit</button>
+      <button id="mgTab3" class="mg-tab" onclick="switchManageTab(3)"><span class="mi mi-sm">key</span> PIN</button>
+    </div>
+
+    <!-- TAB 1: MANPOWER -->
+    <div id="mgPane1">
+      <div class="mg-cards" style="margin-bottom:10px">
+        <div class="kpi"><div class="kpi-label">Total</div><div class="kpi-val" id="mpTotal">—</div></div>
+        <div class="kpi"><div class="kpi-label">Active</div><div class="kpi-val" style="color:var(--green)" id="mpActive">—</div></div>
+        <div class="kpi"><div class="kpi-label">Inactive</div><div class="kpi-val" style="color:var(--red)" id="mpInactive">—</div></div>
+        <div class="kpi"><div class="kpi-label">Driver / Operator</div><div class="kpi-val" style="font-size:1.2rem" id="mpRoles">—</div></div>
+      </div>
+      <div class="mg-tools" style="margin-bottom:10px">
+        <button class="mg-btn primary" onclick="openAddDriver()"><span class="mi mi-sm">person_add</span> Tambah Driver</button>
+        <button class="mg-btn ghost" onclick="downloadManpowerExcel()"><span class="mi mi-sm">download</span> Download Excel</button>
+        <div style="flex:1"></div>
+        <input type="text" id="mpSearch" placeholder="Cari nama / ID..." oninput="renderManpower()" style="min-width:150px"/>
+        <select id="mpRole" onchange="renderManpower()"><option value="">Role: Semua</option><option>Driver</option><option>Operator</option></select>
+        <select id="mpDept" onchange="renderManpower()"><option value="">Dept: Semua</option><option>Mining</option><option>Hauling</option></select>
+        <select id="mpEq" onchange="renderManpower()"><option value="">Equipment: Semua</option></select>
+        <select id="mpStatus" onchange="renderManpower()"><option value="">Status: Semua</option><option>Active</option><option>Inactive</option></select>
+      </div>
+      <div class="panel" style="padding:0">
+        <div class="mg-scroll"><div style="min-width:700px">
+          <div class="mg-thead mp-grid"><span>No</span><span>ID</span><span>Nama</span><span>Role</span><span>Department</span><span>Equipment Class</span><span>Status</span><span>Aksi</span></div>
+          <div id="mpBody"></div>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- TAB 2: UNIT -->
+    <div id="mgPane2" style="display:none">
+      <div class="mg-cards" style="margin-bottom:10px">
+        <div class="kpi"><div class="kpi-label">Total</div><div class="kpi-val" id="unTotal">—</div></div>
+        <div class="kpi"><div class="kpi-label">Ready</div><div class="kpi-val" style="color:var(--green)" id="unReady">—</div></div>
+        <div class="kpi"><div class="kpi-label">BD</div><div class="kpi-val" style="color:var(--red)" id="unBd">—</div></div>
+        <div class="kpi"><div class="kpi-label">MT</div><div class="kpi-val" style="color:var(--amber)" id="unMt">—</div></div>
+      </div>
+      <div class="mg-tools" style="margin-bottom:10px">
+        <button class="mg-btn primary" onclick="openAddUnit()"><span class="mi mi-sm">add</span> Tambah Unit</button>
+        <button class="mg-btn ghost" onclick="downloadUnitsExcel()"><span class="mi mi-sm">download</span> Download Excel</button>
+        <div style="flex:1"></div>
+        <input type="text" id="unSearch" placeholder="Cari unit ID..." oninput="renderManageUnits()" style="min-width:150px"/>
+        <select id="unEq" onchange="renderManageUnits()"><option value="">Equipment: Semua</option></select>
+        <select id="unStatus" onchange="renderManageUnits()"><option value="">Status: Semua</option><option value="Ready">Ready</option><option value="Breakdown">BD</option><option value="Maintenance">MT</option></select>
+        <select id="unCat" onchange="renderManageUnits()"><option value="">Kategori: Semua</option><option value="HAULING">Hauling</option><option value="MINING">Mining</option><option value="HRM">HRM</option><option value="SUPPORT">Support</option></select>
+      </div>
+      <div class="panel" style="padding:0">
+        <div class="mg-scroll"><div style="min-width:660px">
+          <div class="mg-thead un-grid"><span>No</span><span>Unit ID</span><span>Vehicle Type</span><span>Equipment Class</span><span>Kategori</span><span>Status</span><span>Aksi</span></div>
+          <div id="unBody"></div>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- TAB 3: PIN -->
+    <div id="mgPane3" style="display:none">
+      <div class="panel" style="padding:16px;max-width:520px">
+        <div style="font-size:.72rem;font-weight:700;color:var(--gray);margin-bottom:6px">Cari Driver</div>
+        <input type="text" id="pinSearch" placeholder="Ketik nama atau ID..." oninput="renderPinSearch()" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:.8rem;outline:none"/>
+        <div id="pinResults" class="pin-drop" style="display:none"></div>
+        <div id="pinCard" style="display:none;margin-top:14px;border-top:1px solid var(--border);padding-top:14px">
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:.74rem;line-height:1.7;margin-bottom:12px">
+            <div><span style="color:var(--gray);font-weight:600">Driver:</span> <span id="pinDrvName" style="font-weight:800"></span> <span id="pinDrvId" style="color:var(--muted)"></span></div>
+            <div><span style="color:var(--gray);font-weight:600">Equipment:</span> <span id="pinDrvEq"></span></div>
+          </div>
+          <div class="mf"><label>PIN Baru *</label><input type="password" id="pinNew" maxlength="4" inputmode="numeric" placeholder="4 digit" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-family:var(--font)"/></div>
+          <div class="mf" style="margin-top:8px"><label>Konfirmasi *</label><input type="password" id="pinConf" maxlength="4" inputmode="numeric" placeholder="Ulangi PIN" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-family:var(--font)"/></div>
+          <div id="pinMsg" style="font-size:.72rem;min-height:16px;margin-top:6px"></div>
+          <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px">
+            <button class="mg-btn ghost" onclick="clearPinCard()">Batal</button>
+            <button class="mg-btn primary" onclick="doPinInline()"><span class="mi mi-sm">key</span> Ganti PIN</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- MODALS -->
@@ -517,6 +624,9 @@ body{background:var(--bg);font-family:var(--font);color:var(--text);display:flex
 <div class="modal-ov" id="modalEdit"><div class="modal"><div class="modal-h"><span class="mi">edit</span> Edit Keterangan</div><div class="modal-b"><div class="mf"><label>Keterangan</label><textarea id="edNotes"></textarea></div></div><div class="modal-f"><button class="mbtn-c" onclick="closeEd()">Batal</button><button class="mbtn-o" onclick="saveNotes()">Simpan</button></div></div></div>
 <div class="modal-ov" id="modalEditReport"><div class="modal"><div class="modal-h"><span class="mi">edit</span> Edit Report</div><div class="modal-b"><div class="mf"><label>Unit ID</label><input type="text" id="erUnit"/></div><div class="mf" style="display:flex;gap:8px"><div style="flex:1"><label>HM Awal</label><input type="number" id="erHmAwal"/></div><div style="flex:1"><label>HM Akhir</label><input type="number" id="erHmAkhir"/></div></div><div class="mf"><label>Status FTW</label><select id="erFtw" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-size:.82rem;font-family:var(--font);outline:none"><option value="Fit">Fit</option><option value="Unfit">Unfit</option></select></div><div id="erStatus" style="font-size:.72rem;min-height:16px"></div></div><div class="modal-f"><button class="mbtn-c" onclick="closeEditReport()">Batal</button><button class="mbtn-o" onclick="saveEditReport()">Simpan</button></div></div></div>
 <div class="modal-ov" id="modalP2H"><div class="modal" style="max-width:440px"><div class="modal-h"><span class="mi">build_circle</span> Update Tiket P2H</div><div class="modal-b"><div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:.72rem;line-height:1.7"><div><span style="color:var(--gray);font-weight:600">Unit:</span> <span id="p2hmUnit" style="font-weight:700"></span></div><div><span style="color:var(--gray);font-weight:600">Komponen:</span> <span id="p2hmItem" style="font-weight:700"></span></div><div><span style="color:var(--gray);font-weight:600">Temuan:</span> <span id="p2hmDesc"></span></div></div><div class="mf"><label>Status</label><select id="p2hmStatus" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-size:.82rem;font-family:var(--font);outline:none"><option value="Open">Open</option><option value="In Progress">In Progress</option><option value="Resolved">Resolved</option></select></div><div class="mf"><label>Ditugaskan ke</label><input type="text" id="p2hmAssigned" placeholder="Nama mekanik / PIC"/></div><div class="mf"><label>Resolusi</label><textarea id="p2hmResolution" placeholder="Tindakan / perbaikan yang dilakukan..."></textarea></div><div id="p2hmStatusMsg" style="font-size:.72rem;min-height:16px"></div></div><div class="modal-f"><button class="mbtn-c" onclick="closeP2HModal()">Batal</button><button class="mbtn-o" onclick="saveP2H()"><span class="mi mi-sm">save</span> Simpan</button></div></div></div>
+<div class="modal-ov" id="modalDriver"><div class="modal"><div class="modal-h"><span class="mi">badge</span> <span id="drvTitle">Tambah Driver Baru</span></div><div class="modal-b"><div class="mf"><label>Nama *</label><input type="text" id="drvName" placeholder="Nama lengkap"/></div><div class="mf"><label>ID Karyawan</label><input type="text" id="drvId" placeholder="Auto"/></div><div class="mf"><label>Equipment Class</label><select id="drvEq" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-size:.82rem;font-family:var(--font);outline:none"></select></div><div class="mf"><label>Department</label><select id="drvDept" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-size:.82rem;font-family:var(--font);outline:none"><option>Mining</option><option>Hauling</option></select></div><div class="mf"><label>No HP</label><input type="text" id="drvPhone" placeholder="08xxxxxxxxxx"/></div><div class="mf" id="drvPinWrap"><label>PIN</label><input type="text" id="drvPin" maxlength="4" inputmode="numeric" placeholder="default 0000"/></div><div id="drvMsg" style="font-size:.72rem;min-height:16px"></div></div><div class="modal-f"><button class="mbtn-c" onclick="closeDriverModal()">Batal</button><button class="mbtn-o" onclick="saveDriver()"><span class="mi mi-sm">save</span> Simpan</button></div></div></div>
+<div class="modal-ov" id="modalUnit"><div class="modal"><div class="modal-h"><span class="mi">local_shipping</span> <span id="unTitle">Tambah Unit Baru</span></div><div class="modal-b"><div class="mf"><label>Unit ID *</label><input type="text" id="unId" placeholder="Contoh: HDTS001"/></div><div class="mf"><label>Vehicle Type *</label><input type="text" id="unType" placeholder="Contoh: SHACMAN X3000"/></div><div class="mf"><label>Equipment Class</label><select id="unEqSel" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-size:.82rem;font-family:var(--font);outline:none"></select></div><div id="unMsg" style="font-size:.72rem;min-height:16px"></div></div><div class="modal-f"><button class="mbtn-c" onclick="closeUnitModal()">Batal</button><button class="mbtn-o" onclick="saveUnit()"><span class="mi mi-sm">save</span> Simpan</button></div></div></div>
+<div class="modal-ov" id="modalPin"><div class="modal" style="max-width:380px"><div class="modal-h"><span class="mi">key</span> Ganti PIN</div><div class="modal-b"><div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:.74rem;line-height:1.7;margin-bottom:12px"><div><span style="color:var(--gray);font-weight:600">Driver:</span> <span id="pmName" style="font-weight:800"></span> <span id="pmId" style="color:var(--muted)"></span></div><div><span style="color:var(--gray);font-weight:600">Equipment:</span> <span id="pmEq"></span></div></div><div class="mf"><label>PIN Baru *</label><input type="password" id="pmNew" maxlength="4" inputmode="numeric" placeholder="4 digit"/></div><div class="mf"><label>Konfirmasi *</label><input type="password" id="pmConf" maxlength="4" inputmode="numeric" placeholder="Ulangi PIN"/></div><div id="pmMsg" style="font-size:.72rem;min-height:16px"></div></div><div class="modal-f"><button class="mbtn-c" onclick="closePinModal()">Batal</button><button class="mbtn-o" onclick="doPinModal()"><span class="mi mi-sm">key</span> Ganti PIN</button></div></div></div>
 <div class="modal-ov" id="modalClosing"><div class="modal" style="max-width:460px"><div class="modal-h"><span class="mi">lock</span> <span id="clsTitle">Closing Shift</span></div><div class="modal-b"><div style="font-size:.72rem;font-weight:700;margin-bottom:6px">Checklist sebelum closing:</div><div id="clsChecklist" style="font-size:.74rem;line-height:1.9"></div><div style="font-size:.72rem;font-weight:700;margin:12px 0 4px">Outstanding:</div><div id="clsOutstanding" style="font-size:.72rem;color:var(--gray);line-height:1.7"></div><div class="mf" style="margin-top:12px"><label>Catatan Serah Terima</label><textarea id="clsNotes" placeholder="Catatan untuk shift berikutnya..."></textarea></div><div id="clsStatus" style="font-size:.72rem;min-height:16px"></div></div><div class="modal-f"><button class="mbtn-c" onclick="closeClosing()">Batal</button><button class="mbtn-o" id="clsConfirmBtn" onclick="confirmClosing()"><span class="mi mi-sm">lock</span> Tutup & Generate PDF</button></div></div></div>
 
 <script>
@@ -530,12 +640,13 @@ document.querySelectorAll('.sb-item[data-view]').forEach(el=>{el.addEventListene
   document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));el.classList.add('active');
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById('v-'+el.dataset.view).classList.add('active');
-  if(el.dataset.view==='fleet')renderFleet();if(el.dataset.view==='bd')renderBD2();if(el.dataset.view==='historis')initHistoris();if(el.dataset.view==='p2h')loadP2H();
+  if(el.dataset.view==='fleet')renderFleet();if(el.dataset.view==='bd')renderBD2();if(el.dataset.view==='historis')initHistoris();if(el.dataset.view==='p2h')loadP2H();if(el.dataset.view==='manage')initManage();
 });});
 
 document.addEventListener('DOMContentLoaded',()=>{
   const i=(SESSION.name||'??').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
   document.getElementById('sbAv').textContent=i;document.getElementById('sbNm').textContent=SESSION.name||SESSION.id;
+  if(String(SESSION.id||'').startsWith('CCR-')){const sm=document.getElementById('sbManage');if(sm)sm.style.display='';}
   updateClock();setInterval(updateClock,1000);loadAll();
 });
 function updateClock(){const n=new Date();document.getElementById('clock').textContent=n.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',second:'2-digit'});document.getElementById('tbDate').textContent='Pemantauan kesiapan shift · '+n.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});const h=n.getHours(),s1=h>=7&&h<19;const b=document.getElementById('shiftBadge');b.className='tb-shift '+(s1?'s1':'s2');b.innerHTML=`<div style="font-size:.55rem;opacity:.7">SHIFT AKTIF</div><div>Shift ${s1?'1 · Siang':'2 · Malam'}</div>`;document.getElementById('shLbl').textContent='Shift '+(s1?'1 · Siang':'2 · Malam');if(isShiftClosed()){b.className='tb-shift';b.style.cssText='padding:6px 14px;border-radius:8px;font-size:.68rem;font-weight:700;background:rgba(239,68,68,.12);color:var(--red);border:1px solid rgba(239,68,68,.25)';b.innerHTML='<div style="font-size:.55rem;opacity:.7">SHIFT</div><div>CLOSED</div>';}else{b.style.cssText='';}updateClosingBtn();}
@@ -1438,6 +1549,143 @@ function downloadP2HExcel(){
   const headers=['No','Tanggal','Unit','Driver','Komponen','Deskripsi','Status','Assigned','Resolusi'];
   const data=list.map((t,i)=>[i+1,p2hFmtDate(t.created_at),t.unit_id||'',t.driver_name||t.driver_id||'',t.item_id||'',t.description||'',t.status||'Open',t.assigned_to||'',t.resolution||'']);
   downloadExcel(data,headers,`P2H_Followup_${new Date().toISOString().slice(0,10)}`);
+}
+// ── KELOLA DATA (Manpower / Unit / PIN) ──
+const EQ_CLASSES=['Dump Truck','Excavator','Articulate Truck','Bulldozer','Compactor','Motor Grader','Wheel Loader','Water Truck','Light Vehicle','Crane Truck'];
+let mpData=[],mpLoaded=false,drvEditId=null,unEditId=null,pinTarget=null;
+function mpEsc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function mpStatusOf(m){const s=m.status||(m.is_active===false?'Inactive':(m.is_active===true?'Active':(m.active===false?'Inactive':'Active')));return String(s);}
+function mpPhoneOf(m){return m.phone||m.no_hp||m.phone_number||m.hp||'';}
+function initManage(){
+  // isi dropdown equipment class
+  const opts='<option value="">Semua</option>'+EQ_CLASSES.map(c=>`<option>${c}</option>`).join('');
+  ['mpEq','unEq'].forEach(id=>{const el=$(id);if(el&&el.options.length<=1)el.innerHTML=(id==='mpEq'?'<option value="">Equipment: Semua</option>':'<option value="">Equipment: Semua</option>')+EQ_CLASSES.map(c=>`<option>${c}</option>`).join('');});
+  ['drvEq','unEqSel'].forEach(id=>{const el=$(id);if(el&&!el.options.length)el.innerHTML=EQ_CLASSES.map(c=>`<option>${c}</option>`).join('');});
+  loadManpower();renderManageUnits();
+}
+function switchManageTab(n){[1,2,3].forEach(i=>{$('mgPane'+i).style.display=i===n?'':'none';$('mgTab'+i).classList.toggle('active',i===n);});if(n===1)renderManpower();if(n===2)renderManageUnits();if(n===3){$('pinSearch').value='';$('pinResults').style.display='none';clearPinCard();}}
+async function loadManpower(){
+  try{const r=await fetch(`${API}/manpower`,{headers:{'Authorization':'Bearer '+TOKEN}});const d=await r.json();mpData=(d.success&&Array.isArray(d.data))?d.data:[];mpLoaded=true;}
+  catch(e){console.error(e);mpData=[];}
+  renderManpower();
+}
+function mpFiltered(){
+  const q=($('mpSearch')?.value||'').toLowerCase();const fRole=$('mpRole')?.value||'';const fDept=$('mpDept')?.value||'';const fEq=$('mpEq')?.value||'';const fSt=$('mpStatus')?.value||'';
+  return (mpData||[]).filter(m=>{const nm=(m.name||'').toLowerCase(),id=String(m.driver_id||'').toLowerCase();
+    if(q&&!nm.includes(q)&&!id.includes(q))return false;
+    if(fRole&&getRoleLabel(m.equipment_class)!==fRole)return false;
+    if(fDept&&(m.department||'')!==fDept)return false;
+    if(fEq&&(m.equipment_class||'')!==fEq)return false;
+    if(fSt&&mpStatusOf(m)!==fSt)return false;
+    return true;});
+}
+function renderManpower(){
+  const tot=mpData.length;const active=mpData.filter(m=>mpStatusOf(m)==='Active').length;const inactive=tot-active;
+  const drv=mpData.filter(m=>getRoleLabel(m.equipment_class)==='Driver').length;const op=tot-drv;
+  if($('mpTotal')){$('mpTotal').textContent=tot;$('mpActive').textContent=active;$('mpInactive').textContent=inactive;$('mpRoles').innerHTML=`${drv} <small style="font-size:.6rem;color:var(--muted)">Drv</small> / ${op} <small style="font-size:.6rem;color:var(--muted)">Op</small>`;}
+  const body=$('mpBody');if(!body)return;const list=mpFiltered();
+  if(!list.length){body.innerHTML='<div style="padding:20px;text-align:center;color:var(--muted)">Tidak ada data.</div>';return;}
+  body.innerHTML=list.map((m,i)=>{const st=mpStatusOf(m);const stCol=st==='Active'?'background:rgba(0,200,83,.12);color:var(--green)':'background:rgba(239,68,68,.12);color:var(--red)';const id=mpEsc(m.driver_id);
+    return`<div class="mg-row mp-grid"><span style="color:var(--gray)">${i+1}</span><span style="font-weight:600">${id}</span><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${mpEsc(m.name)}</span><span>${getRoleLabel(m.equipment_class)}</span><span>${mpEsc(m.department||'—')}</span><span style="color:var(--gray);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${mpEsc(m.equipment_class||'—')}</span><span><span class="mg-badge" style="${stCol}">${st}</span></span><span style="display:flex;gap:4px"><button class="mg-act" onclick="openEditDriver('${id}')">Edit</button><button class="mg-act" style="border-color:var(--blue);color:var(--blue)" onclick="openPinModal('${id}')">PIN</button></span></div>`;}).join('');
+}
+function openAddDriver(){drvEditId=null;$('drvTitle').textContent='Tambah Driver Baru';$('drvName').value='';$('drvId').value='';$('drvId').disabled=false;$('drvEq').selectedIndex=0;$('drvDept').selectedIndex=0;$('drvPhone').value='';$('drvPin').value='0000';$('drvPinWrap').style.display='';$('drvMsg').textContent='';$('modalDriver').classList.add('show');}
+function openEditDriver(id){const m=(mpData||[]).find(x=>String(x.driver_id)===String(id));if(!m)return;drvEditId=id;$('drvTitle').textContent='Edit Driver';$('drvName').value=m.name||'';$('drvId').value=m.driver_id||'';$('drvId').disabled=true;$('drvEq').value=m.equipment_class||EQ_CLASSES[0];$('drvDept').value=m.department||'Mining';$('drvPhone').value=mpPhoneOf(m);$('drvPinWrap').style.display='none';$('drvMsg').textContent='';$('modalDriver').classList.add('show');}
+function closeDriverModal(){$('modalDriver').classList.remove('show');drvEditId=null;}
+async function saveDriver(){
+  const name=$('drvName').value.trim();const msg=$('drvMsg');
+  if(!name){msg.style.color='var(--red)';msg.textContent='Nama wajib diisi.';return;}
+  const eq=$('drvEq').value,dept=$('drvDept').value,phone=$('drvPhone').value.trim();
+  msg.style.color='var(--gray)';msg.textContent='Menyimpan...';
+  try{let r;
+    if(drvEditId){r=await fetch(`${API}/manpower/${drvEditId}`,{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},body:JSON.stringify({name,equipment_class:eq,department:dept,phone})});}
+    else{let id=$('drvId').value.trim();if(!id)id=String(Date.now()).slice(-8);const pin=($('drvPin').value.trim()||'0000');r=await fetch(`${API}/manpower`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},body:JSON.stringify({driver_id:id,name,equipment_class:eq,department:dept,phone,pin})});}
+    const d=await r.json();
+    if(r.ok&&d.success!==false){closeDriverModal();showClosingToast(drvEditId?'Driver diperbarui':'Driver ditambahkan');mpLoaded=false;loadManpower();}
+    else{msg.style.color='var(--red)';msg.textContent=(d&&d.message)||'Gagal menyimpan.';}
+  }catch(e){msg.style.color='var(--red)';msg.textContent='Gagal terhubung ke server.';}
+}
+function downloadManpowerExcel(){
+  const list=mpFiltered();if(!list.length){alert('Tidak ada data untuk diunduh.');return;}
+  const headers=['ID','Nama','Role','Department','Equipment Class','No HP','Status'];
+  const data=list.map(m=>[m.driver_id||'',m.name||'',getRoleLabel(m.equipment_class),m.department||'',m.equipment_class||'',mpPhoneOf(m),mpStatusOf(m)]);
+  downloadExcel(data,headers,`Manpower_${new Date().toISOString().slice(0,10)}`);
+}
+// ── UNIT ──
+function unFiltered(){
+  const q=($('unSearch')?.value||'').toUpperCase();const fEq=$('unEq')?.value||'';const fSt=$('unStatus')?.value||'';const fCat=$('unCat')?.value||'';
+  return (allUnits||[]).filter(u=>{if(q&&!String(u.unit_id||'').toUpperCase().includes(q))return false;if(fEq&&(u.equipment_class||'')!==fEq)return false;if(fSt&&u.status_unit!==fSt)return false;if(fCat&&getCategory(u.equipment_class,u.unit_id)!==fCat)return false;return true;});
+}
+function renderManageUnits(){
+  const all=allUnits||[];const tot=all.length,rdy=all.filter(u=>u.status_unit==='Ready').length,bd=all.filter(u=>u.status_unit==='Breakdown').length,mt=all.filter(u=>u.status_unit==='Maintenance').length;
+  if($('unTotal')){$('unTotal').textContent=tot;$('unReady').textContent=rdy;$('unBd').textContent=bd;$('unMt').textContent=mt;}
+  const body=$('unBody');if(!body)return;const list=unFiltered().slice().sort((a,b)=>String(a.unit_id).localeCompare(String(b.unit_id),undefined,{numeric:true}));
+  if(!list.length){body.innerHTML='<div style="padding:20px;text-align:center;color:var(--muted)">Tidak ada unit.</div>';return;}
+  body.innerHTML=list.map((u,i)=>{const s=u.status_unit;const stCol=s==='Ready'?'background:rgba(0,200,83,.12);color:var(--green)':s==='Breakdown'?'background:rgba(239,68,68,.12);color:var(--red)':'background:rgba(245,158,11,.12);color:var(--amber)';const cat=getCategory(u.equipment_class,u.unit_id);const catCol=CAT_COLOR[cat];const id=mpEsc(u.unit_id);
+    return`<div class="mg-row un-grid"><span style="color:var(--gray)">${i+1}</span><span style="font-weight:700">${id}</span><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${mpEsc(u.vehicle_type||'—')}</span><span style="color:var(--gray);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${mpEsc(u.equipment_class||'—')}</span><span style="font-weight:700;color:${catCol}">${cat}</span><span><span class="mg-badge" style="${stCol}">${s}</span></span><span style="display:flex;gap:4px"><button class="mg-act" onclick="openEditUnit('${id}')">Edit</button><button class="mg-act" style="border-color:var(--red);color:var(--red)" onclick="deleteUnit('${id}')">Hapus</button></span></div>`;}).join('');
+}
+function openAddUnit(){unEditId=null;$('unTitle').textContent='Tambah Unit Baru';$('unId').value='';$('unId').disabled=false;$('unType').value='';$('unEqSel').selectedIndex=0;$('unMsg').textContent='';$('modalUnit').classList.add('show');}
+function openEditUnit(id){const u=(allUnits||[]).find(x=>String(x.unit_id)===String(id));if(!u)return;unEditId=id;$('unTitle').textContent='Edit Unit';$('unId').value=u.unit_id||'';$('unId').disabled=true;$('unType').value=u.vehicle_type||'';$('unEqSel').value=u.equipment_class||EQ_CLASSES[0];$('unMsg').textContent='';$('modalUnit').classList.add('show');}
+function closeUnitModal(){$('modalUnit').classList.remove('show');unEditId=null;}
+async function saveUnit(){
+  const msg=$('unMsg');const type=$('unType').value.trim();const eq=$('unEqSel').value;
+  if(!unEditId&&!$('unId').value.trim()){msg.style.color='var(--red)';msg.textContent='Unit ID wajib diisi.';return;}
+  if(!type){msg.style.color='var(--red)';msg.textContent='Vehicle Type wajib diisi.';return;}
+  msg.style.color='var(--gray)';msg.textContent='Menyimpan...';
+  try{let r;
+    if(unEditId){r=await fetch(`${API}/vehicles/${unEditId}/edit`,{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},body:JSON.stringify({vehicle_type:type,equipment_class:eq})});}
+    else{const uid=$('unId').value.trim();r=await fetch(`${API}/vehicles`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},body:JSON.stringify({unit_id:uid,vehicle_type:type,equipment_class:eq})});}
+    const d=await r.json();
+    if(r.ok&&d.success!==false){
+      if(unEditId){const u=allUnits.find(x=>x.unit_id===unEditId);if(u){u.vehicle_type=type;u.equipment_class=eq;}}
+      else{allUnits.push({unit_id:$('unId').value.trim(),vehicle_type:type,equipment_class:eq,status_unit:'Ready',notes:''});}
+      closeUnitModal();showClosingToast(unEditId?'Unit diperbarui':'Unit ditambahkan');renderManageUnits();renderKPI();renderFleet();
+    }else{msg.style.color='var(--red)';msg.textContent=(d&&d.message)||'Gagal menyimpan.';}
+  }catch(e){msg.style.color='var(--red)';msg.textContent='Gagal terhubung ke server.';}
+}
+async function deleteUnit(id){
+  if(!confirm(`Hapus unit ${id}? Tindakan ini tidak bisa dibatalkan.`))return;
+  try{const r=await fetch(`${API}/vehicles/${id}`,{method:'DELETE',headers:{'Authorization':'Bearer '+TOKEN}});const d=await r.json();
+    if(r.ok&&d.success!==false){allUnits=allUnits.filter(x=>String(x.unit_id)!==String(id));showClosingToast('Unit dihapus');renderManageUnits();renderKPI();renderFleet();}
+    else alert((d&&d.message)||'Gagal menghapus unit.');
+  }catch(e){alert('Gagal terhubung ke server.');}
+}
+function downloadUnitsExcel(){
+  const list=unFiltered();if(!list.length){alert('Tidak ada unit untuk diunduh.');return;}
+  const headers=['Unit ID','Vehicle Type','Equipment Class','Kategori','Status','Keterangan'];
+  const data=list.slice().sort((a,b)=>String(a.unit_id).localeCompare(String(b.unit_id),undefined,{numeric:true})).map(u=>[u.unit_id||'',u.vehicle_type||'',u.equipment_class||'',getCategory(u.equipment_class,u.unit_id),u.status_unit||'',u.notes||'']);
+  downloadExcel(data,headers,`Unit_Data_${new Date().toISOString().slice(0,10)}`);
+}
+// ── PIN ──
+function renderPinSearch(){
+  const q=($('pinSearch').value||'').toLowerCase();const box=$('pinResults');
+  if(!q){box.style.display='none';return;}
+  const list=(mpData||[]).filter(m=>(m.name||'').toLowerCase().includes(q)||String(m.driver_id||'').toLowerCase().includes(q)).slice(0,8);
+  if(!list.length){box.style.display='block';box.innerHTML='<div class="pin-opt" style="color:var(--muted);cursor:default">Tidak ada driver.</div>';return;}
+  box.style.display='block';
+  box.innerHTML=list.map(m=>`<div class="pin-opt" onclick="selectPinDriver('${mpEsc(m.driver_id)}')"><span style="font-weight:700">${mpEsc(m.name||m.driver_id)}</span> <span style="color:var(--muted);font-size:.66rem">${mpEsc(m.driver_id)} · ${mpEsc(m.equipment_class||'')}</span></div>`).join('');
+}
+function selectPinDriver(id){const m=(mpData||[]).find(x=>String(x.driver_id)===String(id));if(!m)return;pinTarget=m;$('pinResults').style.display='none';$('pinSearch').value=m.name||m.driver_id;
+  $('pinDrvName').textContent=m.name||'';$('pinDrvId').textContent='('+(m.driver_id||'')+')';$('pinDrvEq').textContent=m.equipment_class||'—';$('pinNew').value='';$('pinConf').value='';$('pinMsg').textContent='';$('pinCard').style.display='';}
+function clearPinCard(){pinTarget=null;$('pinCard').style.display='none';$('pinSearch').value='';$('pinResults').style.display='none';}
+function validatePin(np,cp){if(!/^\d{4}$/.test(np))return{ok:false,msg:'PIN harus 4 digit angka.'};if(np!==cp)return{ok:false,msg:'PIN baru dan konfirmasi tidak sama.'};return{ok:true};}
+async function submitPin(driverId,newPin){const r=await fetch(`${API}/manpower/${driverId}/pin`,{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},body:JSON.stringify({new_pin:newPin})});const d=await r.json();return{ok:r.ok&&d.success!==false,msg:(d&&d.message)||''};}
+async function doPinInline(){
+  if(!pinTarget)return;const msg=$('pinMsg');const v=validatePin($('pinNew').value.trim(),$('pinConf').value.trim());
+  if(!v.ok){msg.style.color='var(--red)';msg.textContent=v.msg;return;}
+  msg.style.color='var(--gray)';msg.textContent='Menyimpan...';
+  try{const res=await submitPin(pinTarget.driver_id,$('pinNew').value.trim());
+    if(res.ok){clearPinCard();showClosingToast('PIN berhasil diubah');}else{msg.style.color='var(--red)';msg.textContent=res.msg||'Gagal mengubah PIN.';}
+  }catch(e){msg.style.color='var(--red)';msg.textContent='Gagal terhubung ke server.';}
+}
+function openPinModal(id){const m=(mpData||[]).find(x=>String(x.driver_id)===String(id));if(!m)return;pinTarget=m;$('pmName').textContent=m.name||'';$('pmId').textContent='('+(m.driver_id||'')+')';$('pmEq').textContent=m.equipment_class||'—';$('pmNew').value='';$('pmConf').value='';$('pmMsg').textContent='';$('modalPin').classList.add('show');}
+function closePinModal(){$('modalPin').classList.remove('show');}
+async function doPinModal(){
+  if(!pinTarget)return;const msg=$('pmMsg');const v=validatePin($('pmNew').value.trim(),$('pmConf').value.trim());
+  if(!v.ok){msg.style.color='var(--red)';msg.textContent=v.msg;return;}
+  msg.style.color='var(--gray)';msg.textContent='Menyimpan...';
+  try{const res=await submitPin(pinTarget.driver_id,$('pmNew').value.trim());
+    if(res.ok){closePinModal();showClosingToast('PIN berhasil diubah');}else{msg.style.color='var(--red)';msg.textContent=res.msg||'Gagal mengubah PIN.';}
+  }catch(e){msg.style.color='var(--red)';msg.textContent='Gagal terhubung ke server.';}
 }
 function doLogout(){localStorage.removeItem('fms_token');localStorage.removeItem('fms_session');window.location.href='index.html';}
 function $(id){return document.getElementById(id);}
