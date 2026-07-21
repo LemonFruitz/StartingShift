@@ -135,7 +135,6 @@ body{background:var(--bg);font-family:var(--font);color:var(--text);display:flex
     <div class="sb-item" data-view="historis"><span class="sb-ico"><span class="mi">history</span></span> Historis</div>
     <div class="sb-section">Laporan</div>
     <div class="sb-item" onclick="genShiftPDF()"><span class="sb-ico"><span class="mi">picture_as_pdf</span></span> PDF Shift Report</div>
-    <div class="sb-item" onclick="downloadAll()"><span class="sb-ico"><span class="mi">download</span></span> Download CSV</div>
     <div class="sb-section">Sistem</div>
     <div class="sb-item" onclick="window.open('tv.html','_blank')"><span class="sb-ico"><span class="mi">tv</span></span> TV Monitor</div>
     <div class="sb-item" onclick="doLogout()"><span class="sb-ico"><span class="mi">logout</span></span> Logout</div>
@@ -1246,11 +1245,6 @@ for(let i=1;i<=pages;i++){doc.setPage(i);
 doc.save(`Shift_Report_${shShort.replace(/\s/g,'_')}_${todayStr}.pdf`);}
 
 // CSV
-async function downloadAll(){try{const today=new Date().toISOString().slice(0,10),B='\uFEFF';let c1='Unit ID,Tipe,Kelas,Status,Keterangan\n';allUnits.forEach(u=>{c1+=`${u.unit_id},"${u.vehicle_type||''}",${u.equipment_class||''},${u.status_unit},"${(u.notes||'').replace(/"/g,'""')}"\n`;});dl(B+c1,`Unit_Status_${today}.csv`);
-const sr=await fetch(`${API}/supervisor/shift-reports?date=${today}&limit=500`,{headers:{'Authorization':'Bearer '+TOKEN}});const sd=await sr.json();let c2='Driver ID,Nama,Unit,FTW,P2H,Status,HM Awal,HM Akhir,Selisih,Waktu,Validasi\n';if(sd.success)(sd.data.reports||[]).forEach(r=>{const diff=r.odometer_end?(r.odometer_end-r.odometer_entered):'';c2+=`${r.driver_id},"${r.driver_name||''}",${r.unit_id},${r.fit_status},${r.p2h_status},"${r.overall_status}",${r.odometer_entered||''},${r.odometer_end||''},${diff},"${r.timestamp_filled?new Date(r.timestamp_filled).toLocaleString('id-ID'):''}",${r.validation_status||'Pending'}\n`;});setTimeout(()=>dl(B+c2,`Shift_Report_${today}.csv`),500);
-const lr=await fetch(`${API}/vehicles/status-log?limit=1000`,{headers:{'Authorization':'Bearer '+TOKEN}});const ld=await lr.json();let c3='Unit,Dari,Ke,Keterangan,Diubah Oleh,Mulai,Selesai,Durasi\n';if(ld.success)(ld.data||[]).forEach(l=>{c3+=`${l.unit_id},${l.status_from},${l.status_to},"${(l.notes||'').replace(/"/g,'""')}",${l.changed_by_name||''},"${l.time_start?new Date(l.time_start).toLocaleString('id-ID'):''}","${l.time_end?new Date(l.time_end).toLocaleString('id-ID'):''}",${l.duration_minutes||''}\n`;});setTimeout(()=>dl(B+c3,`Status_Log_${today}.csv`),1000);
-}catch(e){alert('Gagal download.');}}
-function dl(c,f){const b=new Blob([c],{type:'text/csv;charset=utf-8;'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=f;document.body.appendChild(a);a.click();document.body.removeChild(a);}
 // ── SHIFT CLOSING (client-side lock / reminder workflow) ──
 function closingKey(){return `shift_closed_${new Date().toISOString().slice(0,10)}_${curShift}`;}
 function isShiftClosed(){return localStorage.getItem(closingKey())==='true';}
