@@ -177,10 +177,72 @@ body{background:var(--bg);font-family:var(--font);color:var(--text);display:flex
   </div>
 
   <!-- VIEW: FLEET -->
-  <div class="content view" id="v-fleet" style="flex-direction:column">
-    <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:8px"><div class="panel-title"><span class="mi">local_shipping</span> Fleet & Status Unit</div></div>
-    <input class="search-in" type="text" placeholder="Cari unit..." id="uSearch" oninput="renderFleet()" style="margin:0 0 10px"/>
-    <div style="flex:1;overflow-y:auto" id="fleetGrid"></div>
+  <div class="content view" id="v-fleet" style="flex-direction:column;gap:10px;overflow-y:auto">
+    <style>
+      #v-fleet .fl-sum{position:sticky;top:0;z-index:5;display:flex;gap:8px;flex-wrap:wrap;background:var(--bg);padding:2px 0 8px;border-bottom:1px solid var(--border)}
+      #v-fleet .fl-box{flex:1;min-width:88px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:9px 12px}
+      #v-fleet .fl-box .fl-l{font-size:.55rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+      #v-fleet .fl-box .fl-v{font-size:1.35rem;font-weight:800;margin-top:2px;display:flex;align-items:center;gap:5px}
+      #v-fleet .fl-avail{flex:2;min-width:190px}
+      #v-fleet .fl-bar{height:9px;border-radius:6px;background:var(--border);overflow:hidden;margin-top:7px}
+      #v-fleet .fl-bar-f{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--green),var(--blue));transition:width .3s}
+      #v-fleet .fl-dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+      #v-fleet .fl-filter{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+      #v-fleet .fl-filter input,#v-fleet .fl-filter select{padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-family:var(--font);font-size:.75rem;outline:none}
+      #v-fleet .fl-ghdr{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 12px;margin-top:4px;background:var(--card);border:1px solid var(--border);border-radius:8px;cursor:pointer;user-select:none}
+      #v-fleet .fl-ghdr:hover{background:var(--bg)}
+      #v-fleet .fl-gtitle{font-size:.74rem;font-weight:800;display:flex;align-items:center;gap:6px}
+      #v-fleet .fl-gstat{font-size:.6rem;color:var(--muted);font-weight:600;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+      #v-fleet .fl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;padding:10px 2px 4px}
+      @media(max-width:1100px){#v-fleet .fl-grid{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}}
+      @media(max-width:640px){#v-fleet .fl-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}}
+      #v-fleet .flc{position:relative;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;border-left:4px solid var(--muted);transition:all .2s}
+      #v-fleet .flc:hover{box-shadow:0 4px 12px rgba(0,0,0,.08)}
+      #v-fleet .flc.s-Ready{border-left-color:var(--green)}
+      #v-fleet .flc.s-Breakdown{border-left-color:var(--red);background:rgba(239,68,68,.02)}
+      #v-fleet .flc.s-Maintenance{border-left-color:var(--amber);background:rgba(245,158,11,.02)}
+      #v-fleet .flc-dot{position:absolute;top:14px;right:14px;width:10px;height:10px;border-radius:50%}
+      #v-fleet .flc-id{font-size:.95rem;font-weight:800;padding-right:16px}
+      #v-fleet .flc-type{font-size:.62rem;color:var(--muted);margin-top:1px}
+      #v-fleet .flc-cls{font-size:.66rem;color:var(--gray);font-weight:600;margin-top:1px}
+      #v-fleet .flc-meta{margin-top:9px;display:flex;flex-direction:column;gap:3px}
+      #v-fleet .flc-drv{font-size:.68rem;color:var(--green);font-weight:600;display:flex;align-items:center;gap:4px}
+      #v-fleet .flc-hm{font-size:.62rem;color:var(--gray);display:flex;align-items:center;gap:4px}
+      #v-fleet .flc-note{font-size:.62rem;display:flex;align-items:flex-start;gap:4px}
+      #v-fleet .flc-note.n-bd{color:var(--red)}#v-fleet .flc-note.n-mt{color:var(--amber)}
+      #v-fleet .flc-loc{font-size:.6rem;color:var(--gray);display:flex;align-items:center;gap:4px}
+      #v-fleet .flc-dur{font-size:.58rem;color:var(--muted);display:flex;align-items:center;gap:4px}
+      #v-fleet .flc-btns{display:flex;gap:4px;margin-top:11px}
+      #v-fleet .flc-btn{flex:1;padding:5px 6px;border-radius:20px;font-size:.6rem;font-weight:800;cursor:pointer;border:1.5px solid;background:transparent;font-family:var(--font);display:inline-flex;align-items:center;justify-content:center;gap:3px;transition:all .15s}
+      #v-fleet .flc-btn:disabled{cursor:default}
+      #v-fleet .flc-btn.r{border-color:var(--green);color:var(--green)}#v-fleet .flc-btn.r.on{background:var(--green);color:#fff}
+      #v-fleet .flc-btn.b{border-color:var(--red);color:var(--red)}#v-fleet .flc-btn.b.on{background:var(--red);color:#fff}
+      #v-fleet .flc-btn.m{border-color:var(--amber);color:var(--amber)}#v-fleet .flc-btn.m.on{background:var(--amber);color:#fff}
+      #v-fleet .flc-btn:not(.on):hover{background:var(--bg)}
+      #v-fleet .flc-edit{margin-top:6px;width:100%;padding:5px;border-radius:6px;font-size:.6rem;font-weight:700;cursor:pointer;border:1px solid var(--border);background:var(--bg);color:var(--gray);font-family:var(--font);display:inline-flex;align-items:center;justify-content:center;gap:4px}
+      #v-fleet .flc-edit:hover{background:var(--card)}
+    </style>
+    <div style="display:flex;justify-content:space-between;align-items:center"><div class="panel-title"><span class="mi">local_shipping</span> Fleet & Status Unit</div></div>
+
+    <!-- Section 1: Summary Bar (sticky) -->
+    <div class="fl-sum">
+      <div class="fl-box"><div class="fl-l">Total</div><div class="fl-v" id="flTot">—</div></div>
+      <div class="fl-box"><div class="fl-l">Ready</div><div class="fl-v" style="color:var(--green)"><span class="fl-dot" style="background:var(--green)"></span><span id="flReady">—</span></div></div>
+      <div class="fl-box"><div class="fl-l">Breakdown</div><div class="fl-v" style="color:var(--red)"><span class="fl-dot" style="background:var(--red)"></span><span id="flBd">—</span></div></div>
+      <div class="fl-box"><div class="fl-l">Maintenance</div><div class="fl-v" style="color:var(--amber)"><span class="fl-dot" style="background:var(--amber)"></span><span id="flMt">—</span></div></div>
+      <div class="fl-box fl-avail"><div class="fl-l">Availability</div><div style="display:flex;align-items:center;gap:8px;margin-top:2px"><div style="font-size:1.35rem;font-weight:800" id="flAvailPct">—</div><div style="flex:1"><div class="fl-bar"><div class="fl-bar-f" id="flAvailBar" style="width:0%"></div></div></div></div></div>
+    </div>
+
+    <!-- Section 2: Filter & Actions -->
+    <div class="fl-filter">
+      <input type="text" placeholder="Cari unit..." id="uSearch" oninput="renderFleet()" style="flex:1;min-width:130px"/>
+      <select id="flStatus" onchange="renderFleet()"><option value="">Status: Semua</option><option value="Ready">Ready</option><option value="Breakdown">Breakdown</option><option value="Maintenance">Maintenance</option></select>
+      <select id="flCat" onchange="renderFleet()"><option value="">Kategori: Semua</option><option value="HAULING">Hauling</option><option value="MINING">Mining</option><option value="HRM">HRM</option><option value="SUPPORT">Support</option></select>
+      <button onclick="downloadFleetExcel()" style="padding:8px 12px;background:var(--card);color:var(--gray);border:1px solid var(--border);border-radius:6px;font-family:var(--font);font-size:.7rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:4px"><span class="mi mi-sm">download</span> Download Excel</button>
+    </div>
+
+    <!-- Section 3+4: Grouped Unit Grid -->
+    <div style="flex:1" id="fleetGrid"></div>
   </div>
 
   <!-- VIEW: BD -->
@@ -543,10 +605,77 @@ function popFilter(){const d=[...new Set((allReports||[]).map(r=>r.equipment_cla
 function renderLog(){const logs=[];allReports.slice(0,6).forEach(r=>{const t=r.timestamp_filled?new Date(r.timestamp_filled).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}):'';if(r.overall_status==='Driver Unfit')logs.push({c:'var(--red)',t:`Unfit: ${r.driver_name}`,tm:t});else if(r.p2h_status!=='Passed')logs.push({c:'var(--amber)',t:`P2H temuan: ${r.unit_id}`,tm:t});else logs.push({c:'var(--green)',t:`P2H ${r.unit_id} Lulus`,tm:t});});if(!logs.length)logs.push({c:'var(--muted)',t:'Menunggu...',tm:''});$('logL').innerHTML=logs.map(l=>`<div class="log-i"><div class="log-d" style="background:${l.c}"></div><div><div class="log-t">${l.t}</div><div class="log-tm">${l.tm} WITA</div></div></div>`).join('');}
 
 // FLEET VIEW
-function renderFleet(){const q=($('uSearch')?.value||'').toUpperCase();const cls=[...new Set(allUnits.map(u=>u.equipment_class||'Other'))].sort();let html='';cls.forEach(c=>{let units=allUnits.filter(u=>(u.equipment_class||'Other')===c);if(q)units=units.filter(u=>u.unit_id.toUpperCase().includes(q));if(!units.length)return;units.sort((a,b)=>{const o={'Breakdown':0,'Maintenance':1,'Ready':2};return(o[a.status_unit]||2)-(o[b.status_unit]||2);});const r=units.filter(u=>u.status_unit==='Ready').length,bd=units.filter(u=>u.status_unit!=='Ready').length;html+=`<div class="cat-hdr"><span>${c} (${units.length})</span><span style="font-size:.58rem"><span style="color:var(--green)">${r}R</span> · <span style="color:var(--red)">${bd}BD</span></span></div><div class="unit-grid">`;
-units.forEach(u=>{const s=u.status_unit;const drv=driverMap[u.unit_id];html+=`<div class="uc st-${s}"><div class="uc-id">${u.unit_id}</div><div class="uc-type">${u.vehicle_type||''}</div>${drv?`<div class="uc-driver"><span class="mi">person</span> ${drv.driver_name||''}</div>`:''}${u.notes&&s!=='Ready'?`<div class="uc-notes" onclick="openEd('${u.unit_id}')"><span class="mi">edit_note</span> ${u.notes}</div>`:''}
-<div class="uc-btns"><button class="sb-btn r ${s==='Ready'?'c':''}" onclick="clickSt('${u.unit_id}','Ready')" ${s==='Ready'?'disabled':''}><span class="mi">check_circle</span></button><button class="sb-btn b ${s==='Breakdown'?'c':''}" onclick="clickSt('${u.unit_id}','Breakdown')" ${s==='Breakdown'?'disabled':''}>BD</button><button class="sb-btn m ${s==='Maintenance'?'c':''}" onclick="clickSt('${u.unit_id}','Maintenance')" ${s==='Maintenance'?'disabled':''}>MT</button></div></div>`;});html+=`</div>`;});
-$('fleetGrid').innerHTML=html||'<div style="padding:20px;text-align:center;color:var(--muted)">Tidak ada unit.</div>';}
+let fleetCollapsed={};
+// HM terakhir per unit (dari allReports: odometer_end kalau ada, kalau tidak odometer_entered)
+function fleetHmMap(){const m={};(allReports||[]).forEach(r=>{const v=(r.odometer_end!=null&&r.odometer_end!=='')?r.odometer_end:r.odometer_entered;if(v!=null&&v!=='')m[r.unit_id]=v;});return m;}
+// Durasi status BD/MT — dihitung dari timestamp status change (kalau tersedia) atau BD report
+function fleetDurStart(u){const c=[u.status_changed_at,u.status_since,u.status_start,u.time_start,u.updated_at,u.last_status_change,u.status_updated_at];for(const t of c){if(t){const ms=new Date(t).getTime();if(!isNaN(ms))return ms;}}
+  if(u.status_unit==='Breakdown'){const bd=(Array.isArray(bdReports)?bdReports:[]).filter(b=>b.unit_id===u.unit_id&&b.status!=='Resolved'&&b.created_at).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at))[0];if(bd){const ms=new Date(bd.created_at).getTime();if(!isNaN(ms))return ms;}}
+  return null;}
+function fleetFmtDur(ms){const min=Math.floor(ms/60000);if(min<1)return 'baru saja';if(min<60)return `${min} menit`;const h=Math.floor(min/60),m=min%60;if(h<24)return `${h} jam${m?' '+m+' menit':''}`;const d=Math.floor(h/24),hh=h%24;return `${d} hari${hh?' '+hh+' jam':''}`;}
+// Pisah notes "desc | Lokasi: xxx" → {note, loc}
+function fleetSplitNotes(notes){if(!notes)return{note:'',loc:''};const parts=String(notes).split(' | ');let loc='';const rest=[];parts.forEach(p=>{const m=p.match(/^Lokasi:\s*(.*)$/i);if(m)loc=m[1];else rest.push(p);});return{note:rest.join(' | '),loc};}
+function fleetFilteredUnits(){const q=($('uSearch')?.value||'').toUpperCase();const fSt=$('flStatus')?.value||'';const fCat=$('flCat')?.value||'';
+  return (allUnits||[]).filter(u=>{if(q&&!String(u.unit_id||'').toUpperCase().includes(q))return false;if(fSt&&u.status_unit!==fSt)return false;if(fCat&&getCategory(u.equipment_class,u.unit_id)!==fCat)return false;return true;});}
+function renderFleet(){
+  // Summary bar — selalu dari semua unit (tidak ikut filter)
+  const all=allUnits||[];const tot=all.length;const rdy=all.filter(u=>u.status_unit==='Ready').length;const bd=all.filter(u=>u.status_unit==='Breakdown').length;const mt=all.filter(u=>u.status_unit==='Maintenance').length;const avail=tot?Math.round(rdy/tot*100):0;
+  if($('flTot')){$('flTot').textContent=tot;$('flReady').textContent=rdy;$('flBd').textContent=bd;$('flMt').textContent=mt;$('flAvailPct').textContent=avail+'%';$('flAvailBar').style.width=avail+'%';}
+  const grid=$('fleetGrid');if(!grid)return;
+  const hm=fleetHmMap();const now=Date.now();
+  const list=fleetFilteredUnits();
+  const cls=[...new Set(list.map(u=>u.equipment_class||'Other'))].sort();
+  let html='';
+  cls.forEach(c=>{
+    let units=list.filter(u=>(u.equipment_class||'Other')===c);if(!units.length)return;
+    units.sort((a,b)=>{const o={'Breakdown':0,'Maintenance':1,'Ready':2};return(o[a.status_unit]??2)-(o[b.status_unit]??2)||String(a.unit_id).localeCompare(String(b.unit_id),undefined,{numeric:true});});
+    const r=units.filter(u=>u.status_unit==='Ready').length,gbd=units.filter(u=>u.status_unit==='Breakdown').length,gmt=units.filter(u=>u.status_unit==='Maintenance').length;
+    const hasIssue=gbd+gmt>0;
+    if(fleetCollapsed[c]===undefined)fleetCollapsed[c]=!hasIssue; // default: expand kalau ada BD/MT
+    const collapsed=fleetCollapsed[c];
+    html+=`<div class="fl-ghdr" onclick="fleetToggleGroup('${c.replace(/'/g,"\\'")}')"><div class="fl-gtitle"><span class="mi mi-sm">${collapsed?'chevron_right':'expand_more'}</span> ${c} (${units.length})</div><div class="fl-gstat"><span style="color:var(--green)">● ${r} Ready</span><span style="color:var(--red)">● ${gbd} BD</span><span style="color:var(--amber)">● ${gmt} MT</span></div></div>`;
+    if(collapsed)return;
+    html+='<div class="fl-grid">';
+    units.forEach(u=>{
+      const s=u.status_unit;const drv=driverMap[u.unit_id];const dot=s==='Ready'?'var(--green)':s==='Breakdown'?'var(--red)':s==='Maintenance'?'var(--amber)':'var(--muted)';
+      const hmv=hm[u.unit_id];const start=(s!=='Ready')?fleetDurStart(u):null;const dur=start?fleetFmtDur(now-start):'';
+      const{note,loc}=fleetSplitNotes(u.notes);
+      let meta='';
+      if(s==='Ready'){
+        if(drv&&drv.driver_name)meta+=`<div class="flc-drv"><span class="mi mi-sm">person</span> ${drv.driver_name}</div>`;
+        if(hmv!=null)meta+=`<div class="flc-hm"><span class="mi mi-sm">timer</span> HM: ${hmv}</div>`;
+      }else{
+        const isBd=s==='Breakdown';
+        if(note)meta+=`<div class="flc-note ${isBd?'n-bd':'n-mt'}"><span class="mi mi-sm">${isBd?'warning':'build'}</span> ${note}</div>`;
+        if(loc)meta+=`<div class="flc-loc"><span class="mi mi-sm">place</span> ${loc}</div>`;
+        if(dur)meta+=`<div class="flc-dur"><span class="mi mi-sm">schedule</span> ${dur}</div>`;
+      }
+      html+=`<div class="flc s-${s}"><span class="flc-dot" style="background:${dot}"></span>`+
+        `<div class="flc-id">${u.unit_id}</div>`+
+        `${u.vehicle_type?`<div class="flc-type">${u.vehicle_type}</div>`:''}`+
+        `${u.equipment_class?`<div class="flc-cls">${u.equipment_class}</div>`:''}`+
+        `${meta?`<div class="flc-meta">${meta}</div>`:''}`+
+        `<div class="flc-btns">`+
+          `<button class="flc-btn r ${s==='Ready'?'on':''}" onclick="clickSt('${u.unit_id}','Ready')" ${s==='Ready'?'disabled':''}><span class="mi mi-sm">check</span> Ready</button>`+
+          `<button class="flc-btn b ${s==='Breakdown'?'on':''}" onclick="clickSt('${u.unit_id}','Breakdown')" ${s==='Breakdown'?'disabled':''}>BD</button>`+
+          `<button class="flc-btn m ${s==='Maintenance'?'on':''}" onclick="clickSt('${u.unit_id}','Maintenance')" ${s==='Maintenance'?'disabled':''}>MT</button>`+
+        `</div>`+
+        `${s!=='Ready'?`<button class="flc-edit" onclick="openEd('${u.unit_id}')"><span class="mi mi-sm">edit_note</span> Edit Notes</button>`:''}`+
+      `</div>`;
+    });
+    html+='</div>';
+  });
+  grid.innerHTML=html||'<div style="padding:20px;text-align:center;color:var(--muted)">Tidak ada unit sesuai filter.</div>';
+}
+function fleetToggleGroup(c){fleetCollapsed[c]=!fleetCollapsed[c];renderFleet();}
+function downloadFleetExcel(){
+  const list=fleetFilteredUnits();if(!list.length){alert('Tidak ada unit untuk diunduh.');return;}
+  const hm=fleetHmMap();
+  const headers=['Unit ID','Vehicle Type','Equipment Class','Status','Driver','HM Terakhir','Notes','Kategori'];
+  const data=list.slice().sort((a,b)=>String(a.equipment_class||'').localeCompare(String(b.equipment_class||''))||String(a.unit_id).localeCompare(String(b.unit_id),undefined,{numeric:true}))
+    .map(u=>{const drv=driverMap[u.unit_id];return [u.unit_id||'',u.vehicle_type||'',u.equipment_class||'',u.status_unit||'',drv&&drv.driver_name?drv.driver_name:'',hm[u.unit_id]!=null?hm[u.unit_id]:'',u.notes||'',getCategory(u.equipment_class,u.unit_id)];});
+  downloadExcel(data,headers,`Fleet_Status_${new Date().toISOString().slice(0,10)}`);
+}
 function clickSt(uid,st){if(st==='Ready'){setSt(uid,'Ready',null);return;}pendingUnit=uid;pendingStatus=st;$('mdTt').innerHTML=st==='Breakdown'?'<span class="mi">error</span> Keterangan Breakdown':'<span class="mi">build</span> Keterangan Maintenance';$('mdDesc').value='';$('mdLoc').value='';$('modalBD').classList.add('show');}
 function closeMd(){$('modalBD').classList.remove('show');}
 function confirmBD(){const d=$('mdDesc').value.trim(),l=$('mdLoc').value.trim();const notes=[d,l?'Lokasi: '+l:''].filter(Boolean).join(' | ');closeMd();setSt(pendingUnit,pendingStatus,notes);}
