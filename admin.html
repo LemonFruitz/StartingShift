@@ -715,14 +715,11 @@ function hmTemplateOrder(unitId){const uid=String(unitId||'').toUpperCase();
 }
 function downloadHmTemplate(){
   if(typeof XLSX==='undefined'){alert('Library Excel belum termuat, coba lagi sebentar.');return;}
-  const catLabel={1:'EXCAVATOR',2:'ADT (VOLVO)',3:'BULLDOZER (KOMATSU)',4:'COMPACTOR (BOMAG)',5:'MOTOR GRADER',6:'WHEEL LOADER',7:'WATER TRUCK',8:'DUMP TRUCK SHACMAN',9:'DUMP TRUCK DONGFENG'};
   const units=(allUnits||[]).slice();
-  // Sheet 1: Template HM (skip support unit / order 10), group by kategori
+  // Sheet 1: Template HM (skip support unit / order 10), urut kategori tanpa separator
   const rows=[['unit_id','hm_akhir']];
   for(let ord=1;ord<=9;ord++){
     const grp=units.filter(u=>hmTemplateOrder(u.unit_id)===ord).sort((a,b)=>String(a.unit_id).localeCompare(String(b.unit_id),undefined,{numeric:true}));
-    if(!grp.length)continue;
-    rows.push([`--- ${catLabel[ord]} ---`,'']);
     grp.forEach(u=>rows.push([u.unit_id,'']));
   }
   if(rows.length===1){alert('Tidak ada unit HM pada data (allUnits kosong). Muat ulang halaman.');return;}
