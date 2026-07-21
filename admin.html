@@ -191,7 +191,7 @@ body{background:var(--bg);font-family:var(--font);color:var(--text);display:flex
   <!-- VIEW: HISTORIS -->
   <div class="content view" id="v-historis" style="flex-direction:column;gap:12px;overflow-y:auto">
     <style>
-      #v-historis .his-grid{display:grid;grid-template-columns:90px 72px 56px 60px 66px 62px 62px 44px 66px 58px;align-items:center;gap:6px}
+      #v-historis .his-grid{display:grid;grid-template-columns:92px 76px 60px 60px 66px 74px 100px 58px;align-items:center;gap:6px}
       #v-historis .his-thead{padding:9px 14px;font-size:.55rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);background:var(--bg)}
       #v-historis .his-row{padding:8px 14px;border-bottom:1px solid var(--border);font-size:.72rem;cursor:pointer;transition:background .12s}
       #v-historis .his-row:hover{background:var(--bg)}
@@ -216,7 +216,7 @@ body{background:var(--bg);font-family:var(--font);color:var(--text);display:flex
       <div class="kpi"><div class="kpi-label">Avg Kehadiran</div><div class="kpi-val" id="hisK1">—</div><div class="kpi-sub" id="hisK1d">—</div></div>
       <div class="kpi"><div class="kpi-label">Avg FTW Fit</div><div class="kpi-val" style="color:var(--green)" id="hisK2">—</div><div class="kpi-sub" id="hisK2d">—</div></div>
       <div class="kpi"><div class="kpi-label">Avg P2H Pass</div><div class="kpi-val" style="color:var(--info)" id="hisK3">—</div><div class="kpi-sub" id="hisK3d">—</div></div>
-      <div class="kpi"><div class="kpi-label">Avg Fleet</div><div class="kpi-val" id="hisK4">—</div><div class="kpi-sub" id="hisK4d">—</div></div>
+      <div class="kpi"><div class="kpi-label">Avg BD Report</div><div class="kpi-val" style="color:var(--red)" id="hisK4">—</div><div class="kpi-sub" id="hisK4d">—</div></div>
     </div>
 
     <!-- Section 3: Chart Trend Harian -->
@@ -228,8 +228,8 @@ body{background:var(--bg);font-family:var(--font);color:var(--text);display:flex
     <!-- Section 4: Tabel Rekap Harian -->
     <div class="panel">
       <div class="panel-head"><div class="panel-title">Rekap Harian</div><span class="badge-s" style="background:var(--bg);color:var(--gray)" id="hisRowCount">—</span></div>
-      <div class="his-scroll"><div style="min-width:740px">
-        <div class="his-thead his-grid"><span>Tanggal</span><span>Shift</span><span>Total</span><span>FTW Fit</span><span>FTW Unfit</span><span>P2H Pass</span><span>P2H Fail</span><span>BD</span><span>HM Done</span><span>Skor</span></div>
+      <div class="his-scroll"><div style="min-width:640px">
+        <div class="his-thead his-grid"><span>Tanggal</span><span>Total Lapor</span><span>RTW</span><span>Unfit</span><span>BD Unit</span><span>BD Report</span><span>Active Drivers</span><span>Skor</span></div>
         <div id="hisTableBody"></div>
       </div></div>
     </div>
@@ -976,23 +976,23 @@ let hisChart=null, hisRows=[];
 function addDays(dstr,n){const d=new Date(dstr);d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);}
 function daysBetween(a,b){return Math.round((new Date(b)-new Date(a))/86400000);}
 function hisFmtDate(dstr){const d=new Date(dstr);if(isNaN(d.getTime()))return dstr;const p=n=>String(n).padStart(2,'0');return `${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()}`;}
+// Field sesuai response daily-trends: total_reports, rtw, unfit, breakdown, active_drivers, bd_reports
+function hisTotalDriver(){return (allDriversList&&allDriversList.length)?allDriversList.length:236;}
 function normTrend(d){
   const num=(...keys)=>{for(const k of keys){if(d[k]!=null&&d[k]!=='')return Number(d[k])||0;}return 0;};
-  const date=(d.date||d.day||d.tanggal||d.report_date||'').slice(0,10);
-  const total=num('total_reports','total','reports','count','hadir','attendance','operator');
-  const fit=num('ftw_fit','fit','fit_count','ftw');
-  const pass=num('p2h_pass','pass','p2h_passed','p2h');
-  const bd=num('bd_count','bd','breakdown','bd_open','bd_active');
-  const hmDone=num('hm_done','hm','hm_terisi','hm_filled');
-  const unfit=num('ftw_unfit','unfit')||Math.max(0,total-fit);
-  const fail=num('p2h_fail','fail','p2h_failed')||Math.max(0,total-pass);
-  const hadirPct=Math.round(num('kehadiran_pct','attendance_pct','hadir_pct','kehadiran')||0);
-  const fleetPct=Math.round(num('fleet_pct','fleet_ready_pct','fleet_availability','availability','fleet','ready_pct')||0);
-  const fitPct=total?Math.round(fit/total*100):0;
-  const passPct=total?Math.round(pass/total*100):0;
-  return {date,total,fit,unfit,pass,fail,bd,hmDone,hadirPct,fleetPct,fitPct,passPct};
+  const date=(d.date||d.day||d.tanggal||'').slice(0,10);
+  const total=num('total_reports');
+  const rtw=num('rtw');
+  const unfit=num('unfit');
+  const breakdown=num('breakdown');
+  const bdReports=num('bd_reports');
+  const activeDrivers=num('active_drivers');
+  const td=hisTotalDriver();
+  const hadirPct=td?Math.round(total/td*100):0;
+  const fitPct=total?Math.round(rtw/total*100):0;
+  return {date,total,rtw,unfit,breakdown,bdReports,activeDrivers,hadirPct,fitPct};
 }
-function hisScore(t){const parts=[t.hadirPct,t.fitPct,t.passPct,t.fleetPct].filter(x=>x>0);return parts.length?Math.round(parts.reduce((a,b)=>a+b,0)/parts.length):0;}
+function hisScore(t){return t.total?Math.round(t.rtw/t.total*100):0;}
 function avg(arr,f){const v=arr.map(f).filter(x=>!isNaN(x));return v.length?Math.round(v.reduce((a,b)=>a+b,0)/v.length):0;}
 function initHistoris(){
   if(!$('hisStart').value){const end=new Date();const start=new Date();start.setDate(end.getDate()-6);$('hisStart').value=start.toISOString().slice(0,10);$('hisEnd').value=end.toISOString().slice(0,10);}
@@ -1010,49 +1010,52 @@ async function loadHistoris(){
   const cur=norm.filter(t=>t.date>=start&&t.date<=end).sort((a,b)=>a.date<b.date?-1:1);
   const prev=norm.filter(t=>t.date>=addDays(start,-len)&&t.date<=addDays(start,-1));
   hisRows=cur;
-  renderHisKpi(cur,prev);renderHisChart(cur);renderHisTable(cur,shift);
+  renderHisKpi(cur,prev);renderHisChart(cur);renderHisTable(cur);
+}
+function hisKpiCard(id,c,p,hasPrev,suffix,higherBetter){
+  $(id).textContent=c+suffix;const dEl=$(id+'d');const diff=c-p;
+  if(!hasPrev){dEl.textContent='—';dEl.style.color='var(--muted)';return;}
+  if(diff===0){dEl.textContent='= sama';dEl.style.color='var(--muted)';return;}
+  const up=diff>0,good=higherBetter?up:!up,col=good?'var(--green)':'var(--red)';
+  dEl.innerHTML=`<span class="mi mi-sm" style="color:${col}">${up?'arrow_upward':'arrow_downward'}</span> ${up?'+':''}${diff}${suffix} vs prev`;dEl.style.color=col;
 }
 function renderHisKpi(cur,prev){
-  [['hisK1',t=>t.hadirPct],['hisK2',t=>t.fitPct],['hisK3',t=>t.passPct],['hisK4',t=>t.fleetPct]].forEach(([id,f])=>{
-    const c=avg(cur,f),p=avg(prev,f);$(id).textContent=c+'%';const dEl=$(id+'d');const diff=c-p;
-    if(!prev.length){dEl.textContent='—';dEl.style.color='var(--muted)';}
-    else if(diff>0){dEl.innerHTML=`<span class="mi mi-sm" style="color:var(--green)">arrow_upward</span> +${diff}% vs prev`;dEl.style.color='var(--green)';}
-    else if(diff<0){dEl.innerHTML=`<span class="mi mi-sm" style="color:var(--red)">arrow_downward</span> ${diff}% vs prev`;dEl.style.color='var(--red)';}
-    else{dEl.textContent='= sama';dEl.style.color='var(--muted)';}
-  });
+  hisKpiCard('hisK1',avg(cur,t=>t.hadirPct),avg(prev,t=>t.hadirPct),prev.length,'%',true);
+  hisKpiCard('hisK2',avg(cur,t=>t.fitPct),avg(prev,t=>t.fitPct),prev.length,'%',true);
+  $('hisK3').textContent='N/A';$('hisK3d').textContent='data P2H tidak tersedia';$('hisK3d').style.color='var(--muted)';
+  hisKpiCard('hisK4',avg(cur,t=>t.bdReports),avg(prev,t=>t.bdReports),prev.length,'',false);
 }
 function renderHisChart(cur){
   const c=$('hisChart');if(!c||typeof Chart==='undefined')return;if(hisChart)hisChart.destroy();
   const labels=cur.map(t=>t.date.slice(5));
   hisChart=new Chart(c,{type:'line',data:{labels,datasets:[
     {label:'Total Lapor',data:cur.map(t=>t.total),borderColor:'#00B0FF',backgroundColor:'rgba(0,176,255,.08)',tension:.3,borderWidth:2},
-    {label:'FTW Fit',data:cur.map(t=>t.fit),borderColor:'#00C853',backgroundColor:'rgba(0,200,83,.08)',tension:.3,borderWidth:2},
-    {label:'P2H Pass',data:cur.map(t=>t.pass),borderColor:'#14B8A6',backgroundColor:'rgba(20,184,166,.08)',tension:.3,borderWidth:2},
-    {label:'BD',data:cur.map(t=>t.bd),borderColor:'#EF4444',backgroundColor:'rgba(239,68,68,.08)',tension:.3,borderWidth:2},
+    {label:'RTW',data:cur.map(t=>t.rtw),borderColor:'#00C853',backgroundColor:'rgba(0,200,83,.08)',tension:.3,borderWidth:2},
+    {label:'Unfit',data:cur.map(t=>t.unfit),borderColor:'#F59E0B',backgroundColor:'rgba(245,158,11,.08)',tension:.3,borderWidth:2},
+    {label:'Breakdown',data:cur.map(t=>t.breakdown),borderColor:'#EF4444',backgroundColor:'rgba(239,68,68,.08)',tension:.3,borderWidth:2},
+    {label:'BD Reports',data:cur.map(t=>t.bdReports),borderColor:'#F97316',backgroundColor:'rgba(249,115,22,.08)',tension:.3,borderWidth:2},
   ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:10,family:'Plus Jakarta Sans'}}}},scales:{y:{beginAtZero:true},x:{ticks:{font:{size:9}}}}}});
 }
-function renderHisTable(cur,shift){
-  const shiftLabel=shift==='1'?'Shift 1':shift==='2'?'Shift 2':'Semua';
+function renderHisTable(cur){
   $('hisRowCount').textContent=cur.length+' hari';const body=$('hisTableBody');if(!body)return;
   if(!cur.length){body.innerHTML='<div style="padding:20px;text-align:center;color:var(--muted)">Tidak ada data pada periode ini.</div>';return;}
   body.innerHTML=cur.map(t=>{const sc=hisScore(t);const scCol=sc>=90?'var(--green)':sc>=70?'var(--amber)':'var(--red)';
-    return`<div class="his-row his-grid" onclick="hisDetail('${t.date}')" title="Klik untuk detail dari shift-reports"><span style="font-weight:600">${hisFmtDate(t.date)}</span><span style="color:var(--gray)">${shiftLabel}</span><span>${t.total}</span><span style="color:var(--green)">${t.fit}</span><span style="color:var(--red)">${t.unfit}</span><span style="color:var(--green)">${t.pass}</span><span style="color:var(--red)">${t.fail}</span><span>${t.bd}</span><span>${t.hmDone||'—'}</span><span style="font-weight:800;color:${scCol}">${sc}%</span></div>`;
+    return`<div class="his-row his-grid" onclick="hisDetail('${t.date}')" title="Klik untuk detail dari shift-reports"><span style="font-weight:600">${hisFmtDate(t.date)}</span><span>${t.total}</span><span style="color:var(--green)">${t.rtw}</span><span style="color:var(--red)">${t.unfit}</span><span>${t.breakdown}</span><span>${t.bdReports}</span><span style="color:var(--gray)">${t.activeDrivers}</span><span style="font-weight:800;color:${scCol}">${sc}%</span></div>`;
   }).join('');
 }
 async function hisDetail(date){
   const shift=$('hisShift').value;
   try{const r=await fetch(`${API}/supervisor/shift-reports?date=${date}${shift?`&shift=${shift}`:''}&limit=500`,{headers:{'Authorization':'Bearer '+TOKEN}});const d=await r.json();const reps=(d.success&&d.data&&d.data.reports)?d.data.reports:[];
-    const total=reps.length,fit=reps.filter(x=>x.fit_status==='Fit').length,pass=reps.filter(x=>x.p2h_status==='Passed').length,hmDone=reps.filter(x=>x.odometer_end).length;
-    const t=hisRows.find(x=>x.date===date);
-    if(t){t.total=total;t.fit=fit;t.unfit=total-fit;t.pass=pass;t.fail=total-pass;t.hmDone=hmDone;t.fitPct=total?Math.round(fit/total*100):0;t.passPct=total?Math.round(pass/total*100):0;renderHisTable(hisRows,shift);}
-    showClosingToast(`Detail ${hisFmtDate(date)}: ${total} lapor · ${fit} fit · ${hmDone} HM done`);
+    const total=reps.length,rtw=reps.filter(x=>x.overall_status==='Ready to Work').length,unfit=reps.filter(x=>x.overall_status==='Driver Unfit').length;
+    const t=hisRows.find(x=>x.date===date);const td=hisTotalDriver();
+    if(t){t.total=total;t.rtw=rtw;t.unfit=unfit;t.fitPct=total?Math.round(rtw/total*100):0;t.hadirPct=td?Math.round(total/td*100):0;renderHisTable(hisRows);}
+    showClosingToast(`Detail ${hisFmtDate(date)}: ${total} lapor · ${rtw} RTW · ${unfit} unfit`);
   }catch(e){showClosingToast('Gagal ambil detail');}
 }
 function downloadHistorisExcel(){
   if(!hisRows.length){alert('Tidak ada data untuk diunduh.');return;}
-  const shift=$('hisShift').value;const shiftLabel=shift==='1'?'Shift 1':shift==='2'?'Shift 2':'Semua';
-  const headers=['Tanggal','Shift','Total Lapor','FTW Fit','FTW Unfit','P2H Pass','P2H Fail','BD','HM Done','Skor %'];
-  const data=hisRows.map(t=>[t.date,shiftLabel,t.total,t.fit,t.unfit,t.pass,t.fail,t.bd,t.hmDone||0,hisScore(t)]);
+  const headers=['Tanggal','Total Lapor','RTW','Unfit','BD Unit','BD Report','Active Drivers','Skor %'];
+  const data=hisRows.map(t=>[t.date,t.total,t.rtw,t.unfit,t.breakdown,t.bdReports,t.activeDrivers,hisScore(t)]);
   downloadExcel(data,headers,`Rekap_Historis_${$('hisStart').value}_s.d_${$('hisEnd').value}`);
 }
 function doLogout(){localStorage.removeItem('fms_token');localStorage.removeItem('fms_session');window.location.href='index.html';}
