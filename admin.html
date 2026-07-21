@@ -127,7 +127,7 @@ body{background:var(--bg);font-family:var(--font);color:var(--text);display:flex
   <div class="sb-brand"><img src="logo-hte.png" alt="HTE"/><div><div class="sbt-name">Starting Shift</div><div class="sbt-sub">PT HTE · MINING OPS</div></div></div>
   <div class="sb-nav">
     <div class="sb-section">Monitoring</div>
-    <div class="sb-item active" data-view="dashboard"><span class="sb-ico"><span class="mi">dashboard</span></span> Dashboard CCR</div>
+    <div class="sb-item active" data-view="dashboard"><span class="sb-ico"><span class="mi">dashboard</span></span> Dashboard CCR<span id="dashExcBadge" style="display:none;margin-left:6px;background:var(--red);color:#fff;font-size:.55rem;font-weight:800;padding:1px 6px;border-radius:10px">0</span></div>
     <div class="sb-item" data-view="hm"><span class="sb-ico"><span class="mi">timer</span></span> Update HM</div>
     <div class="sb-item" data-view="fleet"><span class="sb-ico"><span class="mi">local_shipping</span></span> Fleet & Alat</div>
     <div class="sb-item" data-view="bd"><span class="sb-ico"><span class="mi">warning_amber</span></span> Breakdown Report</div>
@@ -156,6 +156,14 @@ body{background:var(--bg);font-family:var(--font);color:var(--text);display:flex
         <div class="kpi"><div class="kpi-icon" style="background:rgba(0,200,83,.08)"><span class="mi">local_shipping</span></div><div class="kpi-label">Unit Ready</div><div class="kpi-val" id="kR">—</div><div class="kpi-bar"><div class="kpi-fill" id="kRB" style="width:0;background:var(--green)"></div></div><div class="kpi-sub" id="kRS">—</div></div>
         <div class="kpi"><div class="kpi-icon" style="background:rgba(239,68,68,.08)"><span class="mi">warning_amber</span></div><div class="kpi-label">Breakdown</div><div class="kpi-val" style="color:var(--red)" id="kB">—</div><div class="kpi-bar"><div class="kpi-fill" id="kBB" style="width:0;background:var(--red)"></div></div><div class="kpi-sub" id="kBS">—</div></div>
         <div class="kpi kpi-hl"><div class="kpi-icon" style="background:rgba(255,255,255,.15)"><span class="mi">track_changes</span></div><div class="kpi-label">Kesiapan Shift</div><div class="kpi-val" id="kSc">—%</div><div class="kpi-sub">Skor gabungan</div></div>
+      </div>
+      <!-- Exception Center -->
+      <div class="panel" id="excPanel">
+        <div class="panel-head" style="cursor:pointer" onclick="toggleExc()">
+          <div class="panel-title"><span class="mi">warning_amber</span> Exception Center</div>
+          <div style="display:flex;align-items:center;gap:8px"><span class="badge-s bg-fit" id="excBadge">—</span><span class="mi" id="excChevron" style="color:var(--muted)">expand_less</span></div>
+        </div>
+        <div class="panel-body" id="excBody" style="max-height:280px"></div>
       </div>
       <div class="panel"><div class="panel-head"><div><div class="panel-title">Operator Aktif — <span id="shLbl">Shift 1</span></div></div><select class="pfsel" id="fDept" onchange="renderOps()"><option value="">Semua</option></select></div><div class="panel-body" id="opTbl"></div><div class="panel-foot"><span id="opCnt">—</span></div></div>
     </div>
@@ -374,8 +382,57 @@ document.addEventListener('DOMContentLoaded',()=>{
   updateClock();setInterval(updateClock,1000);loadAll();
 });
 function updateClock(){const n=new Date();document.getElementById('clock').textContent=n.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',second:'2-digit'});document.getElementById('tbDate').textContent='Pemantauan kesiapan shift · '+n.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});const h=n.getHours(),s1=h>=7&&h<19;const b=document.getElementById('shiftBadge');b.className='tb-shift '+(s1?'s1':'s2');b.innerHTML=`<div style="font-size:.55rem;opacity:.7">SHIFT AKTIF</div><div>Shift ${s1?'1 · Siang':'2 · Malam'}</div>`;document.getElementById('shLbl').textContent='Shift '+(s1?'1 · Siang':'2 · Malam');}
-async function loadAll(){const today=new Date().toISOString().slice(0,10);try{const[a,b,c,d,e]=await Promise.all([fetch(`${API}/vehicles`,{headers:{'Authorization':'Bearer '+TOKEN}}),fetch(`${API}/vehicles/active-drivers`,{headers:{'Authorization':'Bearer '+TOKEN}}),fetch(`${API}/supervisor/dashboard-stats`,{headers:{'Authorization':'Bearer '+TOKEN}}),fetch(`${API}/supervisor/shift-reports?date=${today}&shift=${curShift}&limit=500`,{headers:{'Authorization':'Bearer '+TOKEN}}),fetch(`${API}/bd-reports?limit=30`,{headers:{'Authorization':'Bearer '+TOKEN}})]);const A=await a.json(),B=await b.json(),C=await c.json(),D=await d.json(),E=await e.json();if(A.success)allUnits=A.data;if(B.success){driverMap={};B.data.forEach(x=>{driverMap[x.unit_id]=x;});}if(D.success)allReports=D.data.reports||[];if(E.success)bdReports=E.data.reports||E.data||[];renderKPI();renderOps();renderFleet();renderBD2();renderLog();renderDonut();popFilter();renderHmView();loadDriverList();}catch(e){console.error(e);}}
+async function loadAll(){const today=new Date().toISOString().slice(0,10);try{const[a,b,c,d,e]=await Promise.all([fetch(`${API}/vehicles`,{headers:{'Authorization':'Bearer '+TOKEN}}),fetch(`${API}/vehicles/active-drivers`,{headers:{'Authorization':'Bearer '+TOKEN}}),fetch(`${API}/supervisor/dashboard-stats`,{headers:{'Authorization':'Bearer '+TOKEN}}),fetch(`${API}/supervisor/shift-reports?date=${today}&shift=${curShift}&limit=500`,{headers:{'Authorization':'Bearer '+TOKEN}}),fetch(`${API}/bd-reports?limit=30`,{headers:{'Authorization':'Bearer '+TOKEN}})]);const A=await a.json(),B=await b.json(),C=await c.json(),D=await d.json(),E=await e.json();if(A.success)allUnits=A.data;if(B.success){driverMap={};B.data.forEach(x=>{driverMap[x.unit_id]=x;});}if(D.success)allReports=D.data.reports||[];if(E.success)bdReports=E.data.reports||E.data||[];renderKPI();renderExceptions();renderOps();renderFleet();renderBD2();renderLog();renderDonut();popFilter();renderHmView();loadDriverList();}catch(e){console.error(e);}}
 
+// ── EXCEPTION CENTER (anomali operasional) ──
+let excExpanded=true, excUserToggled=false;
+function computeExceptions(){
+  const ex=[];const now=Date.now();const reported=allReports||[];const units=allUnits||[];const bds=Array.isArray(bdReports)?bdReports:[];
+  // 1. HM anomali
+  reported.forEach(r=>{
+    const awal=Number(r.odometer_entered)||0;const hasAkhir=r.odometer_end!=null&&r.odometer_end!=='';const akhir=hasAkhir?Number(r.odometer_end):null;
+    if(hasAkhir&&akhir<awal)ex.push({lvl:'kritis',label:'HM Anomali',desc:`${r.unit_id} — HM Akhir (${akhir}) < Awal (${awal})`,unit:r.unit_id});
+    else if(hasAkhir&&(akhir-awal)>14)ex.push({lvl:'warning',label:'Selisih HM',desc:`${r.unit_id} — selisih HM ${akhir-awal} terlalu besar`,unit:r.unit_id});
+    if(Number(r.odometer_entered)===0&&r.submitted_by!=='CCR-Manual')ex.push({lvl:'warning',label:'HM Awal 0',desc:`${r.unit_id} — HM Awal 0 padahal bukan input manual`,unit:r.unit_id});
+  });
+  // 2. Driver ganda (driver_id di >1 unit berbeda)
+  const byDrv={};reported.forEach(r=>{if(r.driver_id)(byDrv[r.driver_id]=byDrv[r.driver_id]||[]).push(r);});
+  Object.values(byDrv).forEach(arr=>{const us=[...new Set(arr.map(r=>r.unit_id))];if(us.length>1)ex.push({lvl:'kritis',label:'Driver Ganda',desc:`${arr[0].driver_name||arr[0].driver_id} di ${us.join(' dan ')}`,driver:arr[0].driver_name||arr[0].driver_id});});
+  // 3. Unit idle (Ready tanpa driver)
+  const repUnits=new Set(reported.map(r=>r.unit_id));
+  const idle=units.filter(u=>u.status_unit==='Ready'&&!repUnits.has(u.unit_id));
+  if(idle.length===1)ex.push({lvl:'warning',label:'Unit Idle',desc:`${idle[0].unit_id} Ready tapi tanpa driver`,unit:idle[0].unit_id});
+  else if(idle.length>1)ex.push({lvl:'warning',label:'Unit Idle',desc:`${idle.length} unit Ready tapi tanpa driver`,view:'fleet'});
+  // 4. HM belum update > 4 jam
+  const overdue=reported.filter(r=>{const hasAkhir=r.odometer_end!=null&&r.odometer_end!=='';if(hasAkhir)return false;const ts=r.timestamp_filled?new Date(r.timestamp_filled).getTime():0;return ts&&(now-ts)>14400000;});
+  if(overdue.length)ex.push({lvl:'warning',label:'HM Belum',desc:`${overdue.length} unit belum update HM akhir (>4 jam)`,view:'hm'});
+  // 5. BD lama > 24 jam
+  units.filter(u=>u.status_unit==='Breakdown').forEach(u=>{
+    const bd=bds.filter(b=>b.unit_id===u.unit_id&&b.status!=='Resolved'&&b.created_at).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at))[0];
+    if(bd){const age=now-new Date(bd.created_at).getTime();if(age>86400000)ex.push({lvl:'warning',label:'BD Lama',desc:`${u.unit_id} Breakdown > 24 jam (${Math.floor(age/3600000)} jam)`,unit:u.unit_id});}
+  });
+  ex.sort((a,b)=>(a.lvl==='kritis'?0:1)-(b.lvl==='kritis'?0:1));
+  return ex;
+}
+function renderExceptions(){
+  const body=$('excBody');if(!body)return;
+  const ex=computeExceptions();
+  const kritis=ex.filter(e=>e.lvl==='kritis').length;const warn=ex.length-kritis;const badge=$('excBadge');
+  if(!ex.length){badge.textContent='Bersih';badge.className='badge-s bg-fit';}
+  else if(kritis){badge.textContent=`${kritis} kritis${warn?' · '+warn+' warning':''}`;badge.className='badge-s bg-unfit';}
+  else{badge.textContent=`${warn} warning`;badge.className='badge-s bg-find';}
+  if(!ex.length)body.innerHTML='<div style="padding:16px;text-align:center;color:var(--green);font-size:.8rem"><span class="mi">check_circle</span> Tidak ada anomali terdeteksi</div>';
+  else body.innerHTML=ex.map(e=>{const ic=e.lvl==='kritis'?'error':'warning';const col=e.lvl==='kritis'?'var(--red)':'var(--amber)';const act=e.unit?`exFocusUnit('${e.unit}')`:e.driver?`exFocusDriver('${String(e.driver).replace(/'/g,"\\'")}')`:e.view?`exGoView('${e.view}')`:'';return`<div class="exc-item" onclick="${act}" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''" style="display:flex;align-items:center;gap:8px;padding:9px 16px;border-bottom:1px solid var(--border);cursor:pointer;font-size:.74rem"><span class="mi" style="color:${col}">${ic}</span><span style="flex:1"><b>${e.label}</b>: ${e.desc}</span><span class="mi mi-sm" style="color:var(--muted)">chevron_right</span></div>`;}).join('');
+  if(!excUserToggled)excExpanded=ex.length>0;
+  applyExcCollapse();
+  const sb=$('dashExcBadge');if(sb){if(ex.length){sb.textContent=ex.length;sb.style.display='';}else sb.style.display='none';}
+}
+function applyExcCollapse(){const body=$('excBody'),ch=$('excChevron');if(body)body.style.display=excExpanded?'':'none';if(ch)ch.textContent=excExpanded?'expand_less':'expand_more';}
+function toggleExc(){excExpanded=!excExpanded;excUserToggled=true;applyExcCollapse();}
+function exGoView(v){const it=document.querySelector('.sb-item[data-view="'+v+'"]');if(it)it.click();}
+function exFlash(el){if(!el)return;const o=el.style.background;el.style.transition='background .3s';el.style.background='rgba(245,158,11,.28)';setTimeout(()=>{el.style.background=o||'';},1600);}
+function exFocusUnit(uid){const row=[...document.querySelectorAll('#opTbl .op-row')].find(r=>{const u=r.querySelector('.op-uid');return u&&u.textContent.trim()===uid;});if(row){row.scrollIntoView({behavior:'smooth',block:'center'});exFlash(row);return;}exGoView('fleet');setTimeout(()=>{const card=[...document.querySelectorAll('#fleetGrid .uc')].find(c=>{const i=c.querySelector('.uc-id');return i&&i.textContent.trim()===uid;});if(card){card.scrollIntoView({behavior:'smooth',block:'center'});exFlash(card);}},250);}
+function exFocusDriver(name){const rows=[...document.querySelectorAll('#opTbl .op-row')].filter(r=>{const n=r.querySelector('.op-name');return n&&n.textContent.trim()===name;});if(rows.length){rows[0].scrollIntoView({behavior:'smooth',block:'center'});rows.forEach(exFlash);}}
 function renderKPI(){const t=allUnits.length||1,r=allUnits.filter(u=>u.status_unit==='Ready').length,bd=allUnits.filter(u=>u.status_unit==='Breakdown').length,mt=allUnits.filter(u=>u.status_unit==='Maintenance').length,td=allReports.length,fc=allReports.filter(r=>r.fit_status==='Fit').length,pp=allReports.filter(r=>r.p2h_status==='Passed').length,tm=Math.max(td,t);
 $('kD').innerHTML=`${td}<small>/${tm}</small>`;$('kDB').style.width=`${td/tm*100}%`;$('kDS').textContent=`${Math.round(td/tm*100)}% kehadiran`;
 $('kF').innerHTML=`${fc}<small style="color:var(--green)"> Fit</small>`;$('kFB').style.width=`${td?fc/td*100:0}%`;$('kFS').textContent=(td-fc)>0?`${td-fc} Unfit`:'Semua fit';
