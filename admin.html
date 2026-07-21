@@ -143,7 +143,7 @@ body{background:var(--bg);font-family:var(--font);color:var(--text);display:flex
 <div class="main">
   <div class="topbar">
     <div><div style="display:flex;align-items:center;gap:8px"><span class="tb-title">Central Control Room</span><span class="tb-live"><span class="tb-dot"></span> LIVE</span></div><div class="tb-sub" id="tbDate">—</div></div>
-    <div style="display:flex;align-items:center;gap:14px"><div style="text-align:right"><div class="tb-clock" id="clock">--:--:--</div><div style="font-size:.55rem;color:var(--muted)">WITA</div></div><div id="shiftBadge" class="tb-shift s1">Shift 1</div></div>
+    <div style="display:flex;align-items:center;gap:14px"><div style="text-align:right"><div class="tb-clock" id="clock">--:--:--</div><div style="font-size:.55rem;color:var(--muted)">WITA</div></div><button id="closingBtn" onclick="openClosing()" style="display:none;padding:7px 12px;border:none;border-radius:8px;font-family:var(--font);font-size:.68rem;font-weight:700;cursor:pointer;background:linear-gradient(135deg,var(--amber),var(--red));color:#fff;align-items:center;gap:5px"><span class="mi mi-sm">lock</span> Closing Shift</button><div id="shiftBadge" class="tb-shift s1">Shift 1</div></div>
   </div>
 
   <!-- VIEW: DASHBOARD -->
@@ -361,6 +361,7 @@ body{background:var(--bg);font-family:var(--font);color:var(--text);display:flex
 <div class="modal-ov" id="modalBD"><div class="modal"><div class="modal-h" id="mdTt"><span class="mi">error</span> Keterangan Breakdown</div><div class="modal-b"><div class="mf"><label>Deskripsi</label><textarea id="mdDesc" placeholder="Jelaskan kerusakan..."></textarea></div><div class="mf"><label>Lokasi Unit</label><input type="text" id="mdLoc" placeholder="Contoh: Hauling Road KM 3"/></div></div><div class="modal-f"><button class="mbtn-c" onclick="closeMd()">Batal</button><button class="mbtn-o" onclick="confirmBD()">Konfirmasi</button></div></div></div>
 <div class="modal-ov" id="modalEdit"><div class="modal"><div class="modal-h"><span class="mi">edit</span> Edit Keterangan</div><div class="modal-b"><div class="mf"><label>Keterangan</label><textarea id="edNotes"></textarea></div></div><div class="modal-f"><button class="mbtn-c" onclick="closeEd()">Batal</button><button class="mbtn-o" onclick="saveNotes()">Simpan</button></div></div></div>
 <div class="modal-ov" id="modalEditReport"><div class="modal"><div class="modal-h"><span class="mi">edit</span> Edit Report</div><div class="modal-b"><div class="mf"><label>Unit ID</label><input type="text" id="erUnit"/></div><div class="mf" style="display:flex;gap:8px"><div style="flex:1"><label>HM Awal</label><input type="number" id="erHmAwal"/></div><div style="flex:1"><label>HM Akhir</label><input type="number" id="erHmAkhir"/></div></div><div class="mf"><label>Status FTW</label><select id="erFtw" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-size:.82rem;font-family:var(--font);outline:none"><option value="Fit">Fit</option><option value="Unfit">Unfit</option></select></div><div id="erStatus" style="font-size:.72rem;min-height:16px"></div></div><div class="modal-f"><button class="mbtn-c" onclick="closeEditReport()">Batal</button><button class="mbtn-o" onclick="saveEditReport()">Simpan</button></div></div></div>
+<div class="modal-ov" id="modalClosing"><div class="modal" style="max-width:460px"><div class="modal-h"><span class="mi">lock</span> <span id="clsTitle">Closing Shift</span></div><div class="modal-b"><div style="font-size:.72rem;font-weight:700;margin-bottom:6px">Checklist sebelum closing:</div><div id="clsChecklist" style="font-size:.74rem;line-height:1.9"></div><div style="font-size:.72rem;font-weight:700;margin:12px 0 4px">Outstanding:</div><div id="clsOutstanding" style="font-size:.72rem;color:var(--gray);line-height:1.7"></div><div class="mf" style="margin-top:12px"><label>Catatan Serah Terima</label><textarea id="clsNotes" placeholder="Catatan untuk shift berikutnya..."></textarea></div><div id="clsStatus" style="font-size:.72rem;min-height:16px"></div></div><div class="modal-f"><button class="mbtn-c" onclick="closeClosing()">Batal</button><button class="mbtn-o" id="clsConfirmBtn" onclick="confirmClosing()"><span class="mi mi-sm">lock</span> Tutup & Generate PDF</button></div></div></div>
 
 <script>
 const API='https://starting-hte.my.id/api/v1',TOKEN=localStorage.getItem('fms_token'),SESSION=JSON.parse(localStorage.getItem('fms_session')||'null');
@@ -381,7 +382,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('sbAv').textContent=i;document.getElementById('sbNm').textContent=SESSION.name||SESSION.id;
   updateClock();setInterval(updateClock,1000);loadAll();
 });
-function updateClock(){const n=new Date();document.getElementById('clock').textContent=n.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',second:'2-digit'});document.getElementById('tbDate').textContent='Pemantauan kesiapan shift · '+n.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});const h=n.getHours(),s1=h>=7&&h<19;const b=document.getElementById('shiftBadge');b.className='tb-shift '+(s1?'s1':'s2');b.innerHTML=`<div style="font-size:.55rem;opacity:.7">SHIFT AKTIF</div><div>Shift ${s1?'1 · Siang':'2 · Malam'}</div>`;document.getElementById('shLbl').textContent='Shift '+(s1?'1 · Siang':'2 · Malam');}
+function updateClock(){const n=new Date();document.getElementById('clock').textContent=n.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',second:'2-digit'});document.getElementById('tbDate').textContent='Pemantauan kesiapan shift · '+n.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});const h=n.getHours(),s1=h>=7&&h<19;const b=document.getElementById('shiftBadge');b.className='tb-shift '+(s1?'s1':'s2');b.innerHTML=`<div style="font-size:.55rem;opacity:.7">SHIFT AKTIF</div><div>Shift ${s1?'1 · Siang':'2 · Malam'}</div>`;document.getElementById('shLbl').textContent='Shift '+(s1?'1 · Siang':'2 · Malam');if(isShiftClosed()){b.className='tb-shift';b.style.cssText='padding:6px 14px;border-radius:8px;font-size:.68rem;font-weight:700;background:rgba(239,68,68,.12);color:var(--red);border:1px solid rgba(239,68,68,.25)';b.innerHTML='<div style="font-size:.55rem;opacity:.7">SHIFT</div><div>CLOSED</div>';}else{b.style.cssText='';}updateClosingBtn();}
 async function loadAll(){const today=new Date().toISOString().slice(0,10);try{const[a,b,c,d,e]=await Promise.all([fetch(`${API}/vehicles`,{headers:{'Authorization':'Bearer '+TOKEN}}),fetch(`${API}/vehicles/active-drivers`,{headers:{'Authorization':'Bearer '+TOKEN}}),fetch(`${API}/supervisor/dashboard-stats`,{headers:{'Authorization':'Bearer '+TOKEN}}),fetch(`${API}/supervisor/shift-reports?date=${today}&shift=${curShift}&limit=500`,{headers:{'Authorization':'Bearer '+TOKEN}}),fetch(`${API}/bd-reports?limit=30`,{headers:{'Authorization':'Bearer '+TOKEN}})]);const A=await a.json(),B=await b.json(),C=await c.json(),D=await d.json(),E=await e.json();if(A.success)allUnits=A.data;if(B.success){driverMap={};B.data.forEach(x=>{driverMap[x.unit_id]=x;});}if(D.success)allReports=D.data.reports||[];if(E.success)bdReports=E.data.reports||E.data||[];renderKPI();renderExceptions();renderOps();renderFleet();renderBD2();renderLog();renderDonut();popFilter();renderHmView();loadDriverList();}catch(e){console.error(e);}}
 
 // ── EXCEPTION CENTER (anomali operasional) ──
@@ -541,6 +542,7 @@ function hmQueueKey(e){
 function hmQueueNav(dir){const p=hmPendingList();if(!p.length)return;hmQueueIdx=(hmQueueIdx+dir+p.length)%p.length;renderHmQueue(true);renderOutstanding();}
 function hmQueueClear(){const el=$('hmQueueInput');if(el){el.value='';el.classList.remove('err');el.focus();}const d=$('hmQueueDiff');if(d){d.textContent='—';d.style.color='var(--muted)';}const m=$('hmQueueMsg');if(m)m.textContent='';}
 async function saveQueueHm(){
+  if(closedGuard())return;
   const p=hmPendingList();if(!p.length)return;const r=p[Math.min(hmQueueIdx,p.length-1)];const awal=r.odometer_entered||0;
   const el=$('hmQueueInput'),m=$('hmQueueMsg');const chk=hmValidate(el?.value,awal);
   if(!chk.ok){if(el)el.classList.add('err');if(chk.empty)m.innerHTML='<span style="color:var(--amber)">Masukkan angka HM.</span>';else if(chk.low)m.innerHTML='<span style="color:var(--red)">HM akhir tidak boleh &lt; HM awal.</span>';else m.innerHTML='<span style="color:var(--red)">Angka HM tidak valid.</span>';el?.focus();return;}
@@ -621,6 +623,7 @@ function hmRowKey(e,rid,awal){
 }
 function hmFocusSibling(rid,dir){const inps=[...document.querySelectorAll('#hmTableBody .hm-inp')];const i=inps.indexOf($('hmi-'+rid));if(i<0)return;const nx=inps[i+dir];if(nx)nx.focus();}
 async function saveHm(rid,awal){
+  if(closedGuard())return;
   const el=$('hmi-'+rid);const chk=hmValidate(el?.value,awal);
   if(!chk.ok){if(el)el.classList.add('err');if(chk.low)alert(`HM akhir (${el.value}) tidak boleh lebih kecil dari HM awal (${awal}).`);else alert('Masukkan angka HM yang valid.');return;}
   const ok=await commitHm(rid,chk.v);
@@ -685,7 +688,7 @@ if(st)st.textContent='';renderAbsList();}
 // Close dropdowns on click outside
 document.addEventListener('click',e=>{if(!e.target.closest('#absDriverId')&&!e.target.closest('#driverDropdown'))$('driverDropdown').style.display='none';if(!e.target.closest('#absUnit')&&!e.target.closest('#unitDropdown'))$('unitDropdown').style.display='none';});
 
-async function addAbsensi(){const did=$('absDriverId').value.trim(),uid=$('absUnit').value.trim(),ftw=$('absFtw').value,reason=$('absReason').value,timeVal=$('absTime').value,notes=$('absNotes')?.value?.trim()||'';const hmAwal=parseInt($('absHmAwal')?.value)||0;const st=$('absStatus');
+async function addAbsensi(){if(closedGuard())return;const did=$('absDriverId').value.trim(),uid=$('absUnit').value.trim(),ftw=$('absFtw').value,reason=$('absReason').value,timeVal=$('absTime').value,notes=$('absNotes')?.value?.trim()||'';const hmAwal=parseInt($('absHmAwal')?.value)||0;const st=$('absStatus');
 if(!did||!uid){st.textContent='Nama Driver dan Unit wajib diisi.';st.style.color='var(--red)';return;}
 const existing=(absReports||allReports||[]).find(r=>r.unit_id===uid);
 if(existing&&!confirm(`Unit ${uid} sudah dipakai oleh ${existing.driver_name||existing.driver_id}. Lanjutkan?`))return;
@@ -876,6 +879,49 @@ const sr=await fetch(`${API}/supervisor/shift-reports?date=${today}&limit=500`,{
 const lr=await fetch(`${API}/vehicles/status-log?limit=1000`,{headers:{'Authorization':'Bearer '+TOKEN}});const ld=await lr.json();let c3='Unit,Dari,Ke,Keterangan,Diubah Oleh,Mulai,Selesai,Durasi\n';if(ld.success)(ld.data||[]).forEach(l=>{c3+=`${l.unit_id},${l.status_from},${l.status_to},"${(l.notes||'').replace(/"/g,'""')}",${l.changed_by_name||''},"${l.time_start?new Date(l.time_start).toLocaleString('id-ID'):''}","${l.time_end?new Date(l.time_end).toLocaleString('id-ID'):''}",${l.duration_minutes||''}\n`;});setTimeout(()=>dl(B+c3,`Status_Log_${today}.csv`),1000);
 }catch(e){alert('Gagal download.');}}
 function dl(c,f){const b=new Blob([c],{type:'text/csv;charset=utf-8;'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=f;document.body.appendChild(a);a.click();document.body.removeChild(a);}
+// ── SHIFT CLOSING (client-side lock / reminder workflow) ──
+function closingKey(){return `shift_closed_${new Date().toISOString().slice(0,10)}_${curShift}`;}
+function isShiftClosed(){return localStorage.getItem(closingKey())==='true';}
+function closingWindowOpen(h,s){h=(h==null?new Date().getHours():h);s=s||curShift;if(s==='1')return h>=18;if(s==='2')return h>=6&&h<7;return false;}
+function closedGuard(){return isShiftClosed()?!confirm('Shift ini sudah ditutup. Data closing sudah difinalisasi — tetap lanjutkan input?'):false;}
+function updateClosingBtn(){const btn=$('closingBtn');if(!btn)return;
+  if(isShiftClosed()){btn.style.display='inline-flex';btn.disabled=true;btn.style.background='var(--border)';btn.style.color='var(--gray)';btn.style.cursor='not-allowed';btn.innerHTML='<span class="mi mi-sm">lock</span> Shift Ditutup';}
+  else if(closingWindowOpen()){btn.style.display='inline-flex';btn.disabled=false;btn.style.background='linear-gradient(135deg,var(--amber),var(--red))';btn.style.color='#fff';btn.style.cursor='pointer';btn.innerHTML='<span class="mi mi-sm">lock</span> Closing Shift';}
+  else{btn.style.display='none';}}
+function openClosing(){if(isShiftClosed())return;loadDriverList();renderClosingModal();const n=localStorage.getItem(closingKey()+'_notes');if(n)$('clsNotes').value=n;$('clsStatus').textContent='';$('modalClosing').classList.add('show');}
+function closeClosing(){$('modalClosing').classList.remove('show');}
+function renderClosingModal(){
+  const dateStr=new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
+  $('clsTitle').textContent=`Closing Shift ${curShift} — ${dateStr}`;
+  const totalDrv=(allDriversList||[]).length;
+  const reportedDrv=new Set((allReports||[]).map(r=>String(r.driver_id))).size;
+  const base=hmBaseList();const hmDone=base.filter(isHmDone).length;const hmTotal=base.length;
+  const kritis=computeExceptions().filter(e=>e.lvl==='kritis').length;
+  const bdUnits=(allUnits||[]).filter(u=>u.status_unit==='Breakdown');
+  const bdReported=bdUnits.every(u=>(Array.isArray(bdReports)?bdReports:[]).some(b=>b.unit_id===u.unit_id));
+  const belumDrv=Math.max(0,totalDrv-reportedDrv);
+  const items=[
+    {ok:totalDrv>0&&reportedDrv>=totalDrv,txt:`Semua driver sudah tercatat (${reportedDrv}/${totalDrv||'—'})`},
+    {ok:hmTotal>0&&hmDone>=hmTotal,txt:`Semua HM akhir sudah diinput (${hmDone}/${hmTotal})`},
+    {ok:kritis===0,txt:`Tidak ada exception kritis (${kritis} pending)`},
+    {ok:bdUnits.length===0||bdReported,txt:`BD report sudah dilaporkan`},
+  ];
+  $('clsChecklist').innerHTML=items.map(it=>`<div style="display:flex;align-items:center;gap:6px"><span class="mi" style="color:${it.ok?'var(--green)':'var(--muted)'}">${it.ok?'check_box':'check_box_outline_blank'}</span> ${it.txt}</div>`).join('');
+  const out=[];
+  if(belumDrv>0)out.push(`${belumDrv} driver belum lapor`);
+  if(hmTotal-hmDone>0)out.push(`${hmTotal-hmDone} unit belum update HM`);
+  if(kritis>0)out.push(`${kritis} exception kritis`);
+  $('clsOutstanding').innerHTML=out.length?out.map(o=>`• ${o}`).join('<br>'):'<span style="color:var(--green)"><span class="mi mi-sm">check</span> Semua beres</span>';
+}
+function confirmClosing(){
+  const notes=$('clsNotes').value.trim();
+  localStorage.setItem(closingKey(),'true');
+  if(notes)localStorage.setItem(closingKey()+'_notes',notes);
+  closeClosing();updateClosingBtn();updateClock();
+  showClosingToast(`Shift ${curShift} berhasil ditutup`);
+  try{genShiftPDF();}catch(e){console.error(e);}
+}
+function showClosingToast(msg){const t=document.createElement('div');t.style.cssText='position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--green);color:#fff;padding:10px 18px;border-radius:8px;font-family:var(--font);font-size:.8rem;font-weight:700;box-shadow:0 4px 16px rgba(0,0,0,.25);z-index:300;display:flex;align-items:center;gap:6px';t.innerHTML='<span class="mi mi-sm">check_circle</span> '+msg;document.body.appendChild(t);setTimeout(()=>t.remove(),3500);}
 function doLogout(){localStorage.removeItem('fms_token');localStorage.removeItem('fms_session');window.location.href='index.html';}
 function $(id){return document.getElementById(id);}
 </script>
