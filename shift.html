@@ -300,6 +300,7 @@ const FTW_QUESTIONS = [
 
 // P2H items loaded dynamically based on unit type from p2h-data.js
 const eqClass = SESSION.eq_class || SESSION.type || 'Dump Truck';
+function getRoleLabel(equipmentClass){const cls=(equipmentClass||'').toLowerCase();if(cls.includes('dump truck'))return'Driver';if(cls.includes('light vehicle'))return'Driver';if(cls.includes('manhaul'))return'Driver';if(cls.includes('water truck'))return'Driver';return'Operator';}
 const rawP2H = getP2HItems(eqClass);
 const P2H_ITEMS = rawP2H.map(it => ({
   item_id: it.id,
@@ -323,7 +324,7 @@ const state = {
 //  INIT
 // ══════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('driverBadge').textContent = SESSION.id + ' · ' + SESSION.unit;
+  document.getElementById('driverBadge').textContent = getRoleLabel(eqClass) + ' · ' + SESSION.id + ' · ' + SESSION.unit;
   renderFTW();
   renderP2H();
   initSignature();
@@ -604,8 +605,8 @@ function renderReview() {
 
   // Driver & Unit
   html += `<div class="review-section">
-    <div class="rs-title"><span class="mi">person</span> Driver & Unit</div>
-    <div class="review-row"><span class="rr-q">Driver</span><span class="rr-a ok">${SESSION.name} (${SESSION.id})</span></div>
+    <div class="rs-title"><span class="mi">person</span> ${getRoleLabel(eqClass)} & Unit</div>
+    <div class="review-row"><span class="rr-q">${getRoleLabel(eqClass)}</span><span class="rr-a ok">${SESSION.name} (${SESSION.id})</span></div>
     <div class="review-row"><span class="rr-q">Unit</span><span class="rr-a ok">${SESSION.unit}</span></div>
     <div class="review-row"><span class="rr-q">Odometer</span><span class="rr-a ok">${state.odometer?.toLocaleString('id-ID')}</span></div>
   </div>`;
@@ -764,7 +765,7 @@ function showResult(d) {
     <div class="result-msg">${msg}</div>
     <div class="result-details">
       <div class="rd-row"><span class="rd-label">Report ID</span><span class="rd-val" style="font-size:.72rem;word-break:break-all">${d.report_id}</span></div>
-      <div class="rd-row"><span class="rd-label">Driver</span><span class="rd-val">${SESSION.name}</span></div>
+      <div class="rd-row"><span class="rd-label">${getRoleLabel(eqClass)}</span><span class="rd-val">${SESSION.name}</span></div>
       <div class="rd-row"><span class="rd-label">Unit</span><span class="rd-val">${SESSION.unit}</span></div>
       <div class="rd-row"><span class="rd-label">Fit-to-Work</span><span class="rd-val ${d.fit_status==='Fit'?'green':'red'}">${d.fit_status}</span></div>
       <div class="rd-row"><span class="rd-label">P2H</span><span class="rd-val ${d.p2h_status==='Passed'?'green':'red'}">${d.p2h_status}</span></div>

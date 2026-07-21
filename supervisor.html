@@ -97,6 +97,7 @@ const API='https://starting-hte.my.id/api/v1',TOKEN=localStorage.getItem('fms_to
 if(!SESSION||!TOKEN)window.location.href='index.html';
 let allReports=[],bdReports=[];
 function $(id){return document.getElementById(id);}
+function getRoleLabel(equipmentClass){const cls=(equipmentClass||'').toLowerCase();if(cls.includes('dump truck'))return'Driver';if(cls.includes('light vehicle'))return'Driver';if(cls.includes('manhaul'))return'Driver';if(cls.includes('water truck'))return'Driver';return'Operator';}
 
 function switchTab(t,el){['reports','bd','csv'].forEach(x=>$('t-'+x).style.display='none');$('t-'+t).style.display='';document.querySelectorAll('.spv-tab').forEach(x=>x.classList.remove('active'));if(el)el.classList.add('active');if(t==='bd')loadBD();}
 
@@ -122,7 +123,7 @@ const vs=r.validation_status||'Pending';const isPen=vs==='Pending'&&r.overall_st
 const stC=r.overall_status==='Ready to Work'?'sb-rtw':r.overall_status==='Driver Unfit'?'sb-uf':'sb-bd';
 const stL=r.overall_status==='Ready to Work'?'RTW':r.overall_status==='Driver Unfit'?'Unfit':'BD';
 const vsC=vs==='Approved'?'sb-app':vs==='Rejected'?'sb-rej':'sb-pen';
-return`<div class="sr-card"><div class="sr-top"><div><div class="sr-name">${r.driver_name||r.driver_id}</div><div class="sr-meta">${r.driver_id} · ${r.unit_id} · ${r.equipment_class||''}</div></div><div class="sr-time">${tm}</div></div>
+return`<div class="sr-card"><div class="sr-top"><div><div class="sr-name">${r.driver_name||r.driver_id}</div><div class="sr-meta">${r.driver_id} · ${r.unit_id} · ${r.equipment_class||''} · ${getRoleLabel(r.equipment_class)}</div></div><div class="sr-time">${tm}</div></div>
 <div class="sr-badges"><span class="sr-badge ${r.fit_status==='Fit'?'sb-fit':'sb-unfit'}">${r.fit_status}</span><span class="sr-badge ${r.p2h_status==='Passed'?'sb-pass':'sb-find'}">${r.p2h_status||'—'}</span><span class="sr-badge ${stC}">${stL}</span><span class="sr-badge ${vsC}">${vs}</span></div>
 ${r.odometer_entered?`<div class="sr-hm">HM: ${r.odometer_entered}${r.odometer_end?' → '+r.odometer_end+' (+'+( r.odometer_end-r.odometer_entered)+')':' (akhir belum diisi)'}</div>`:''}
 ${isPen?`<div class="sr-actions"><button class="sr-btn btn-app" onclick="validate('${r.report_id}','Approved')"><span class="mi">check</span> Approve</button><button class="sr-btn btn-rej" onclick="validate('${r.report_id}','Rejected')"><span class="mi">close</span> Reject</button></div>`:`<div class="sr-actions"><button class="sr-btn btn-done" disabled>${vs==='Approved'?'<span class="mi">check_circle</span> Approved':vs==='Rejected'?'<span class="mi">cancel</span> Rejected':'<span class="mi">warning_amber</span> '+stL}</button></div>`}</div>`;}).join('');}

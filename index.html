@@ -203,11 +203,13 @@ const SAFETY_MSGS=[
 ];
 document.addEventListener('DOMContentLoaded',function(){var el=document.getElementById('safetyMsg');if(el)el.textContent=SAFETY_MSGS[Math.floor(Math.random()*SAFETY_MSGS.length)];});
 
-// Role mapping based on equipment class
-const DRIVER_CLASSES=['Dump Truck','Light Vehicle','Manhaul','Tyre Truck','Lube Truck','Tire Truck','Water Truck','Crane Truck','Fuel Truck'];
-function getRoleLabel(role,eqClass){
-  if(role==='Supervisor'||role==='Foreman'||role==='Admin'||role==='PJO')return role;
-  if(DRIVER_CLASSES.includes(eqClass))return'Driver';
+// Role label selalu diturunkan dari equipment_class (bukan field role dari DB)
+function getRoleLabel(equipmentClass){
+  const cls=(equipmentClass||'').toLowerCase();
+  if(cls.includes('dump truck'))return'Driver';
+  if(cls.includes('light vehicle'))return'Driver';
+  if(cls.includes('manhaul'))return'Driver';
+  if(cls.includes('water truck'))return'Driver';
   return'Operator';
 }
 function showAlert(m,t='error'){const e=document.getElementById('loginAlert');e.textContent=m;e.className=`alert alert-${t} show`}
@@ -243,8 +245,10 @@ async function doLogin(){hideAlert();
 }
 
 function showDashboard(s){document.getElementById('loginWrap').style.display='none';document.getElementById('dashboardView').style.display='block';
+  const role=getRoleLabel(s.equipment_class);
   document.getElementById('dashName').textContent=(s.name||'').toUpperCase();
-  document.getElementById('dashRole').textContent=getRoleLabel(s.role,s.equipment_class);
+  document.getElementById('dashRole').textContent=role;
+  const hello=document.querySelector('.pc-hello');if(hello)hello.textContent=`Selamat datang, ${role}`;
   document.getElementById('dashId').textContent=s.id;}
 
 async function loadUnits(ec){try{const token=localStorage.getItem(TOKEN_KEY);
