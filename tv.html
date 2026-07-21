@@ -7,124 +7,167 @@
 <title>Starting Shift — TV Monitor</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
-:root{--bg:#F0F4F8;--card:#FFF;--border:#E2E8F0;--text:#1E293B;--muted:#94A3B8;--gray:#64748B;--green:#00C853;--blue:#00B0FF;--red:#EF4444;--amber:#F59E0B;--shadow:0 1px 3px rgba(0,0,0,.06);--font:'Plus Jakarta Sans',sans-serif}
+:root{
+  --bg:#F0F4F8;--card:#FFF;--border:#E5E9F0;--text:#1E293B;--muted:#94A3B8;--gray:#64748B;
+  --green:#00C853;--blue:#00B0FF;--red:#EF4444;--amber:#F59E0B;--sidebar:#1E293B;
+  --shadow:0 1px 3px rgba(0,0,0,.06);--font:'Plus Jakarta Sans',sans-serif;
+}
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;overflow:hidden}
-body{background:var(--bg);font-family:var(--font);color:var(--text)}
+html,body{height:100%}
+body{background:var(--bg);font-family:var(--font);color:var(--text);overflow:hidden}
+.tv{display:grid;grid-template-rows:auto auto 1fr;height:100vh;padding:12px 16px;gap:10px}
 
-.tv{display:grid;grid-template-rows:auto auto 1fr;height:100vh;padding:14px 18px;gap:10px}
+/* ── TOP BAR (dark command-center) ── */
+.topbar{display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,#0F172A,#1E293B);border-radius:14px;padding:12px 22px;box-shadow:0 2px 10px rgba(15,23,42,.18)}
+.tb-left{display:flex;align-items:center;gap:14px}
+.tb-left img{height:40px;filter:drop-shadow(0 1px 3px rgba(0,0,0,.3))}
+.tb-title{font-size:1.35rem;font-weight:900;color:#F1F5F9;letter-spacing:.02em;line-height:1.1}
+.tb-sub{font-size:.72rem;color:#94A3B8;font-weight:500;margin-top:2px}
+.tb-right{display:flex;align-items:center;gap:20px}
+.tb-live{display:flex;align-items:center;gap:7px;font-size:.8rem;font-weight:800;color:var(--green);letter-spacing:.08em}
+.tb-dot{width:10px;height:10px;border-radius:50%;background:var(--green);animation:pulse 2s ease infinite}
+.tb-shift{padding:7px 16px;border-radius:22px;font-size:.9rem;font-weight:800;letter-spacing:.03em}
+.tb-shift.s1{background:rgba(0,200,83,.18);color:var(--green);border:1px solid rgba(0,200,83,.35)}
+.tb-shift.s2{background:rgba(0,176,255,.18);color:var(--blue);border:1px solid rgba(0,176,255,.35)}
+.tb-clock{font-size:1.8rem;font-weight:900;font-variant-numeric:tabular-nums;color:#F1F5F9;line-height:1}
+.tb-date{font-size:.72rem;color:#94A3B8;text-align:right;margin-top:2px}
 
-.topbar{display:flex;justify-content:space-between;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 18px;box-shadow:var(--shadow)}
-.tb-left{display:flex;align-items:center;gap:10px}
-.tb-left img{height:28px}
-.tb-title{font-size:1rem;font-weight:800;color:var(--text)}
-.tb-sub{font-size:.58rem;color:var(--muted);font-weight:500}
-.tb-right{display:flex;align-items:center;gap:14px}
-.tb-shift{padding:5px 12px;border-radius:20px;font-size:.68rem;font-weight:700}
-.tb-shift.s1{background:rgba(0,200,83,.1);color:var(--green);border:1px solid rgba(0,200,83,.2)}
-.tb-shift.s2{background:rgba(0,176,255,.1);color:var(--blue);border:1px solid rgba(0,176,255,.2)}
-.tb-clock{font-size:1.3rem;font-weight:900;font-variant-numeric:tabular-nums;color:var(--text)}
-.tb-date{font-size:.6rem;color:var(--muted);text-align:right}
-.tb-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2.5s ease infinite}
+/* ── KPI BAR ── */
+.kpi-row{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 16px;box-shadow:var(--shadow);position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:center}
+.kpi::before{content:'';position:absolute;top:0;left:0;bottom:0;width:4px}
+.kpi.g::before{background:var(--green)}.kpi.r::before{background:var(--red)}.kpi.y::before{background:var(--amber)}.kpi.b::before{background:var(--blue)}
+.kpi-label{font-size:.62rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em}
+.kpi-val{font-size:2.1rem;font-weight:900;line-height:1.05;margin-top:2px}
+.kpi-sub{font-size:.9rem;font-weight:700;opacity:.7;margin-top:1px}
+.kpi-bar{height:7px;border-radius:5px;background:var(--border);overflow:hidden;margin-top:6px}
+.kpi-bar-f{height:100%;border-radius:5px;transition:width .5s}
 
-.kpi-row{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
-.kpi{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 10px;text-align:center;box-shadow:var(--shadow);position:relative;overflow:hidden}
-.kpi::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;border-radius:0 0 10px 10px}
-.kpi.g::after{background:var(--green)}.kpi.r::after{background:var(--red)}.kpi.y::after{background:var(--amber)}.kpi.b::after{background:var(--blue)}
-.kpi-val{font-size:1.8rem;font-weight:900;line-height:1}
-.kpi-label{font-size:.55rem;font-weight:600;color:var(--muted);margin-top:3px;text-transform:uppercase;letter-spacing:.06em}
+/* ── MAIN ── */
+.main{display:grid;grid-template-columns:3fr 2fr;gap:10px;min-height:0;overflow:hidden}
 
-.main{display:grid;grid-template-columns:1fr 300px;gap:10px;min-height:0;overflow:hidden}
-
-/* Unit panel */
-.unit-panel{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px;overflow-y:auto;box-shadow:var(--shadow)}
-.unit-panel::-webkit-scrollbar{width:4px}.unit-panel::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
-.cat-header{font-size:.65rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:10px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+/* Left: unit grid */
+.unit-panel{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;overflow-y:auto;box-shadow:var(--shadow)}
+.unit-panel::-webkit-scrollbar{width:6px}.unit-panel::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.cat-header{font-size:.9rem;font-weight:800;color:var(--gray);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 8px;padding-bottom:5px;border-bottom:2px solid var(--border);display:flex;justify-content:space-between;align-items:center}
 .cat-header:first-child{margin-top:0}
-.cat-stats{font-weight:600;font-size:.58rem}
+.cat-stats{font-weight:700;font-size:.72rem;display:flex;gap:10px}
 .cat-stats .cs-g{color:var(--green)}.cat-stats .cs-r{color:var(--red)}.cat-stats .cs-y{color:var(--amber)}
-.unit-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(82px,1fr));gap:5px;margin-bottom:6px}
-.ug{border-radius:8px;padding:7px 5px;text-align:center;border:1px solid var(--border);transition:all .3s;background:var(--card)}
-.ug.ready{background:rgba(0,200,83,.04);border-color:rgba(0,200,83,.2)}
-.ug.bd{background:rgba(239,68,68,.05);border-color:rgba(239,68,68,.2);animation:bdPulse 3s ease infinite}
-.ug.mt{background:rgba(245,158,11,.05);border-color:rgba(245,158,11,.2)}
-.ug-id{font-size:.65rem;font-weight:800}
-.ug.ready .ug-id{color:var(--green)}.ug.bd .ug-id{color:var(--red)}.ug.mt .ug-id{color:var(--amber)}
-.ug-status{font-size:.45rem;font-weight:600;color:var(--muted);margin-top:1px}
-.ug-driver{font-size:.42rem;color:var(--gray);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.unit-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:6px;margin-bottom:8px}
+.ug{border-radius:9px;padding:9px 7px;border:1px solid var(--border);border-left-width:3px;transition:all .3s;background:var(--card);min-height:62px;display:flex;flex-direction:column;gap:2px}
+.ug.ready{background:rgba(0,200,83,.08);border-left-color:var(--green)}
+.ug.bd{background:rgba(239,68,68,.12);border-left-color:var(--red);animation:bdPulse 2s ease infinite}
+.ug.mt{background:rgba(245,158,11,.08);border-left-color:var(--amber)}
+.ug-top{display:flex;justify-content:space-between;align-items:center}
+.ug-id{font-size:.86rem;font-weight:800;color:var(--text)}
+.ug-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.ug-sub{font-size:.62rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ug.ready .ug-sub{color:var(--green)}.ug.bd .ug-sub{color:var(--red)}.ug.mt .ug-sub{color:var(--amber)}
 
-/* Right panel */
-.right-panel{display:flex;flex-direction:column;gap:8px;min-height:0;overflow:hidden}
-.info-panel{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;flex:1;overflow:hidden;display:flex;flex-direction:column;box-shadow:var(--shadow)}
-.panel-title{font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;display:flex;justify-content:space-between}
+/* Right: info panels */
+.right-panel{display:flex;flex-direction:column;gap:10px;min-height:0;overflow:hidden}
+.info-panel{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px 14px;flex:1;overflow:hidden;display:flex;flex-direction:column;box-shadow:var(--shadow)}
+.info-panel.bd-panel{background:rgba(239,68,68,.05);border-color:rgba(239,68,68,.2)}
+.panel-title{font-size:.85rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;margin-bottom:9px;display:flex;justify-content:space-between;align-items:center;color:var(--gray)}
+.panel-title .pt-badge{font-size:.72rem;font-weight:800;padding:2px 10px;border-radius:12px;background:var(--bg);color:var(--gray)}
+.panel-title.red-t{color:var(--red)}.panel-title.red-t .pt-badge{background:rgba(239,68,68,.1);color:var(--red)}
 .info-list{overflow-y:auto;flex:1}
-.info-list::-webkit-scrollbar{width:3px}.info-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.info-list::-webkit-scrollbar{width:5px}.info-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.empty-msg{text-align:center;padding:18px;color:var(--muted);font-size:.8rem}
 
-.driver-item{display:flex;align-items:center;justify-content:space-between;padding:6px 8px;border-bottom:1px solid var(--border)}
-.di-name{font-size:.7rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.di-meta{font-size:.5rem;color:var(--muted)}
-.di-badge{font-size:.48rem;font-weight:700;padding:3px 8px;border-radius:10px}
-.di-badge.rtw{background:rgba(0,200,83,.08);color:var(--green)}
+/* BD list */
+.bd-item{padding:9px 11px;border-left:3px solid var(--red);background:rgba(239,68,68,.06);border-radius:0 8px 8px 0;margin-bottom:7px}
+.bd-item.flash{animation:bdFlash 1s ease 3}
+.bd-unit{font-size:.86rem;font-weight:800;color:var(--red)}
+.bd-meta{font-size:.66rem;color:var(--gray);margin-top:2px}
 
-.bd-item{padding:8px 10px;border-left:3px solid var(--red);background:rgba(239,68,68,.04);border-radius:0 8px 8px 0;margin-bottom:5px}
-.bd-unit{font-size:.72rem;font-weight:800;color:var(--red)}
-.bd-notes{font-size:.58rem;color:var(--gray);margin-top:2px;line-height:1.4}
+/* Activity feed */
+.act-item{display:flex;align-items:center;gap:9px;padding:7px 4px;border-bottom:1px solid var(--border)}
+.act-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.act-time{font-size:.72rem;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;flex-shrink:0}
+.act-text{font-size:.8rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-.empty-msg{text-align:center;padding:16px;color:var(--muted);font-size:.72rem}
+/* Fleet availability */
+.fa-item{display:grid;grid-template-columns:110px 1fr auto;align-items:center;gap:10px;padding:6px 2px}
+.fa-name{font-size:.76rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fa-bar{height:10px;border-radius:6px;background:var(--border);overflow:hidden}
+.fa-bar-f{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--green),#38d97e);transition:width .5s}
+.fa-val{font-size:.74rem;font-weight:800;color:var(--gray);font-variant-numeric:tabular-nums}
 
-/* Notif */
-.notif-bar{position:fixed;top:0;left:0;right:0;z-index:999;display:flex;align-items:center;gap:12px;padding:12px 20px;background:linear-gradient(135deg,#d32f2f,#c62828);color:white;font-size:.88rem;font-weight:700;transform:translateY(-100%);opacity:0;transition:all .4s ease;cursor:pointer;box-shadow:0 4px 20px rgba(211,47,47,.4)}
-.notif-bar.show{transform:translateY(0);opacity:1}
-.notif-icon{font-size:1.2rem;animation:bdPulse 1s ease infinite}
-.notif-text{flex:1}.notif-close{opacity:.6}
+/* ── BD Notification (subtle flash overlay) ── */
+.bd-overlay{position:fixed;inset:0;z-index:998;background:rgba(239,68,68,.15);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s ease}
+.bd-overlay.show{opacity:1}
+.bd-overlay-card{background:var(--card);border:2px solid var(--red);border-radius:16px;padding:26px 40px;box-shadow:0 10px 40px rgba(239,68,68,.3);text-align:center;max-width:80%}
+.bd-overlay-card .bo-icon{font-size:2.4rem;color:var(--red)}
+.bd-overlay-card .bo-title{font-size:1rem;font-weight:800;color:var(--red);letter-spacing:.1em;margin-top:4px}
+.bd-overlay-card .bo-text{font-size:1.7rem;font-weight:900;color:var(--text);margin-top:6px}
 
-@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(0,200,83,.25)}50%{box-shadow:0 0 0 5px rgba(0,200,83,0)}}
-@keyframes bdPulse{0%,100%{opacity:1}50%{opacity:.65}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(0,200,83,.4)}50%{box-shadow:0 0 0 7px rgba(0,200,83,0)}}
+@keyframes bdPulse{0%,100%{border-left-color:var(--red);box-shadow:0 0 0 0 rgba(239,68,68,.0)}50%{box-shadow:-2px 0 0 0 rgba(239,68,68,.5)}}
+@keyframes bdFlash{0%,100%{background:rgba(239,68,68,.06)}50%{background:rgba(239,68,68,.28)}}
 </style>
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
-<style>.mi{font-family:'Material Icons Outlined';font-size:18px;vertical-align:middle;font-weight:normal;font-style:normal;line-height:1}.mi-sm{font-size:14px}</style>
+<style>.mi{font-family:'Material Icons Outlined';font-size:18px;vertical-align:middle;font-weight:normal;font-style:normal;line-height:1;text-transform:none;letter-spacing:normal;font-feature-settings:'liga'}.mi-sm{font-size:14px}</style>
 </head>
 <body>
 
-<div class="notif-bar" id="notifBar">
-  <span class="notif-icon"><span class="mi">emergency</span></span><span class="notif-text"></span><span class="notif-close"><span class="mi">close</span></span>
+<!-- BD flash overlay -->
+<div class="bd-overlay" id="bdOverlay">
+  <div class="bd-overlay-card">
+    <div class="bo-icon"><span class="mi" style="font-size:inherit">warning</span></div>
+    <div class="bo-title">BREAKDOWN</div>
+    <div class="bo-text" id="bdOverlayText">—</div>
+  </div>
 </div>
 
 <div class="tv">
-<div class="topbar">
-  <div class="tb-left">
-    <img src="logo-hte.png" alt="HTE"/>
-    <div><div class="tb-title">Starting Shift — Live Monitor</div><div class="tb-sub">PT Halmahera Transportasi Energi · Site HSM · Pit Cendana Extend</div></div>
-  </div>
-  <div class="tb-right">
-    <div class="tb-dot"></div>
-    <div id="shiftBadge" class="tb-shift s1">SHIFT 1</div>
-    <div style="text-align:right"><div class="tb-clock" id="clock">--:--:--</div><div class="tb-date" id="dateDisp">—</div></div>
-  </div>
-</div>
-
-<div class="kpi-row">
-  <div class="kpi g"><div class="kpi-val" style="color:var(--green)" id="kReady">—</div><div class="kpi-label">Unit Ready</div></div>
-  <div class="kpi r"><div class="kpi-val" style="color:var(--red)" id="kBD">—</div><div class="kpi-label">Breakdown</div></div>
-  <div class="kpi y"><div class="kpi-val" style="color:var(--amber)" id="kMT">—</div><div class="kpi-label">Maintenance</div></div>
-  <div class="kpi b"><div class="kpi-val" style="color:var(--blue)" id="kDrivers">—</div><div class="kpi-label">Driver Aktif</div></div>
-  <div class="kpi g"><div class="kpi-val" style="color:var(--green)" id="kReports">—</div><div class="kpi-label">Laporan</div></div>
-  <div class="kpi r"><div class="kpi-val" style="color:var(--red)" id="kBDOpen">—</div><div class="kpi-label">BD Open</div></div>
-</div>
-
-<div class="main">
-  <div class="unit-panel" id="unitPanel"></div>
-  <div class="right-panel">
-    <div class="info-panel" style="flex:1.2">
-      <div class="panel-title"><span><span class="mi">person</span> Driver Aktif</span><span id="driverCount">—</span></div>
-      <div class="info-list" id="driverList"><div class="empty-msg">Memuat...</div></div>
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="tb-left">
+      <img src="logo-hte.png" alt="HTE"/>
+      <div>
+        <div class="tb-title">STARTING SHIFT — PT HTE</div>
+        <div class="tb-sub">Site HSM · Mining Operations</div>
+      </div>
     </div>
-    <div class="info-panel">
-      <div class="panel-title"><span style="color:var(--red)"><span class="mi">error</span> Unit BD / MT</span><span id="bdCount">—</span></div>
-      <div class="info-list" id="bdList"><div class="empty-msg">Memuat...</div></div>
+    <div class="tb-right">
+      <div class="tb-live"><span class="tb-dot"></span> LIVE</div>
+      <div id="shiftBadge" class="tb-shift s1">SHIFT 1</div>
+      <div><div class="tb-clock" id="clock">--:--:--</div><div class="tb-date" id="dateDisp">—</div></div>
     </div>
   </div>
-</div>
+
+  <!-- KPI BAR -->
+  <div class="kpi-row">
+    <div class="kpi b"><div class="kpi-label">Operator</div><div class="kpi-val" style="color:var(--blue)" id="kOp">—</div><div class="kpi-sub" style="color:var(--blue)" id="kOpP">—</div></div>
+    <div class="kpi g"><div class="kpi-label">FTW Fit</div><div class="kpi-val" style="color:var(--green)" id="kFit">—</div><div class="kpi-sub" style="color:var(--green)" id="kFitP">—</div></div>
+    <div class="kpi b"><div class="kpi-label">P2H Pass</div><div class="kpi-val" style="color:var(--blue)" id="kP2h">—</div><div class="kpi-sub" style="color:var(--blue)" id="kP2hP">—</div></div>
+    <div class="kpi g"><div class="kpi-label">Ready</div><div class="kpi-val" style="color:var(--green)" id="kReady">—</div><div class="kpi-sub" style="color:var(--green)" id="kReadyP">—</div></div>
+    <div class="kpi r"><div class="kpi-label">Breakdown</div><div class="kpi-val" style="color:var(--red)" id="kBD">—</div><div class="kpi-sub" style="color:var(--red)" id="kBDsub">unit</div></div>
+    <div class="kpi y"><div class="kpi-label">Skor</div><div class="kpi-val" id="kScore">—</div><div class="kpi-bar"><div class="kpi-bar-f" id="kScoreBar" style="width:0%"></div></div></div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <!-- LEFT: unit grid -->
+    <div class="unit-panel" id="unitPanel"><div class="empty-msg">Memuat...</div></div>
+
+    <!-- RIGHT: info panels -->
+    <div class="right-panel">
+      <div class="info-panel bd-panel" style="flex:1.1">
+        <div class="panel-title red-t"><span><span class="mi mi-sm">warning</span> Breakdown Aktif</span><span class="pt-badge" id="bdCount">—</span></div>
+        <div class="info-list" id="bdList"><div class="empty-msg">Memuat...</div></div>
+      </div>
+      <div class="info-panel" style="flex:1.1">
+        <div class="panel-title"><span><span class="mi mi-sm">history</span> Aktivitas Terkini</span></div>
+        <div class="info-list" id="actList"><div class="empty-msg">Memuat...</div></div>
+      </div>
+      <div class="info-panel">
+        <div class="panel-title"><span><span class="mi mi-sm">local_shipping</span> Fleet Availability</span></div>
+        <div class="info-list" id="faList"><div class="empty-msg">Memuat...</div></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -133,115 +176,147 @@ const TOKEN=localStorage.getItem('fms_token');
 if(!TOKEN){const p=new URLSearchParams(location.search);if(p.get('token'))localStorage.setItem('fms_token',p.get('token'));else{alert('Login dulu sebagai CCR.');window.location.href='index.html';}}
 const AUTH={'Authorization':'Bearer '+(localStorage.getItem('fms_token'))};
 
-let allUnits=[],driverMap={},prevBDUnits=new Set(),prevBDOpen=0,firstLoad=true;
+let allUnits=[],driverMap={},allReports=[],bdReports=[],prevBDUnits=new Set(),firstLoad=true,flashUnits=new Set();
+
 function getRoleLabel(equipmentClass){const cls=(equipmentClass||'').toLowerCase();if(cls.includes('articulate'))return'Operator';if(cls.includes('dump truck'))return'Driver';if(cls.includes('light vehicle'))return'Driver';if(cls.includes('manhaul'))return'Driver';if(cls.includes('water truck'))return'Driver';return'Operator';}
+function curShift(){const h=new Date().getHours();return(h>=7&&h<19)?'1':'2';}
+function inCurShift(ts){if(!ts)return true;const h=new Date(ts).getHours();return curShift()==='1'?(h>=7&&h<19):(h>=19||h<7);}
+function timeAgo(ts){if(!ts)return'';const ms=Date.now()-new Date(ts).getTime();if(isNaN(ms))return'';const min=Math.floor(ms/60000);if(min<1)return'baru saja';if(min<60)return`${min} menit lalu`;const h=Math.floor(min/60);if(h<24)return`${h} jam lalu`;const d=Math.floor(h/24);return`${d} hari lalu`;}
+function hhmm(ts){return ts?new Date(ts).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}):'';}
 
-function playAlert(){try{const ctx=new(window.AudioContext||window.webkitAudioContext)();[0,0.25,0.5].forEach(t=>{const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=880;o.type='square';g.gain.setValueAtTime(0.15,ctx.currentTime+t);g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+t+0.2);o.start(ctx.currentTime+t);o.stop(ctx.currentTime+t+0.2);});}catch{}}
-function showNotif(msg){const el=document.getElementById('notifBar');el.querySelector('.notif-text').textContent=msg;el.classList.add('show');playAlert();setTimeout(()=>el.classList.remove('show'),12000);}
+// ── BD notification: beep (AudioContext) + subtle red flash overlay ──
+function beep(){try{const ctx=new(window.AudioContext||window.webkitAudioContext)();[0,0.26,0.52].forEach(t=>{const o=ctx.createOscillator(),g=ctx.createGain();o.type='square';o.frequency.value=800;o.connect(g);g.connect(ctx.destination);g.gain.setValueAtTime(0.18,ctx.currentTime+t);g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+t+0.2);o.start(ctx.currentTime+t);o.stop(ctx.currentTime+t+0.2);});}catch(e){}}
+let overlayTimer=null;
+function showBDAlert(text){const el=document.getElementById('bdOverlay');document.getElementById('bdOverlayText').textContent=text;el.classList.add('show');beep();clearTimeout(overlayTimer);overlayTimer=setTimeout(()=>el.classList.remove('show'),3000);}
 
-function updateClock(){const now=new Date();document.getElementById('clock').textContent=now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',second:'2-digit'});document.getElementById('dateDisp').textContent=now.toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'short',year:'numeric'});const h=now.getHours(),s1=h>=7&&h<19;const b=document.getElementById('shiftBadge');b.textContent=s1?'SHIFT 1 (07-19)':'SHIFT 2 (19-07)';b.className='tb-shift '+(s1?'s1':'s2');}
+// ── Clock ──
+function updateClock(){const now=new Date();document.getElementById('clock').textContent=now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+' WITA';document.getElementById('dateDisp').textContent=now.toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});const s1=curShift()==='1';const b=document.getElementById('shiftBadge');b.textContent=s1?'SHIFT 1':'SHIFT 2';b.className='tb-shift '+(s1?'s1':'s2');}
 setInterval(updateClock,1000);updateClock();
 
+// ── Data load ──
 async function loadAll(){
   try{
-    const [uR,dR,sR]=await Promise.all([
+    const today=new Date().toISOString().slice(0,10),sh=curShift();
+    const[uR,dR,sR,bR]=await Promise.all([
       fetch(`${API}/vehicles`,{headers:AUTH}),
       fetch(`${API}/vehicles/active-drivers`,{headers:AUTH}),
-      fetch(`${API}/supervisor/dashboard-stats`,{headers:AUTH}),
+      fetch(`${API}/supervisor/shift-reports?date=${today}&shift=${sh}&limit=500`,{headers:AUTH}),
+      fetch(`${API}/bd-reports?limit=20`,{headers:AUTH}),
     ]);
-    const uD=await uR.json(),dD=await dR.json(),sD=await sR.json();
-    if(uD.success)allUnits=uD.data;
-    if(dD.success){
-      driverMap={};
-      // Filter drivers by current shift
-      const h=new Date().getHours();
-      const isS1=h>=7&&h<19;
-      dD.data.filter(x=>{
-        if(!x.timestamp_filled)return true;
-        const dh=new Date(x.timestamp_filled).getHours();
-        return isS1?(dh>=7&&dh<19):(dh>=19||dh<7);
-      }).forEach(x=>{driverMap[x.unit_id]=x;});
-    }
-    renderKPI(sD.success?sD.data:null);
-    renderUnits();
-    renderDrivers(dD.success?dD.data:[]);
-    renderBD();
-    // Detect new BD
+    const uD=await uR.json(),dD=await dR.json(),sD=await sR.json(),bD=await bR.json();
+    if(uD.success)allUnits=uD.data||[];
+    if(dD.success){driverMap={};(dD.data||[]).filter(x=>inCurShift(x.timestamp_filled)).forEach(x=>{driverMap[x.unit_id]=x;});}
+    if(sD.success)allReports=(sD.data&&sD.data.reports)?sD.data.reports:[];
+    if(bD.success)bdReports=(bD.data&&bD.data.reports)?bD.data.reports:(Array.isArray(bD.data)?bD.data:[]);
+
+    // BD detection: unit yang baru jadi Breakdown → beep + flash
+    const cur=new Set(allUnits.filter(u=>u.status_unit==='Breakdown').map(u=>u.unit_id));
     if(!firstLoad){
-      const cur=new Set(allUnits.filter(u=>u.status_unit==='Breakdown').map(u=>u.unit_id));
       const nb=[...cur].filter(id=>!prevBDUnits.has(id));
-      if(nb.length>0)showNotif(`BREAKDOWN BARU: ${nb.join(', ')}`);
-      if(sD.success&&sD.data.bd_open>prevBDOpen&&prevBDOpen>0)showNotif(`BD Report baru masuk! Total: ${sD.data.bd_open}`);
-      prevBDUnits=cur;if(sD.success)prevBDOpen=sD.data.bd_open;
-    }else{prevBDUnits=new Set(allUnits.filter(u=>u.status_unit==='Breakdown').map(u=>u.unit_id));if(sD.success)prevBDOpen=sD.data.bd_open;firstLoad=false;}
+      if(nb.length){flashUnits=new Set(nb);const u=allUnits.find(x=>x.unit_id===nb[0]);const note=u&&u.notes?String(u.notes).split(' | ')[0]:'';showBDAlert(`${nb.join(', ')}${note?' — '+note:''}`);}
+      else flashUnits=new Set();
+    }
+    prevBDUnits=cur;firstLoad=false;
+
+    renderKPI();renderUnits();renderBDPanel();renderActivity();renderFleetAvail();
   }catch(e){console.error(e);}
 }
 
-function renderKPI(s){
-  const r=allUnits.filter(u=>u.status_unit==='Ready').length;
+function renderKPI(){
+  const t=allUnits.length||1;
+  const rdy=allUnits.filter(u=>u.status_unit==='Ready').length;
   const bd=allUnits.filter(u=>u.status_unit==='Breakdown').length;
-  const mt=allUnits.filter(u=>u.status_unit==='Maintenance').length;
-  document.getElementById('kReady').textContent=r;
-  document.getElementById('kBD').textContent=bd;
-  document.getElementById('kMT').textContent=mt;
-  document.getElementById('kDrivers').textContent=s?s.active_drivers:'—';
-  document.getElementById('kReports').textContent=s?s.total_reports:'—';
-  document.getElementById('kBDOpen').textContent=s?s.bd_open:'—';
+  const td=allReports.length;
+  const fc=allReports.filter(r=>r.fit_status==='Fit').length;
+  const pp=allReports.filter(r=>r.p2h_status==='Passed').length;
+  const tm=Math.max(td,t);
+  const aP=Math.round(td/tm*100),fP=td?Math.round(fc/td*100):0,pP=td?Math.round(pp/td*100):0,rP=Math.round(rdy/t*100);
+  const score=Math.round((aP+fP+pP+rP)/4);
+  const $=id=>document.getElementById(id);
+  $('kOp').textContent=td;$('kOpP').textContent=aP+'%';
+  $('kFit').textContent=fc;$('kFitP').textContent=fP+'%';
+  $('kP2h').textContent=pp;$('kP2hP').textContent=pP+'%';
+  $('kReady').textContent=`${rdy}/${t}`;$('kReadyP').textContent=rP+'%';
+  $('kBD').textContent=bd;
+  const sc=score>=90?'var(--green)':score>=70?'var(--amber)':'var(--red)';
+  $('kScore').textContent=score+'%';$('kScore').style.color=sc;$('kScoreBar').style.width=score+'%';$('kScoreBar').style.background=sc;
 }
 
 function renderUnits(){
   const panel=document.getElementById('unitPanel');
-  // Group by equipment_class
   const classes=[...new Set(allUnits.map(u=>u.equipment_class||'Other'))].sort();
+  if(!classes.length){panel.innerHTML='<div class="empty-msg">Tidak ada unit.</div>';return;}
   let html='';
   classes.forEach(cls=>{
     const units=allUnits.filter(u=>(u.equipment_class||'Other')===cls);
-    // Sort: BD first, MT, Ready
-    units.sort((a,b)=>{const o={'Breakdown':0,'Maintenance':1,'Ready':2};return(o[a.status_unit]||2)-(o[b.status_unit]||2);});
-    const rdy=units.filter(u=>u.status_unit==='Ready').length;
-    const bd=units.filter(u=>u.status_unit==='Breakdown').length;
-    const mt=units.filter(u=>u.status_unit==='Maintenance').length;
-
-    html+=`<div class="cat-header"><span>${cls} (${units.length})</span><span class="cat-stats"><span class="cs-g">${rdy}R</span> · <span class="cs-r">${bd}B</span> · <span class="cs-y">${mt}M</span></span></div>`;
-    html+=`<div class="unit-grid">`;
+    units.sort((a,b)=>{const o={'Breakdown':0,'Maintenance':1,'Ready':2};return(o[a.status_unit]??2)-(o[b.status_unit]??2)||String(a.unit_id).localeCompare(String(b.unit_id),undefined,{numeric:true});});
+    const rdy=units.filter(u=>u.status_unit==='Ready').length,bd=units.filter(u=>u.status_unit==='Breakdown').length,mt=units.filter(u=>u.status_unit==='Maintenance').length;
+    html+=`<div class="cat-header"><span>${cls} (${units.length})</span><span class="cat-stats"><span class="cs-g">${rdy} R</span><span class="cs-r">${bd} BD</span><span class="cs-y">${mt} MT</span></span></div><div class="unit-grid">`;
     units.forEach(u=>{
-      const st=u.status_unit==='Ready'?'ready':u.status_unit==='Breakdown'?'bd':'mt';
-      const stL=u.status_unit==='Ready'?'READY':u.status_unit==='Breakdown'?'BD':'MT';
-      const drv=driverMap[u.unit_id];
-      html+=`<div class="ug ${st}"><div class="ug-id">${u.unit_id}</div><div class="ug-status">${stL}</div>${drv?`<div class="ug-driver">${drv.driver_name||''}</div>`:''}</div>`;
+      const s=u.status_unit;const st=s==='Ready'?'ready':s==='Breakdown'?'bd':'mt';
+      const dot=s==='Ready'?'var(--green)':s==='Breakdown'?'var(--red)':'var(--amber)';
+      const drv=driverMap[u.unit_id];const note=u.notes?String(u.notes).split(' | ')[0]:'';
+      let sub='';
+      if(s==='Ready')sub=drv&&drv.driver_name?drv.driver_name:'Ready';
+      else if(s==='Breakdown')sub='BD: '+(note||'—');
+      else sub='MT: '+(note||'—');
+      html+=`<div class="ug ${st}" title="${u.unit_id}"><div class="ug-top"><span class="ug-id">${u.unit_id}</span><span class="ug-dot" style="background:${dot}"></span></div><div class="ug-sub">${sub}</div></div>`;
     });
-    html+=`</div>`;
+    html+='</div>';
   });
   panel.innerHTML=html;
 }
 
-function renderDrivers(drivers){
-  const list=document.getElementById('driverList');
-  document.getElementById('driverCount').textContent=drivers.length;
-  if(!drivers.length){list.innerHTML='<div class="empty-msg">Belum ada driver lapor.</div>';return;}
-  list.innerHTML=drivers.map(d=>{
-    const t=d.timestamp_filled?new Date(d.timestamp_filled).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}):'';
-    const role=getRoleLabel(d.equipment_class||(allUnits.find(u=>u.unit_id===d.unit_id)||{}).equipment_class);
-    return`<div class="driver-item"><div style="min-width:0;flex:1"><div class="di-name">${d.driver_name||d.driver_id}</div><div class="di-meta">${d.driver_id} · ${d.unit_id} · ${role} · ${t}</div></div><div class="di-badge rtw">RTW</div></div>`;
-  }).join('');
-}
-
-function renderBD(){
-  const bdU=allUnits.filter(u=>u.status_unit!=='Ready');
+function renderBDPanel(){
   const list=document.getElementById('bdList');
-  document.getElementById('bdCount').textContent=bdU.length;
+  // Prefer bd-reports (aktif) — punya reporter + waktu; fallback ke unit BD
+  const active=(Array.isArray(bdReports)?bdReports:[]).filter(r=>r.status!=='Resolved');
+  document.getElementById('bdCount').textContent=(active.length||allUnits.filter(u=>u.status_unit==='Breakdown').length)+' unit';
+  if(active.length){
+    list.innerHTML=active.map(r=>{const desc=r.description||r.component||'Breakdown';const rep=r.driver_name||r.driver_id||'—';const ago=timeAgo(r.created_at);const fl=flashUnits.has(r.unit_id)?' flash':'';
+      return`<div class="bd-item${fl}"><div class="bd-unit">${r.unit_id} — ${desc}</div><div class="bd-meta">Dilaporkan: ${rep}${ago?' · '+ago:''}</div></div>`;}).join('');
+    return;
+  }
+  const bdU=allUnits.filter(u=>u.status_unit==='Breakdown'||u.status_unit==='Maintenance');
   if(!bdU.length){list.innerHTML='<div class="empty-msg" style="color:var(--green)"><span class="mi">check_circle</span> Semua unit Ready</div>';return;}
-  list.innerHTML=bdU.map(u=>{
-    const c=u.status_unit==='Breakdown'?'var(--red)':'var(--amber)';
-    return`<div class="bd-item" style="border-left-color:${c}"><div class="bd-unit" style="color:${c}">${u.unit_id} — ${u.status_unit}</div><div class="bd-notes">${u.notes||'Tidak ada keterangan'}</div></div>`;
-  }).join('');
+  list.innerHTML=bdU.map(u=>{const c=u.status_unit==='Breakdown'?'var(--red)':'var(--amber)';const note=u.notes?String(u.notes).split(' | ')[0]:'Tidak ada keterangan';const fl=flashUnits.has(u.unit_id)?' flash':'';
+    return`<div class="bd-item${fl}" style="border-left-color:${c};background:${u.status_unit==='Breakdown'?'rgba(239,68,68,.06)':'rgba(245,158,11,.06)'}"><div class="bd-unit" style="color:${c}">${u.unit_id} — ${u.status_unit}</div><div class="bd-meta">${note}</div></div>`;}).join('');
 }
 
+function renderActivity(){
+  const list=document.getElementById('actList');
+  const ev=[];
+  allReports.forEach(r=>{const ts=r.timestamp_filled;if(!ts)return;
+    if(r.overall_status==='Driver Unfit')ev.push({ts,c:'var(--amber)',t:`${r.driver_name||r.driver_id||r.unit_id} UNFIT`});
+    else if(r.p2h_status&&r.p2h_status!=='Passed')ev.push({ts,c:'var(--red)',t:`${r.unit_id} P2H temuan`});
+    else if(r.p2h_status==='Passed')ev.push({ts,c:'var(--green)',t:`${r.unit_id} P2H Lulus`});
+    else ev.push({ts,c:'var(--blue)',t:`${r.unit_id} lapor RTW`});
+  });
+  (Array.isArray(bdReports)?bdReports:[]).forEach(r=>{if(r.created_at)ev.push({ts:r.created_at,c:'var(--red)',t:`${r.unit_id} BD: ${r.component||r.description||'Breakdown'}`});});
+  ev.sort((a,b)=>new Date(b.ts)-new Date(a.ts));
+  const top=ev.slice(0,10);
+  if(!top.length){list.innerHTML='<div class="empty-msg">Belum ada aktivitas.</div>';return;}
+  list.innerHTML=top.map(e=>`<div class="act-item"><span class="act-dot" style="background:${e.c}"></span><span class="act-time">${hhmm(e.ts)}</span><span class="act-text">${e.t}</span></div>`).join('');
+}
+
+function renderFleetAvail(){
+  const list=document.getElementById('faList');
+  const classes=[...new Set(allUnits.map(u=>u.equipment_class||'Other'))];
+  const rows=classes.map(c=>{const u=allUnits.filter(x=>(x.equipment_class||'Other')===c);const r=u.filter(x=>x.status_unit==='Ready').length;return{c,r,t:u.length,pct:u.length?r/u.length*100:0};});
+  rows.sort((a,b)=>b.t-a.t);
+  if(!rows.length){list.innerHTML='<div class="empty-msg">Tidak ada data.</div>';return;}
+  list.innerHTML=rows.map(x=>`<div class="fa-item"><span class="fa-name" title="${x.c}">${x.c}</span><div class="fa-bar"><div class="fa-bar-f" style="width:${x.pct}%"></div></div><span class="fa-val">${x.r}/${x.t}</span></div>`).join('');
+}
+
+// ── Auto refresh (pause saat hidden) ──
 loadAll();
 let refreshTimer=setInterval(loadAll,15000);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)clearInterval(refreshTimer);else{loadAll();refreshTimer=setInterval(loadAll,15000);}});
-document.addEventListener('dblclick',()=>{if(!document.fullscreenElement)document.documentElement.requestFullscreen();else document.exitFullscreen();});
-document.getElementById('notifBar').addEventListener('click',function(){this.classList.remove('show');});
+
+// ── Fullscreen & keyboard ──
+function toggleFullscreen(){if(!document.fullscreenElement)document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen();else document.exitFullscreen&&document.exitFullscreen();}
+document.addEventListener('dblclick',toggleFullscreen);
+document.addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(k==='f')toggleFullscreen();else if(k==='r')loadAll();});
 </script>
 </body>
 </html>
