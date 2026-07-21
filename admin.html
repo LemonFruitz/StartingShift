@@ -366,12 +366,13 @@ body{background:var(--bg);font-family:var(--font);color:var(--text);display:flex
     <div id="hmPane2" class="panel" style="display:none;padding:24px;text-align:center">
       <div style="border:2px dashed var(--border);border-radius:12px;padding:40px 20px;background:var(--bg)">
         <div style="font-size:2rem;margin-bottom:8px"><span class="mi" style="font-size:inherit">upload_file</span></div>
-        <div style="font-size:.88rem;font-weight:700;margin-bottom:4px">Upload File CSV HM</div>
-        <div style="font-size:.68rem;color:var(--muted);margin-bottom:6px">Format: unit_id, hm_akhir (kolom A & B, mulai baris 2)</div>
-        <div style="font-size:.68rem;color:var(--gray);margin-bottom:16px;font-weight:600">Download template → isi data → upload kembali</div>
+        <div style="font-size:.88rem;font-weight:700;margin-bottom:4px">Upload File HM</div>
+        <div style="font-size:.68rem;color:var(--gray);margin-bottom:4px;font-weight:700">1. Download Template → 2. Isi kolom hm_akhir untuk unit yang beroperasi → 3. Upload kembali</div>
+        <div style="font-size:.66rem;color:var(--muted);margin-bottom:3px">HDTS = Shacman&nbsp; | &nbsp;HDTD = Dongfeng&nbsp; | &nbsp;HAVV = Volvo ADT&nbsp; | &nbsp;HEXK = Komatsu Excavator</div>
+        <div style="font-size:.66rem;color:var(--muted);margin-bottom:16px">Unit support (LV, Manhaul, Crane) tidak termasuk dalam template</div>
         <input type="file" id="hmFile" accept=".csv" onchange="processHmFile()" style="display:none"/>
         <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
-          <button onclick="downloadHmTemplate()" style="padding:10px 18px;background:var(--card);color:var(--gray);border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:5px"><span class="mi mi-sm">download</span> Download Template CSV</button>
+          <button onclick="downloadHmTemplate()" style="padding:10px 18px;background:var(--card);color:var(--gray);border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:5px"><span class="mi mi-sm">download</span> Download Template</button>
           <button onclick="document.getElementById('hmFile').click()" style="padding:10px 20px;background:linear-gradient(135deg,var(--green),var(--blue));color:#FFF;border:none;border-radius:8px;font-family:var(--font);font-weight:700;cursor:pointer">Pilih File</button>
         </div>
         <div id="hmFileStatus" style="margin-top:12px;font-size:.72rem"></div>
@@ -699,7 +700,45 @@ function downloadHmExcel(){
   downloadExcel(data,headers,`HM_Report_${new Date().toISOString().slice(0,10)}`);
 }
 // Download template upload HM (.xlsx: header + 2 contoh row)
-function downloadHmTemplate(){downloadExcel([['HDT001',4230],['HAVV003',1250]],['unit_id','hm_akhir'],'Template_HM_Upload');}
+// Template HM: 2 sheet (Template HM ber-kategori + Referensi Unit). Hanya unit yg butuh HM.
+function hmTemplateOrder(unitId){const uid=String(unitId||'').toUpperCase();
+  if(uid.startsWith('HEXK')||uid.startsWith('CAT'))return 1; // Excavator
+  if(uid.startsWith('HAVV'))return 2; // ADT
+  if(uid.startsWith('HBDK'))return 3; // Bulldozer
+  if(uid.startsWith('HCDK'))return 4; // Compactor
+  if(uid.startsWith('HGDK'))return 5; // Motor Grader
+  if(uid.startsWith('HWLC'))return 6; // Wheel Loader
+  if(uid.startsWith('HWT'))return 7;  // Water Truck
+  if(uid.startsWith('HDTS'))return 8; // Dump Truck Shacman
+  if(uid.startsWith('HDTD'))return 9; // Dump Truck Dongfeng
+  return 10; // lainnya (support unit) → di-skip
+}
+function downloadHmTemplate(){
+  if(typeof XLSX==='undefined'){alert('Library Excel belum termuat, coba lagi sebentar.');return;}
+  const catLabel={1:'EXCAVATOR',2:'ADT (VOLVO)',3:'BULLDOZER (KOMATSU)',4:'COMPACTOR (BOMAG)',5:'MOTOR GRADER',6:'WHEEL LOADER',7:'WATER TRUCK',8:'DUMP TRUCK SHACMAN',9:'DUMP TRUCK DONGFENG'};
+  const units=(allUnits||[]).slice();
+  // Sheet 1: Template HM (skip support unit / order 10), group by kategori
+  const rows=[['unit_id','hm_akhir']];
+  for(let ord=1;ord<=9;ord++){
+    const grp=units.filter(u=>hmTemplateOrder(u.unit_id)===ord).sort((a,b)=>String(a.unit_id).localeCompare(String(b.unit_id),undefined,{numeric:true}));
+    if(!grp.length)continue;
+    rows.push([`--- ${catLabel[ord]} ---`,'']);
+    grp.forEach(u=>rows.push([u.unit_id,'']));
+  }
+  if(rows.length===1){alert('Tidak ada unit HM pada data (allUnits kosong). Muat ulang halaman.');return;}
+  const ws1=XLSX.utils.aoa_to_sheet(rows);
+  ws1['!cols']=[{wch:Math.max(22,...rows.map(r=>String(r[0]).length))+2},{wch:12}];
+  // Sheet 2: Referensi Unit (semua unit)
+  const ref=[['unit_id','equipment_class','vehicle_type','status_unit'],
+    ...units.slice().sort((a,b)=>(hmTemplateOrder(a.unit_id)-hmTemplateOrder(b.unit_id))||String(a.unit_id).localeCompare(String(b.unit_id),undefined,{numeric:true}))
+      .map(u=>[u.unit_id||'',u.equipment_class||'',u.vehicle_type||'',u.status_unit||''])];
+  const ws2=XLSX.utils.aoa_to_sheet(ref);
+  ws2['!cols']=ref[0].map((h,i)=>({wch:Math.max(String(h).length,...ref.map(r=>String(r[i]!=null?r[i]:'').length))+2}));
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws1,'Template HM');
+  XLSX.utils.book_append_sheet(wb,ws2,'Referensi Unit');
+  XLSX.writeFile(wb,'Template_HM_Upload.xlsx');
+}
 function hmRowInput(rid,awal){
   const el=$('hmi-'+rid),d=$('hmd-'+rid);if(!el)return;
   if(el.value===''){el.classList.remove('err');if(d){d.textContent='—';d.style.color='var(--muted)';}return;}
