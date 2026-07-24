@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Checker Rumah Sample</title>
+<link rel="manifest" href="manifest.json"/>
+<link rel="stylesheet" href="style.css"/>
+<style>
+.ck-wrap{max-width:480px;margin:0 auto;padding:14px}
+.ck-topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 0 16px}
+.ck-title{font-size:1rem;font-weight:800}.ck-sub{font-size:.62rem;color:var(--text-muted)}
+.ck-back{background:none;border:none;font-family:var(--font);font-size:.75rem;color:var(--text-muted);cursor:pointer;padding:0}
+.ck-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:12px}
+.ck-card-header{padding:12px 16px;background:linear-gradient(135deg,var(--success),var(--primary));color:#FFF;font-size:.88rem;font-weight:700}
+.ck-card-body{padding:16px}
+.ck-field{margin-bottom:12px}
+.ck-field label{display:block;font-size:.65rem;font-weight:600;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em}
+.ck-field input,.ck-field textarea{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:.88rem;font-family:var(--font);background:var(--input-bg);color:var(--text);outline:none;transition:border .15s}
+.ck-field input:focus,.ck-field textarea:focus{border-color:var(--success)}
+.ck-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ck-btn{width:100%;padding:13px;background:linear-gradient(135deg,var(--success),var(--primary));color:#FFF;border:none;border-radius:var(--radius-sm);font-family:var(--font);font-size:.9rem;font-weight:700;cursor:pointer;min-height:48px;margin-top:4px}
+.ck-btn:disabled{opacity:.5;cursor:not-allowed}
+.ck-status{padding:10px 14px;border-radius:var(--radius-sm);font-size:.78rem;margin-bottom:10px;display:none}
+.ck-status.ok{background:rgba(0,200,83,.08);color:var(--success);display:block}
+.ck-status.err{background:rgba(239,68,68,.08);color:#EF4444;display:block}
+/* History list */
+.hist-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);font-size:.78rem}
+.hist-unit{font-weight:700}.hist-meta{color:var(--text-muted);font-size:.65rem;margin-top:2px}
+.hist-badge{padding:3px 8px;border-radius:5px;font-size:.6rem;font-weight:700}
+.badge-pending{background:rgba(245,158,11,.08);color:#F59E0B}
+.badge-done{background:rgba(0,200,83,.08);color:var(--success)}
+.shift-badge{padding:4px 10px;border-radius:6px;font-size:.68rem;font-weight:700}
+.s1{background:rgba(0,200,83,.08);color:var(--success)}.s2{background:rgba(0,176,255,.08);color:var(--primary)}
+</style>
+</head>
+<body style="background:var(--bg)">
+<div class="ck-wrap">
+  <div class="ck-topbar">
+    <div>
+      <div class="ck-title">🏠 Checker Rumah Sample</div>
+      <div class="ck-sub" id="topbarInfo">—</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <span class="shift-badge" id="shiftBadge">Shift 1</span>
+      <button class="ck-back" onclick="window.location.href='checker.html'">← Kembali</button>
+    </div>
+  </div>
+
+  <!-- FORM INPUT RITASI -->
+  <div class="ck-card">
+    <div class="ck-card-header">+ Input Ritasi DT</div>
+    <div class="ck-card-body">
+      <div id="formStatus" class="ck-status"></div>
+      <div class="ck-field">
+        <label>No Unit *</label>
+        <input type="text" id="fUnit" placeholder="Contoh: HDTS001" autocomplete="off" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"/>
+      </div>
+      <div class="ck-grid">
+        <div class="ck-field">
+          <label>Jam Sample</label>
+          <input type="time" id="fJam"/>
+        </div>
+        <div class="ck-field">
+          <label>Shift</label>
+          <select id="fShift" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font);font-size:.88rem;background:var(--input-bg)">
+            <option value="1">Shift 1 (07:00-19:00)</option>
+            <option value="2">Shift 2 (19:00-07:00)</option>
+          </select>
+        </div>
+      </div>
+      <div class="ck-field">
+        <label>Loading Area *</label>
+        <input type="text" id="fLoading" placeholder="Contoh: Pit A Block 3"/>
+      </div>
+      <div class="ck-field">
+        <label>Dumping Area *</label>
+        <input type="text" id="fDumping" placeholder="Contoh: ROM Stockpile"/>
+      </div>
+      <div class="ck-field">
+        <label>Catatan (opsional)</label>
+        <input type="text" id="fCatatan" placeholder="Catatan tambahan jika ada"/>
+      </div>
+      <button class="ck-btn" id="submitBtn" onclick="submitRitasi()">✓ Simpan Ritasi</button>
+    </div>
+  </div>
+
+  <!-- RIWAYAT HARI INI -->
+  <div class="ck-card">
+    <div class="ck-card-header">📋 Ritasi Hari Ini (<span id="histCount">0</span>)</div>
+    <div class="ck-card-body" id="histList">
+      <div style="text-align:center;color:var(--text-muted);font-size:.78rem;padding:16px 0">Belum ada ritasi hari ini.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = 'https://starting-hte.my.id/api/v1';
+const TOKEN = localStorage.getItem('fms_token');
+const SESSION = JSON.parse(localStorage.getItem('fms_session') || 'null');
+if (!SESSION || !TOKEN || SESSION.role !== 'Checker') window.location.href = 'index.html';
+
+let ritasiList = [];
+
+window.addEventListener('DOMContentLoaded', () => {
+  // Set info topbar
+  document.getElementById('topbarInfo').textContent = SESSION.name + ' · ' + new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' });
+
+  // Auto-detect shift
+  const h = new Date().getHours();
+  const shift = (h >= 7 && h < 19) ? '1' : '2';
+  document.getElementById('fShift').value = shift;
+  const badge = document.getElementById('shiftBadge');
+  badge.textContent = shift === '1' ? 'Shift 1' : 'Shift 2';
+  badge.className = 'shift-badge ' + (shift === '1' ? 's1' : 's2');
+
+  // Auto-set jam sekarang
+  const now = new Date();
+  document.getElementById('fJam').value = now.toTimeString().slice(0, 5);
+
+  loadRitasi();
+});
+
+async function loadRitasi() {
+  try {
+    const today = new Date().toISOString().slice(0, 10);
+    const r = await fetch(`${API}/ritasi?tanggal=${today}&limit=50`, {
+      headers: { 'Authorization': 'Bearer ' + TOKEN }
+    });
+    const d = await r.json();
+    if (d.success) {
+      // Filter hanya yang diinput oleh checker ini
+      ritasiList = d.data.filter(x => x.checker_rs === SESSION.id);
+      renderHist();
+    }
+  } catch (e) { console.error(e); }
+}
+
+function renderHist() {
+  const c = document.getElementById('histList');
+  document.getElementById('histCount').textContent = ritasiList.length;
+  if (!ritasiList.length) {
+    c.innerHTML = '<div style="text-align:center;color:var(--text-muted);font-size:.78rem;padding:16px 0">Belum ada ritasi hari ini.</div>';
+    return;
+  }
+  c.innerHTML = ritasiList.map(r => {
+    const jam = r.jam_sample ? new Date(r.jam_sample).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '—';
+    const isDone = r.status === 'Completed';
+    return `<div class="hist-item">
+      <div>
+        <div class="hist-unit">${r.unit_id}</div>
+        <div class="hist-meta">${jam} · ${r.loading_area || '—'} → ${r.dumping_area || '—'}</div>
+        ${r.tonase ? `<div class="hist-meta" style="color:var(--success);font-weight:600">${r.tonase} ton</div>` : ''}
+      </div>
+      <span class="hist-badge ${isDone ? 'badge-done' : 'badge-pending'}">${isDone ? '✓ Done' : 'Pending'}</span>
+    </div>`;
+  }).join('');
+}
+
+async function submitRitasi() {
+  const unit = document.getElementById('fUnit').value.trim();
+  const jam = document.getElementById('fJam').value;
+  const loading = document.getElementById('fLoading').value.trim();
+  const dumping = document.getElementById('fDumping').value.trim();
+  const catatan = document.getElementById('fCatatan').value.trim();
+  const shift = document.getElementById('fShift').value;
+  const st = document.getElementById('formStatus');
+  const btn = document.getElementById('submitBtn');
+
+  if (!unit) { showStatus('Unit wajib diisi.', 'err'); return; }
+  if (!loading) { showStatus('Loading Area wajib diisi.', 'err'); return; }
+  if (!dumping) { showStatus('Dumping Area wajib diisi.', 'err'); return; }
+
+  btn.disabled = true; btn.textContent = 'Menyimpan...';
+
+  // Build jam_sample timestamp
+  const today = new Date().toISOString().slice(0, 10);
+  const jam_sample = jam ? `${today}T${jam}:00+08:00` : new Date().toISOString();
+
+  try {
+    const r = await fetch(`${API}/ritasi`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + TOKEN },
+      body: JSON.stringify({ unit_id: unit, jam_sample, loading_area: loading, dumping_area: dumping, catatan, shift, checker_rs: SESSION.id })
+    });
+    const d = await r.json();
+
+    if (d.success) {
+      showStatus(`✅ Ritasi ${unit} berhasil disimpan!`, 'ok');
+      // Reset form
+      document.getElementById('fUnit').value = '';
+      document.getElementById('fLoading').value = '';
+      document.getElementById('fDumping').value = '';
+      document.getElementById('fCatatan').value = '';
+      // Update jam ke sekarang
+      document.getElementById('fJam').value = new Date().toTimeString().slice(0, 5);
+      loadRitasi();
+    } else {
+      showStatus(d.message || 'Gagal menyimpan.', 'err');
+    }
+  } catch (e) {
+    showStatus('Koneksi gagal. Coba lagi.', 'err');
+  }
+
+  btn.disabled = false; btn.textContent = '✓ Simpan Ritasi';
+}
+
+function showStatus(msg, type) {
+  const el = document.getElementById('formStatus');
+  el.textContent = msg;
+  el.className = 'ck-status ' + type;
+  setTimeout(() => { el.style.display = 'none'; el.className = 'ck-status'; }, 4000);
+}
+</script>
+</body>
+</html>

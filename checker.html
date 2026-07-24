@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Starting Shift — Checker</title>
+<link rel="manifest" href="manifest.json"/>
+<link rel="stylesheet" href="style.css"/>
+<style>
+.ck-wrap{max-width:420px;margin:0 auto;padding:20px}
+.ck-header{text-align:center;padding:32px 0 24px}
+.ck-logo{width:56px;height:56px;margin:0 auto 12px;display:block}
+.ck-title{font-size:1.4rem;font-weight:800;color:var(--text)}
+.ck-sub{font-size:.78rem;color:var(--text-muted);margin-top:4px}
+.ck-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:16px}
+.ck-card-header{padding:14px 20px;background:linear-gradient(135deg,var(--success),var(--primary));color:#FFF}
+.ck-card-title{font-size:.95rem;font-weight:700}
+.ck-card-body{padding:20px}
+.ck-user-info{background:var(--input-bg);border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:16px}
+.ck-user-name{font-weight:700;color:var(--text);font-size:.95rem}
+.ck-user-role{font-size:.68rem;color:var(--text-muted);margin-top:2px}
+.role-grid{display:flex;flex-direction:column;gap:10px}
+.role-card{padding:18px 20px;border:2px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:14px;background:var(--card)}
+.role-card:hover{border-color:var(--success);background:rgba(0,200,83,.04);transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.08)}
+.role-card:active{transform:translateY(0)}
+.role-icon{width:48px;height:48px;border-radius:12px;display:grid;place-items:center;font-size:1.4rem;flex-shrink:0}
+.role-name{font-size:.95rem;font-weight:700;color:var(--text)}
+.role-desc{font-size:.68rem;color:var(--text-muted);margin-top:3px}
+.logout-btn{width:100%;padding:11px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:none;font-family:var(--font);font-size:.82rem;color:var(--text-muted);cursor:pointer;margin-top:8px;transition:all .15s}
+.logout-btn:hover{border-color:var(--danger,#EF4444);color:var(--danger,#EF4444)}
+</style>
+</head>
+<body style="background:var(--bg);min-height:100vh">
+<div class="ck-wrap">
+  <div class="ck-header">
+    <img src="logo-hte.png" alt="HTE" class="ck-logo"/>
+    <div class="ck-title">Starting Shift</div>
+    <div class="ck-sub">Portal Checker · PT Halmahera Transportasi Energi</div>
+  </div>
+
+  <div class="ck-card">
+    <div class="ck-card-header"><div class="ck-card-title">📋 Pilih Lokasi Kerja</div></div>
+    <div class="ck-card-body">
+
+      <!-- Info user yang login -->
+      <div class="ck-user-info">
+        <div class="ck-user-name" id="userName">—</div>
+        <div class="ck-user-role">Checker · Selamat datang</div>
+      </div>
+
+      <!-- Pilihan peran -->
+      <div class="role-grid">
+        <div class="role-card" onclick="goToRS()">
+          <div class="role-icon" style="background:rgba(0,200,83,.1)">🏠</div>
+          <div>
+            <div class="role-name">Checker Rumah Sample</div>
+            <div class="role-desc">Input ritasi DT per jam — loading & dumping area</div>
+          </div>
+          <span style="margin-left:auto;color:var(--text-muted);font-size:1rem">›</span>
+        </div>
+
+        <div class="role-card" onclick="goToTB()">
+          <div class="role-icon" style="background:rgba(0,176,255,.1)">⚖️</div>
+          <div>
+            <div class="role-name">Checker Timbangan</div>
+            <div class="role-desc">Input tonase untuk DT yang sudah diinput RS</div>
+          </div>
+          <span style="margin-left:auto;color:var(--text-muted);font-size:1rem">›</span>
+        </div>
+      </div>
+
+      <button class="logout-btn" onclick="doLogout()">🚪 Logout</button>
+    </div>
+  </div>
+
+  <div style="text-align:center;font-size:.65rem;color:var(--text-muted)">
+    v1.0 · Starting Shift Web App PT HTE
+  </div>
+</div>
+
+<script>
+const SESSION = JSON.parse(localStorage.getItem('fms_session') || 'null');
+
+// Kalau bukan Checker → redirect ke login
+window.addEventListener('DOMContentLoaded', () => {
+  if (!SESSION || SESSION.role !== 'Checker') {
+    window.location.href = 'index.html';
+    return;
+  }
+  document.getElementById('userName').textContent = SESSION.name || SESSION.id;
+});
+
+function goToRS() { window.location.href = 'checker-rs.html'; }
+function goToTB() { window.location.href = 'checker-tb.html'; }
+
+function doLogout() {
+  localStorage.removeItem('fms_token');
+  localStorage.removeItem('fms_session');
+  window.location.href = 'index.html';
+}
+</script>
+</body>
+</html>
