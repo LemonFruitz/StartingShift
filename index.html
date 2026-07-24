@@ -223,6 +223,7 @@ window.addEventListener('DOMContentLoaded',async()=>{
   if(token&&sess){try{const r=await fetch(`${API}/auth/validate`,{headers:{'Authorization':'Bearer '+token}});
   if(r.ok){if(sess.role==='Supervisor'||sess.role==='Foreman'){window.location.href='supervisor.html';return;}
   if(sess.role==='Admin'){window.location.href='admin.html';return;}
+  if(sess.role==='Checker'){window.location.href='checker.html';return;}
       if(sess.role==='PJO'){window.location.href='pjo.html';return;}
   showDashboard(sess);loadUnits(sess.equipment_class||'ALL');if(sess.unit)restoreUnit(sess);return;}}catch{}
   localStorage.removeItem(TOKEN_KEY);localStorage.removeItem(SESSION_KEY);}
@@ -240,6 +241,7 @@ async function doLogin(){hideAlert();
   localStorage.setItem(SESSION_KEY,JSON.stringify(session));setLoading(false);
   if(role==='Supervisor'||role==='Foreman'){window.location.href='supervisor.html';return;}
   if(role==='Admin'){window.location.href='admin.html';return;}
+  if(role==='Checker'){window.location.href='checker.html';return;}
     if(role==='PJO'){window.location.href='pjo.html';return;}
   showDashboard(session);loadUnits(session.equipment_class);
   }catch{setLoading(false);showAlert('Server sedang bangun (~30 dtk) — coba lagi.');}
