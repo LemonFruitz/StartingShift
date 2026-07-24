@@ -511,7 +511,84 @@ body{background:var(--bg);font-family:var(--font);color:var(--text);display:flex
       <div id="blListBody" style="overflow-y:auto"></div>
     </div>
   </div>
-
+  
+  <!-- VIEW: RITASI HAULING -->
+  <div class="content view" id="v-ritasi" style="flex-direction:column;gap:14px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div class="panel-title">🚛 Laporan Ritasi Hauling</div>
+      <button onclick="downloadRitasiExcel()" style="padding:8px 16px;background:linear-gradient(135deg,var(--green),var(--blue));color:#FFF;border:none;border-radius:8px;font-family:var(--font);font-size:.75rem;font-weight:700;cursor:pointer">
+        <span class="mi mi-sm">download</span> Download Excel
+      </button>
+    </div>
+ 
+    <!-- Summary Cards -->
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px">
+      <div class="kpi" style="padding:12px"><div class="kpi-val" style="font-size:1.3rem" id="rTot">—</div><div class="kpi-sub">Total Ritasi</div></div>
+      <div class="kpi" style="padding:12px"><div class="kpi-val" style="font-size:1.3rem;color:var(--amber)" id="rPend">—</div><div class="kpi-sub">Pending Timbangan</div></div>
+      <div class="kpi" style="padding:12px"><div class="kpi-val" style="font-size:1.3rem;color:var(--green)" id="rDone">—</div><div class="kpi-sub">Completed</div></div>
+      <div class="kpi" style="padding:12px"><div class="kpi-val" style="font-size:1.3rem;color:var(--blue)" id="rTonase">—</div><div class="kpi-sub">Total Tonase (ton)</div></div>
+      <div class="kpi" style="padding:12px"><div class="kpi-val" style="font-size:1.3rem;color:var(--info)" id="rUnit">—</div><div class="kpi-sub">Unit Aktif</div></div>
+    </div>
+ 
+    <!-- Filter -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 16px">
+      <div>
+        <label style="font-size:.6rem;font-weight:600;color:var(--gray);display:block;margin-bottom:3px">TANGGAL</label>
+        <input type="date" id="rFDate" class="pfsel" onchange="loadRitasiCCR()" style="padding:6px 10px"/>
+      </div>
+      <div>
+        <label style="font-size:.6rem;font-weight:600;color:var(--gray);display:block;margin-bottom:3px">SHIFT</label>
+        <select id="rFShift" class="pfsel" onchange="loadRitasiCCR()">
+          <option value="">Semua</option>
+          <option value="1">Shift 1</option>
+          <option value="2">Shift 2</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:.6rem;font-weight:600;color:var(--gray);display:block;margin-bottom:3px">STATUS</label>
+        <select id="rFStatus" class="pfsel" onchange="renderRitasiTable()">
+          <option value="">Semua</option>
+          <option value="Pending Timbangan">Pending</option>
+          <option value="Completed">Completed</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:.6rem;font-weight:600;color:var(--gray);display:block;margin-bottom:3px">CARI UNIT</label>
+        <input type="text" id="rFUnit" class="pfsel" placeholder="No unit..." oninput="renderRitasiTable()" style="padding:6px 10px;width:120px"/>
+      </div>
+      <div style="display:flex;align-items:flex-end">
+        <button onclick="loadRitasiCCR()" style="padding:6px 14px;background:var(--green);color:#FFF;border:none;border-radius:6px;font-family:var(--font);font-size:.72rem;font-weight:700;cursor:pointer">↻ Muat</button>
+      </div>
+    </div>
+ 
+    <!-- Table -->
+    <div class="panel" style="flex:1;overflow:hidden">
+      <div style="overflow-x:auto;overflow-y:auto;max-height:calc(100vh - 340px)">
+        <table style="width:100%;border-collapse:collapse;font-size:.75rem">
+          <thead>
+            <tr style="background:var(--bg);position:sticky;top:0;z-index:1">
+              <th style="padding:10px 12px;text-align:left;font-weight:600;color:var(--gray);border-bottom:1px solid var(--border);white-space:nowrap">No</th>
+              <th style="padding:10px 12px;text-align:left;font-weight:600;color:var(--gray);border-bottom:1px solid var(--border);white-space:nowrap">No Unit</th>
+              <th style="padding:10px 12px;text-align:left;font-weight:600;color:var(--gray);border-bottom:1px solid var(--border);white-space:nowrap">Jam Sample</th>
+              <th style="padding:10px 12px;text-align:left;font-weight:600;color:var(--gray);border-bottom:1px solid var(--border);white-space:nowrap">Shift</th>
+              <th style="padding:10px 12px;text-align:left;font-weight:600;color:var(--gray);border-bottom:1px solid var(--border);white-space:nowrap">Loading Area</th>
+              <th style="padding:10px 12px;text-align:left;font-weight:600;color:var(--gray);border-bottom:1px solid var(--border);white-space:nowrap">Dumping Area</th>
+              <th style="padding:10px 12px;text-align:center;font-weight:600;color:var(--gray);border-bottom:1px solid var(--border);white-space:nowrap">Tonase (ton)</th>
+              <th style="padding:10px 12px;text-align:center;font-weight:600;color:var(--gray);border-bottom:1px solid var(--border);white-space:nowrap">Status</th>
+              <th style="padding:10px 12px;text-align:left;font-weight:600;color:var(--gray);border-bottom:1px solid var(--border);white-space:nowrap">Checker RS</th>
+              <th style="padding:10px 12px;text-align:left;font-weight:600;color:var(--gray);border-bottom:1px solid var(--border);white-space:nowrap">Checker TB</th>
+              <th style="padding:10px 12px;text-align:center;font-weight:600;color:var(--gray);border-bottom:1px solid var(--border);white-space:nowrap">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="ritasiTableBody">
+            <tr><td colspan="11" style="padding:24px;text-align:center;color:var(--muted)">Pilih tanggal dan klik Muat.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="padding:8px 16px;border-top:1px solid var(--border);font-size:.65rem;color:var(--muted)" id="ritasiFooter">—</div>
+    </div>
+  </div>
+ 
   <!-- VIEW: KELOLA DATA -->
   <div class="content view" id="v-manage" style="flex-direction:column;gap:12px;overflow-y:auto">
     <style>
@@ -628,7 +705,8 @@ body{background:var(--bg);font-family:var(--font);color:var(--text);display:flex
 <div class="modal-ov" id="modalUnit"><div class="modal"><div class="modal-h"><span class="mi">local_shipping</span> <span id="unTitle">Tambah Unit Baru</span></div><div class="modal-b"><div class="mf"><label>Unit ID *</label><input type="text" id="unId" placeholder="Contoh: HDTS001"/></div><div class="mf"><label>Vehicle Type *</label><input type="text" id="unType" placeholder="Contoh: SHACMAN X3000"/></div><div class="mf"><label>Equipment Class</label><select id="unEqSel" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-size:.82rem;font-family:var(--font);outline:none"></select></div><div id="unMsg" style="font-size:.72rem;min-height:16px"></div></div><div class="modal-f"><button class="mbtn-c" onclick="closeUnitModal()">Batal</button><button class="mbtn-o" onclick="saveUnit()"><span class="mi mi-sm">save</span> Simpan</button></div></div></div>
 <div class="modal-ov" id="modalPin"><div class="modal" style="max-width:380px"><div class="modal-h"><span class="mi">key</span> Ganti PIN</div><div class="modal-b"><div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:.74rem;line-height:1.7;margin-bottom:12px"><div><span style="color:var(--gray);font-weight:600">Driver:</span> <span id="pmName" style="font-weight:800"></span> <span id="pmId" style="color:var(--muted)"></span></div><div><span style="color:var(--gray);font-weight:600">Equipment:</span> <span id="pmEq"></span></div></div><div class="mf"><label>PIN Baru *</label><input type="password" id="pmNew" maxlength="4" inputmode="numeric" placeholder="4 digit"/></div><div class="mf"><label>Konfirmasi *</label><input type="password" id="pmConf" maxlength="4" inputmode="numeric" placeholder="Ulangi PIN"/></div><div id="pmMsg" style="font-size:.72rem;min-height:16px"></div></div><div class="modal-f"><button class="mbtn-c" onclick="closePinModal()">Batal</button><button class="mbtn-o" onclick="doPinModal()"><span class="mi mi-sm">key</span> Ganti PIN</button></div></div></div>
 <div class="modal-ov" id="modalClosing"><div class="modal" style="max-width:460px"><div class="modal-h"><span class="mi">lock</span> <span id="clsTitle">Closing Shift</span></div><div class="modal-b"><div style="font-size:.72rem;font-weight:700;margin-bottom:6px">Checklist sebelum closing:</div><div id="clsChecklist" style="font-size:.74rem;line-height:1.9"></div><div style="font-size:.72rem;font-weight:700;margin:12px 0 4px">Outstanding:</div><div id="clsOutstanding" style="font-size:.72rem;color:var(--gray);line-height:1.7"></div><div class="mf" style="margin-top:12px"><label>Catatan Serah Terima</label><textarea id="clsNotes" placeholder="Catatan untuk shift berikutnya..."></textarea></div><div id="clsStatus" style="font-size:.72rem;min-height:16px"></div></div><div class="modal-f"><button class="mbtn-c" onclick="closeClosing()">Batal</button><button class="mbtn-o" id="clsConfirmBtn" onclick="confirmClosing()"><span class="mi mi-sm">lock</span> Tutup & Generate PDF</button></div></div></div>
-
+<div class="modal-ov" id="modalEditTonase"><div class="modal"><div class="modal-h">✏️ Edit Tonase</div><div class="modal-b"><div class="mf"><label>Unit</label><input type="text" id="etUnit" readonly style="background:var(--bg)"/></div><div class="mf"><label>Tonase (ton)</label><input type="number" id="etTonase" placeholder="Contoh: 25.5" step="0.1" min="0"/></div></div><div class="modal-f"><button class="mbtn-c" onclick="closeEtModal()">Batal</button><button class="mbtn-o" onclick="saveEditTonase()">Simpan</button></div></div></div>
+  
 <script>
 const API='https://starting-hte.my.id/api/v1',TOKEN=localStorage.getItem('fms_token'),SESSION=JSON.parse(localStorage.getItem('fms_session')||'null');
 if(!SESSION||!TOKEN)window.location.href='index.html';
@@ -640,7 +718,7 @@ document.querySelectorAll('.sb-item[data-view]').forEach(el=>{el.addEventListene
   document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));el.classList.add('active');
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById('v-'+el.dataset.view).classList.add('active');
-  if(el.dataset.view==='fleet')renderFleet();if(el.dataset.view==='bd')renderBD2();if(el.dataset.view==='historis')initHistoris();if(el.dataset.view==='p2h')loadP2H();if(el.dataset.view==='manage')initManage();
+  if(el.dataset.view==='fleet')renderFleet();if(el.dataset.view==='bd')renderBD2();if(el.dataset.view==='historis')initHistoris();if(el.dataset.view==='p2h')loadP2H();if(el.dataset.view==='manage')initManage();if(el.dataset.view==='ritasi')initRitasiView();
 });});
 
 document.addEventListener('DOMContentLoaded',()=>{
@@ -1689,6 +1767,192 @@ async function doPinModal(){
 }
 function doLogout(){localStorage.removeItem('fms_token');localStorage.removeItem('fms_session');window.location.href='index.html';}
 function $(id){return document.getElementById(id);}
+<script>
+// ═══ RITASI HAULING ═══
+let ritasiData = [];
+let editingRitasiId = null;
+ 
+// Panggil saat sidebar Ritasi diklik
+function initRitasiView() {
+  if (!document.getElementById('rFDate').value) {
+    document.getElementById('rFDate').value = new Date().toISOString().slice(0, 10);
+  }
+  loadRitasiCCR();
+}
+ 
+async function loadRitasiCCR() {
+  const tanggal = document.getElementById('rFDate').value;
+  const shift = document.getElementById('rFShift').value;
+  let url = `${API}/ritasi?limit=500`;
+  if (tanggal) url += `&tanggal=${tanggal}`;
+  if (shift) url += `&shift=${shift}`;
+ 
+  try {
+    const r = await fetch(url, { headers: { 'Authorization': 'Bearer ' + TOKEN } });
+    const d = await r.json();
+    if (d.success) {
+      ritasiData = d.data;
+      renderRitasiSummary();
+      renderRitasiTable();
+    }
+  } catch (e) { console.error('loadRitasiCCR error:', e); }
+}
+ 
+function renderRitasiSummary() {
+  const total = ritasiData.length;
+  const pending = ritasiData.filter(r => r.status === 'Pending Timbangan').length;
+  const done = ritasiData.filter(r => r.status === 'Completed').length;
+  const tonase = ritasiData.reduce((s, r) => s + (parseFloat(r.tonase) || 0), 0);
+  const units = new Set(ritasiData.map(r => r.unit_id)).size;
+ 
+  document.getElementById('rTot').textContent = total;
+  document.getElementById('rPend').textContent = pending;
+  document.getElementById('rDone').textContent = done;
+  document.getElementById('rTonase').textContent = tonase.toFixed(2);
+  document.getElementById('rUnit').textContent = units;
+}
+ 
+function renderRitasiTable() {
+  const sf = document.getElementById('rFStatus').value;
+  const su = (document.getElementById('rFUnit').value || '').toUpperCase();
+  let list = ritasiData;
+  if (sf) list = list.filter(r => r.status === sf);
+  if (su) list = list.filter(r => r.unit_id.includes(su));
+ 
+  const tbody = document.getElementById('ritasiTableBody');
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="11" style="padding:24px;text-align:center;color:var(--muted)">Tidak ada data.</td></tr>';
+    document.getElementById('ritasiFooter').textContent = '0 ritasi';
+    return;
+  }
+ 
+  tbody.innerHTML = list.map((r, i) => {
+    const jam = r.jam_sample ? new Date(r.jam_sample).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '—';
+    const isPend = r.status === 'Pending Timbangan';
+    const stBg = isPend ? 'background:rgba(245,158,11,.08);color:#F59E0B' : 'background:rgba(0,200,83,.08);color:var(--green)';
+    const tonaseCell = isPend
+      ? `<span style="color:var(--muted)">—</span>`
+      : `<strong style="color:var(--green)">${parseFloat(r.tonase).toFixed(2)}</strong>`;
+ 
+    return `<tr style="border-bottom:1px solid var(--border);transition:background .1s" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+      <td style="padding:10px 12px;color:var(--muted)">${i + 1}</td>
+      <td style="padding:10px 12px;font-weight:700">${r.unit_id}</td>
+      <td style="padding:10px 12px">${jam}</td>
+      <td style="padding:10px 12px;text-align:center">
+        <span style="padding:2px 8px;border-radius:4px;font-size:.62rem;font-weight:700;${r.shift === '1' ? 'background:rgba(0,200,83,.08);color:var(--green)' : 'background:rgba(0,176,255,.08);color:var(--blue)'}">
+          S${r.shift}
+        </span>
+      </td>
+      <td style="padding:10px 12px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.loading_area || '—'}</td>
+      <td style="padding:10px 12px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.dumping_area || '—'}</td>
+      <td style="padding:10px 12px;text-align:center">${tonaseCell}</td>
+      <td style="padding:10px 12px;text-align:center">
+        <span style="padding:3px 8px;border-radius:5px;font-size:.6rem;font-weight:700;${stBg}">${isPend ? 'Pending' : 'Done'}</span>
+      </td>
+      <td style="padding:10px 12px;color:var(--gray);font-size:.7rem">${r.checker_rs_name || r.checker_rs || '—'}</td>
+      <td style="padding:10px 12px;color:var(--gray);font-size:.7rem">${r.checker_tb_name || r.checker_tb || '—'}</td>
+      <td style="padding:10px 12px;text-align:center">
+        <button onclick="openEtModal(${r.ritasi_id},'${r.unit_id}',${r.tonase || 0})"
+          style="padding:4px 8px;background:var(--info);color:#FFF;border:none;border-radius:5px;font-size:.62rem;font-weight:700;cursor:pointer;margin-right:3px">
+          Edit
+        </button>
+        <button onclick="deleteRitasi(${r.ritasi_id},'${r.unit_id}')"
+          style="padding:4px 8px;background:var(--red);color:#FFF;border:none;border-radius:5px;font-size:.62rem;font-weight:700;cursor:pointer">
+          Hapus
+        </button>
+      </td>
+    </tr>`;
+  }).join('');
+ 
+  const totalTonase = list.reduce((s, r) => s + (parseFloat(r.tonase) || 0), 0);
+  document.getElementById('ritasiFooter').textContent =
+    `${list.length} ritasi · Total tonase: ${totalTonase.toFixed(2)} ton`;
+}
+ 
+// Edit tonase modal
+function openEtModal(id, unit, tonase) {
+  editingRitasiId = id;
+  document.getElementById('etUnit').value = unit;
+  document.getElementById('etTonase').value = tonase || '';
+  document.getElementById('modalEditTonase').classList.add('show');
+  setTimeout(() => document.getElementById('etTonase').focus(), 100);
+}
+function closeEtModal() { document.getElementById('modalEditTonase').classList.remove('show'); editingRitasiId = null; }
+ 
+async function saveEditTonase() {
+  const tonase = parseFloat(document.getElementById('etTonase').value);
+  if (!tonase || tonase <= 0) { alert('Tonase harus lebih dari 0.'); return; }
+  try {
+    const r = await fetch(`${API}/ritasi/${editingRitasiId}/tonase`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + TOKEN },
+      body: JSON.stringify({ tonase, checker_tb: SESSION.id })
+    });
+    const d = await r.json();
+    if (d.success) { closeEtModal(); loadRitasiCCR(); }
+    else alert(d.message || 'Gagal.');
+  } catch (e) { alert('Koneksi gagal.'); }
+}
+ 
+async function deleteRitasi(id, unit) {
+  if (!confirm(`Hapus ritasi unit ${unit}?`)) return;
+  try {
+    const r = await fetch(`${API}/ritasi/${id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + TOKEN }
+    });
+    const d = await r.json();
+    if (d.success) loadRitasiCCR();
+    else alert(d.message || 'Gagal hapus.');
+  } catch (e) { alert('Koneksi gagal.'); }
+}
+ 
+// Download Excel
+function downloadRitasiExcel() {
+  if (!window.XLSX) { alert('Library Excel belum ter-load.'); return; }
+  const sf = document.getElementById('rFStatus').value;
+  const su = (document.getElementById('rFUnit').value || '').toUpperCase();
+  let list = ritasiData;
+  if (sf) list = list.filter(r => r.status === sf);
+  if (su) list = list.filter(r => r.unit_id.includes(su));
+ 
+  if (!list.length) { alert('Tidak ada data untuk didownload.'); return; }
+ 
+  const tanggal = document.getElementById('rFDate').value || new Date().toISOString().slice(0, 10);
+ 
+  const headers = ['No', 'No Unit', 'Jam Sample', 'Shift', 'Loading Area', 'Dumping Area', 'Tonase (ton)', 'Status', 'Checker RS', 'Checker TB'];
+  const rows = list.map((r, i) => {
+    const jam = r.jam_sample ? new Date(r.jam_sample).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '';
+    return [
+      i + 1,
+      r.unit_id,
+      jam,
+      'Shift ' + r.shift,
+      r.loading_area || '',
+      r.dumping_area || '',
+      r.tonase ? parseFloat(r.tonase) : '',
+      r.status,
+      r.checker_rs_name || r.checker_rs || '',
+      r.checker_tb_name || r.checker_tb || ''
+    ];
+  });
+ 
+  const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+  ws['!cols'] = headers.map((h, i) => ({
+    wch: Math.max(h.length, ...rows.map(r => String(r[i] || '').length)) + 2
+  }));
+ 
+  // Style header row
+  const range = XLSX.utils.decode_range(ws['!ref']);
+  for (let c = range.s.c; c <= range.e.c; c++) {
+    const cell = ws[XLSX.utils.encode_cell({ r: 0, c })];
+    if (cell) cell.s = { font: { bold: true }, fill: { fgColor: { rgb: '00C853' } } };
+  }
+ 
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Ritasi Hauling');
+  XLSX.writeFile(wb, `Ritasi_Hauling_${tanggal}.xlsx`);
+}
 </script>
 <script>if("serviceWorker"in navigator){navigator.serviceWorker.register("sw.js").catch(()=>{});}</script>
 </body>
