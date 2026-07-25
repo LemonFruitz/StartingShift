@@ -5,90 +5,97 @@
 <title>Checker Timbangan</title>
 <link rel="manifest" href="manifest.json"/>
 <link rel="stylesheet" href="style.css"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
-.ck-wrap{max-width:480px;margin:0 auto;padding:14px}
+.mi{font-family:'Material Icons Outlined';font-size:18px;vertical-align:middle;font-weight:normal;font-style:normal;line-height:1;text-transform:none;letter-spacing:normal}
+.mi-sm{font-size:14px}.mi-lg{font-size:24px}
+.ck-wrap{max-width:500px;margin:0 auto;padding:14px}
 .ck-topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 0 16px}
 .ck-title{font-size:1rem;font-weight:800}.ck-sub{font-size:.62rem;color:var(--text-muted)}
-.ck-back{background:none;border:none;font-family:var(--font);font-size:.75rem;color:var(--text-muted);cursor:pointer;padding:0}
+.ck-back{background:none;border:none;font-family:var(--font);font-size:.75rem;color:var(--text-muted);cursor:pointer;padding:0;display:flex;align-items:center;gap:4px}
 .ck-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:12px}
 .ck-card-header{padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
 .ck-card-header.blue{background:linear-gradient(135deg,#00B0FF,#0081CB);color:#FFF}
 .ck-card-title{font-size:.88rem;font-weight:700}
-.ck-card-body{padding:0}
-/* Summary cards */
 .sum-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px}
 .sum-card{background:var(--input-bg);border-radius:var(--radius-sm);padding:10px;text-align:center}
 .sum-val{font-size:1.4rem;font-weight:800}.sum-label{font-size:.58rem;color:var(--text-muted);margin-top:2px}
-/* Pending list */
+.filter-row{display:flex;gap:6px;padding:10px 12px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.filter-sel{flex:1;min-width:80px;padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font);font-size:.75rem;background:var(--input-bg)}
 .pend-item{padding:12px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s}
 .pend-item:hover{background:var(--input-bg)}
-.pend-top{display:flex;justify-content:space-between;align-items:center}
-.pend-unit{font-size:.92rem;font-weight:800}
-.pend-jam{font-size:.65rem;color:var(--text-muted)}
-.pend-route{font-size:.72rem;color:var(--text-muted);margin-top:3px}
+.pend-item.is-done{opacity:.65;cursor:default}
+.pend-top{display:flex;justify-content:space-between;align-items:start}
+.pend-unit{font-size:.92rem;font-weight:800;display:flex;align-items:center;gap:6px}
+.pend-route{font-size:.72rem;color:var(--text-muted);margin-top:3px;display:flex;align-items:center;gap:4px}
 .pend-badge{padding:3px 8px;border-radius:5px;font-size:.6rem;font-weight:700;background:rgba(245,158,11,.08);color:#F59E0B}
 .done-badge{padding:3px 8px;border-radius:5px;font-size:.6rem;font-weight:700;background:rgba(0,200,83,.08);color:var(--success)}
-/* Filter */
-.filter-row{display:flex;gap:6px;padding:10px 12px;border-bottom:1px solid var(--border)}
-.filter-sel{flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font);font-size:.75rem;background:var(--input-bg)}
-/* Modal tonase */
-.modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(4px);z-index:100;align-items:center;justify-content:center;padding:16px}
-.modal-ov.show{display:flex}
-.modal{background:var(--card);border-radius:var(--radius);width:100%;max-width:360px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,.15)}
-.modal-h{padding:14px 18px;background:linear-gradient(135deg,#00B0FF,#0081CB);color:#FFF;font-size:.9rem;font-weight:700}
-.modal-b{padding:18px}
-.modal-info{background:var(--input-bg);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:14px;font-size:.78rem}
-.modal-info-label{font-size:.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em}
-.modal-info-val{font-weight:700;color:var(--text);margin-top:1px}
-.modal-f{padding:12px 18px;display:flex;gap:8px;border-top:1px solid var(--border)}
-.mbtn-c{flex:1;padding:10px;border-radius:var(--radius-sm);font-family:var(--font);font-size:.8rem;font-weight:700;cursor:pointer;border:1px solid var(--border);background:var(--input-bg);color:var(--text-muted)}
-.mbtn-o{flex:2;padding:10px;border-radius:var(--radius-sm);font-family:var(--font);font-size:.8rem;font-weight:700;cursor:pointer;border:none;background:linear-gradient(135deg,#00B0FF,#0081CB);color:#FFF}
-.ck-field{margin-bottom:12px}
-.ck-field label{display:block;font-size:.65rem;font-weight:600;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em}
-.ck-field input{width:100%;padding:11px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:1rem;font-family:var(--font);background:var(--input-bg);color:var(--text);outline:none;transition:border .15s}
-.ck-field input:focus{border-color:#00B0FF}
-.modal-status{font-size:.72rem;padding:8px 12px;border-radius:var(--radius-sm);margin-bottom:10px;display:none}
-.modal-status.err{background:rgba(239,68,68,.08);color:#EF4444;display:block}
 .shift-badge{padding:4px 10px;border-radius:6px;font-size:.68rem;font-weight:700}
 .s1{background:rgba(0,200,83,.08);color:var(--success)}.s2{background:rgba(0,176,255,.08);color:#00B0FF}
 .empty-box{padding:24px;text-align:center;color:var(--text-muted);font-size:.78rem}
+/* Modal */
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(4px);z-index:100;align-items:center;justify-content:center;padding:16px}
+.modal-ov.show{display:flex}
+.modal{background:var(--card);border-radius:var(--radius);width:100%;max-width:380px;box-shadow:0 8px 30px rgba(0,0,0,.15);overflow:hidden}
+.modal-h{padding:14px 18px;background:linear-gradient(135deg,#00B0FF,#0081CB);color:#FFF;font-size:.9rem;font-weight:700;display:flex;align-items:center;gap:8px}
+.modal-b{padding:18px}
+.modal-info{background:var(--input-bg);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:10px;font-size:.78rem}
+.modal-info-label{font-size:.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;display:flex;align-items:center;gap:4px}
+.modal-info-val{font-weight:700;color:var(--text);margin-top:2px}
+.modal-f{padding:12px 18px;display:flex;gap:8px;border-top:1px solid var(--border)}
+.mbtn-c{flex:1;padding:10px;border-radius:var(--radius-sm);font-family:var(--font);font-size:.8rem;font-weight:700;cursor:pointer;border:1px solid var(--border);background:var(--input-bg);color:var(--text-muted)}
+.mbtn-o{flex:2;padding:10px;border-radius:var(--radius-sm);font-family:var(--font);font-size:.8rem;font-weight:700;cursor:pointer;border:none;background:linear-gradient(135deg,#00B0FF,#0081CB);color:#FFF;display:flex;align-items:center;justify-content:center;gap:6px}
+.modal-err{font-size:.72rem;padding:8px 12px;border-radius:var(--radius-sm);margin-bottom:10px;display:none;background:rgba(239,68,68,.08);color:#EF4444}
+.ck-field{margin-bottom:12px}
+.ck-field label{display:block;font-size:.65rem;font-weight:600;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em;display:flex;align-items:center;gap:4px}
+.ck-field input{width:100%;padding:11px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:.95rem;font-family:var(--font);background:var(--input-bg);color:var(--text);outline:none;transition:border .15s}
+.ck-field input:focus{border-color:#00B0FF}
+.ck-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 </style>
 </head>
 <body style="background:var(--bg)">
 <div class="ck-wrap">
   <div class="ck-topbar">
     <div>
-      <div class="ck-title">⚖️ Checker Timbangan</div>
+      <div class="ck-title"><span class="mi">scale</span> Checker Timbangan</div>
       <div class="ck-sub" id="topbarInfo">—</div>
     </div>
     <div style="display:flex;gap:8px;align-items:center">
       <span class="shift-badge" id="shiftBadge">Shift 1</span>
-      <button class="ck-back" onclick="window.location.href='checker.html'">← Kembali</button>
+      <button class="ck-back" onclick="window.location.href='checker.html'"><span class="mi mi-sm">arrow_back</span> Kembali</button>
     </div>
   </div>
 
   <!-- SUMMARY -->
   <div class="ck-card">
     <div class="sum-row">
-      <div class="sum-card"><div class="sum-val" id="sTot">—</div><div class="sum-label">Total Ritasi</div></div>
+      <div class="sum-card"><div class="sum-val" id="sTot">—</div><div class="sum-label">Total</div></div>
       <div class="sum-card"><div class="sum-val" style="color:#F59E0B" id="sPend">—</div><div class="sum-label">Pending</div></div>
       <div class="sum-card"><div class="sum-val" style="color:var(--success)" id="sDone">—</div><div class="sum-label">Selesai</div></div>
     </div>
-    <div style="padding:0 12px 12px;font-size:.72rem;color:var(--text-muted)">Total tonase: <strong id="sTonase" style="color:var(--text)">0 ton</strong></div>
+    <div style="padding:0 12px 12px;font-size:.72rem;color:var(--text-muted)">
+      <span class="mi mi-sm">scale</span> Total tonase: <strong id="sTonase" style="color:var(--text)">0 ton</strong>
+    </div>
+    <div style="padding:0 12px 12px">
+      <button class="mbtn-o" style="width:100%" onclick="openDownloadModal()">
+        <span class="mi mi-sm">file_download</span> Download Laporan
+      </button>
+    </div>
   </div>
 
-  <!-- LIST PENDING -->
+  <!-- DAFTAR PENDING -->
   <div class="ck-card">
     <div class="ck-card-header blue">
-      <div class="ck-card-title">Daftar Unit Pending Timbangan</div>
-      <button onclick="loadRitasi()" style="background:rgba(255,255,255,.2);border:none;color:#FFF;padding:4px 10px;border-radius:5px;font-size:.68rem;cursor:pointer;font-family:var(--font)">↻ Refresh</button>
+      <div class="ck-card-title"><span class="mi mi-sm">list_alt</span> Daftar Unit</div>
+      <button onclick="loadRitasi()" style="background:rgba(255,255,255,.2);border:none;color:#FFF;padding:4px 10px;border-radius:5px;font-size:.68rem;cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:4px">
+        <span class="mi mi-sm">refresh</span> Refresh
+      </button>
     </div>
-
-    <!-- Filter -->
     <div class="filter-row">
       <select class="filter-sel" id="fStatus" onchange="renderList()">
-        <option value="">Semua Status</option>
         <option value="Pending Timbangan">Pending</option>
+        <option value="">Semua Status</option>
         <option value="Completed">Selesai</option>
       </select>
       <select class="filter-sel" id="fShift" onchange="loadRitasi()">
@@ -96,9 +103,9 @@
         <option value="1">Shift 1</option>
         <option value="2">Shift 2</option>
       </select>
-      <input type="date" class="filter-sel" id="fTanggal" onchange="loadRitasi()"/>
+      <input type="date" class="filter-sel" id="fTanggal" onchange="loadRitasi()" style="min-width:120px"/>
+      <input type="text" class="filter-sel" placeholder="Cari unit..." id="fUnit" oninput="renderList()" style="min-width:80px"/>
     </div>
-
     <div id="ritasiList"><div class="empty-box">Memuat data...</div></div>
   </div>
 </div>
@@ -106,179 +113,267 @@
 <!-- MODAL TONASE -->
 <div class="modal-ov" id="modalTonase">
   <div class="modal">
-    <div class="modal-h">⚖️ Input Tonase</div>
+    <div class="modal-h"><span class="mi">scale</span> Input Timbangan</div>
     <div class="modal-b">
-      <div id="modalErr" class="modal-status err"></div>
-      <div class="modal-info">
-        <div class="modal-info-label">Unit</div>
-        <div class="modal-info-val" id="mUnit">—</div>
+      <div id="modalErr" class="modal-err"></div>
+
+      <!-- Info unit -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+        <div class="modal-info">
+          <div class="modal-info-label"><span class="mi mi-sm">local_shipping</span> Unit</div>
+          <div class="modal-info-val" id="mUnit">—</div>
+        </div>
+        <div class="modal-info">
+          <div class="modal-info-label"><span class="mi mi-sm">schedule</span> Jam Sample</div>
+          <div class="modal-info-val" id="mJam">—</div>
+        </div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
-        <div class="modal-info" style="margin-bottom:0">
-          <div class="modal-info-label">Loading Area</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+        <div class="modal-info">
+          <div class="modal-info-label"><span class="mi mi-sm">place</span> Loading</div>
           <div class="modal-info-val" id="mLoading">—</div>
         </div>
-        <div class="modal-info" style="margin-bottom:0">
-          <div class="modal-info-label">Dumping Area</div>
+        <div class="modal-info">
+          <div class="modal-info-label"><span class="mi mi-sm">place</span> Dumping</div>
           <div class="modal-info-val" id="mDumping">—</div>
         </div>
       </div>
-      <div class="modal-info">
-        <div class="modal-info-label">Jam Sample</div>
-        <div class="modal-info-val" id="mJam">—</div>
-      </div>
-      <div class="ck-field" style="margin-top:14px">
-        <label>Tonase (ton) *</label>
-        <input type="number" id="inputTonase" placeholder="Contoh: 25.5" step="0.1" min="0" inputmode="decimal" autofocus/>
+
+      <!-- Input: Jam timbang + Tonase -->
+      <div class="ck-grid">
+        <div class="ck-field">
+          <label><span class="mi mi-sm">schedule</span> Jam Timbang *</label>
+          <input type="time" id="inputJamTimbang"/>
+        </div>
+        <div class="ck-field">
+          <label><span class="mi mi-sm">scale</span> Tonase (ton) *</label>
+          <input type="number" id="inputTonase" placeholder="25.5" step="0.1" min="0.1" inputmode="decimal"/>
+        </div>
       </div>
     </div>
     <div class="modal-f">
       <button class="mbtn-c" onclick="closeModal()">Batal</button>
-      <button class="mbtn-o" id="saveTonaseBtn" onclick="saveTonase()">⚖️ Simpan Tonase</button>
+      <button class="mbtn-o" id="saveTonaseBtn" onclick="saveTonase()">
+        <span class="mi mi-sm">save</span> Simpan
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DOWNLOAD -->
+<div class="modal-ov" id="modalDownload">
+  <div class="modal">
+    <div class="modal-h"><span class="mi">file_download</span> Download Laporan</div>
+    <div class="modal-b">
+      <div class="ck-field">
+        <label><span class="mi mi-sm">event</span> Tanggal</label>
+        <input type="date" id="dlTanggal"/>
+      </div>
+      <div class="ck-field">
+        <label><span class="mi mi-sm">swap_horiz</span> Shift</label>
+        <select id="dlShift">
+          <option value="">Semua Shift</option>
+          <option value="1">Shift 1 (07:00-19:00)</option>
+          <option value="2">Shift 2 (19:00-07:00)</option>
+        </select>
+      </div>
+      <div class="ck-grid">
+        <div class="ck-field">
+          <label><span class="mi mi-sm">schedule</span> Jam Mulai</label>
+          <input type="time" id="dlJamMulai"/>
+        </div>
+        <div class="ck-field">
+          <label><span class="mi mi-sm">schedule</span> Jam Selesai</label>
+          <input type="time" id="dlJamSelesai"/>
+        </div>
+      </div>
+      <div style="font-size:.65rem;color:var(--text-muted);margin-top:-4px">Kosongkan jam untuk semua rentang waktu (berdasarkan jam timbang)</div>
+    </div>
+    <div class="modal-f">
+      <button class="mbtn-c" onclick="closeDownloadModal()">Batal</button>
+      <button class="mbtn-o" onclick="downloadReport()"><span class="mi mi-sm">download</span> Download</button>
     </div>
   </div>
 </div>
 
 <script>
-const API = 'https://starting-hte.my.id/api/v1';
-const TOKEN = localStorage.getItem('fms_token');
-const SESSION = JSON.parse(localStorage.getItem('fms_session') || 'null');
-if (!SESSION || !TOKEN || SESSION.role !== 'Checker') window.location.href = 'index.html';
+const API='https://starting-hte.my.id/api/v1';
+const TOKEN=localStorage.getItem('fms_token');
+const SESSION=JSON.parse(localStorage.getItem('fms_session')||'null');
+if(!SESSION||!TOKEN||SESSION.role!=='Checker')window.location.href='index.html';
 
-let allRitasi = [];
-let selectedId = null;
+let allRitasi=[];let selectedId=null;
 
-window.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('topbarInfo').textContent = SESSION.name + ' · ' + new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' });
-
-  const h = new Date().getHours();
-  const shift = (h >= 7 && h < 19) ? '1' : '2';
-  const badge = document.getElementById('shiftBadge');
-  badge.textContent = shift === '1' ? 'Shift 1' : 'Shift 2';
-  badge.className = 'shift-badge ' + (shift === '1' ? 's1' : 's2');
-
-  document.getElementById('fTanggal').value = new Date().toISOString().slice(0, 10);
-  document.getElementById('fShift').value = shift;
-
+window.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('topbarInfo').textContent=SESSION.name+' · '+new Date().toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long'});
+  const h=new Date().getHours(),shift=(h>=7&&h<19)?'1':'2';
+  const badge=document.getElementById('shiftBadge');
+  badge.textContent=shift==='1'?'Shift 1':'Shift 2';
+  badge.className='shift-badge '+(shift==='1'?'s1':'s2');
+  document.getElementById('fTanggal').value=new Date().toISOString().slice(0,10);
+  document.getElementById('fShift').value=shift;
   loadRitasi();
-  // Auto-refresh tiap 30 detik
-  setInterval(loadRitasi, 30000);
-
-  // Enter untuk save tonase
-  document.getElementById('inputTonase').addEventListener('keydown', e => {
-    if (e.key === 'Enter') saveTonase();
-  });
+  setInterval(loadRitasi,30000);
+  // Enter key
+  document.getElementById('inputTonase').addEventListener('keydown',e=>{if(e.key==='Enter')saveTonase();});
 });
 
-async function loadRitasi() {
-  const tanggal = document.getElementById('fTanggal').value;
-  const shift = document.getElementById('fShift').value;
-  let url = `${API}/ritasi?limit=200`;
-  if (tanggal) url += `&tanggal=${tanggal}`;
-  if (shift) url += `&shift=${shift}`;
+async function loadRitasi(){
+  const tanggal=document.getElementById('fTanggal').value;
+  const shift=document.getElementById('fShift').value;
+  let url=`${API}/ritasi?limit=300`;
+  if(tanggal)url+=`&tanggal=${tanggal}`;
+  if(shift)url+=`&shift=${shift}`;
+  try{
+    const r=await fetch(url,{headers:{'Authorization':'Bearer '+TOKEN}});
+    const d=await r.json();
+    if(d.success){allRitasi=d.data;renderSummary();renderList();}
+  }catch(e){console.error(e);}}
 
-  try {
-    const r = await fetch(url, { headers: { 'Authorization': 'Bearer ' + TOKEN } });
-    const d = await r.json();
-    if (d.success) { allRitasi = d.data; renderSummary(); renderList(); }
-  } catch (e) { console.error(e); }
-}
+function renderSummary(){
+  const total=allRitasi.length,pending=allRitasi.filter(r=>r.status==='Pending Timbangan').length,done=allRitasi.filter(r=>r.status==='Completed').length;
+  const tonase=allRitasi.reduce((s,r)=>s+(parseFloat(r.tonase)||0),0);
+  document.getElementById('sTot').textContent=total;
+  document.getElementById('sPend').textContent=pending;
+  document.getElementById('sDone').textContent=done;
+  document.getElementById('sTonase').textContent=tonase.toFixed(2)+' ton';}
 
-function renderSummary() {
-  const total = allRitasi.length;
-  const pending = allRitasi.filter(r => r.status === 'Pending Timbangan').length;
-  const done = allRitasi.filter(r => r.status === 'Completed').length;
-  const tonase = allRitasi.reduce((s, r) => s + (parseFloat(r.tonase) || 0), 0);
-  document.getElementById('sTot').textContent = total;
-  document.getElementById('sPend').textContent = pending;
-  document.getElementById('sDone').textContent = done;
-  document.getElementById('sTonase').textContent = tonase.toFixed(2) + ' ton';
-}
-
-function renderList() {
-  const sf = document.getElementById('fStatus').value;
-  let list = allRitasi;
-  if (sf) list = list.filter(r => r.status === sf);
-
-  const c = document.getElementById('ritasiList');
-  if (!list.length) { c.innerHTML = '<div class="empty-box">Tidak ada data.</div>'; return; }
-
-  c.innerHTML = list.map(r => {
-    const jam = r.jam_sample ? new Date(r.jam_sample).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '—';
-    const isDone = r.status === 'Completed';
-    return `<div class="pend-item" onclick="${isDone ? '' : `openModal(${r.ritasi_id})`}">
+function renderList(){
+  const sf=document.getElementById('fStatus').value;
+  const su=(document.getElementById('fUnit').value||'').toUpperCase();
+  let list=allRitasi;
+  if(sf)list=list.filter(r=>r.status===sf);
+  if(su)list=list.filter(r=>r.unit_id.includes(su));
+  const c=document.getElementById('ritasiList');
+  if(!list.length){c.innerHTML='<div class="empty-box"><span class="mi" style="font-size:2rem;display:block;margin-bottom:8px">inbox</span>Tidak ada data.</div>';return;}
+  c.innerHTML=list.map(r=>{
+    const jam=r.jam_sample?new Date(r.jam_sample).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}):'—';
+    const isDone=r.status==='Completed';
+    return`<div class="pend-item ${isDone?'is-done':''}" onclick="${isDone?'':(`openModal(${r.ritasi_id})`)}">
       <div class="pend-top">
         <div>
-          <span class="pend-unit">${r.unit_id}</span>
-          ${isDone ? `<span style="color:var(--success);font-size:.68rem;margin-left:6px">✓ ${r.tonase} ton</span>` : ''}
+          <div class="pend-unit">
+            <span class="mi mi-sm" style="color:${isDone?'var(--success)':'var(--primary)'}">local_shipping</span>
+            ${r.unit_id}
+            ${isDone?`<span style="color:var(--success);font-size:.72rem;font-weight:600"><span class="mi mi-sm">scale</span> ${parseFloat(r.tonase).toFixed(2)} ton</span>`:''}
+          </div>
+          <div class="pend-route">
+            <span class="mi mi-sm">schedule</span> ${jam}
+            &nbsp;·&nbsp;
+            <span class="mi mi-sm">place</span> ${r.loading_area||'—'} → ${r.dumping_area||'—'}
+          </div>
+          ${r.checker_rs_name?`<div style="font-size:.6rem;color:var(--text-muted);margin-top:2px"><span class="mi mi-sm">person</span> RS: ${r.checker_rs_name}</div>`:''}
+          ${isDone&&r.checker_tb_name?`<div style="font-size:.6rem;color:var(--text-muted)"><span class="mi mi-sm">person</span> TB: ${r.checker_tb_name}</div>`:''}
         </div>
-        <div style="display:flex;align-items:center;gap:6px">
-          <span class="pend-jam">${jam}</span>
-          <span class="${isDone ? 'done-badge' : 'pend-badge'}">${isDone ? 'Selesai' : 'Pending'}</span>
-        </div>
+        <span class="${isDone?'done-badge':'pend-badge'}">${isDone?'Selesai':'Pending'}</span>
       </div>
-      <div class="pend-route">${r.loading_area || '—'} → ${r.dumping_area || '—'}</div>
-      ${r.checker_rs_name ? `<div style="font-size:.6rem;color:var(--text-muted);margin-top:2px">RS: ${r.checker_rs_name}</div>` : ''}
-    </div>`;
-  }).join('');
-}
+    </div>`;}).join('');}
 
-function openModal(id) {
-  const r = allRitasi.find(x => x.ritasi_id === id);
-  if (!r) return;
-  selectedId = id;
-  const jam = r.jam_sample ? new Date(r.jam_sample).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '—';
-  document.getElementById('mUnit').textContent = r.unit_id;
-  document.getElementById('mLoading').textContent = r.loading_area || '—';
-  document.getElementById('mDumping').textContent = r.dumping_area || '—';
-  document.getElementById('mJam').textContent = jam;
-  document.getElementById('inputTonase').value = '';
-  document.getElementById('modalErr').style.display = 'none';
+function openModal(id){
+  const r=allRitasi.find(x=>x.ritasi_id===id);if(!r)return;
+  selectedId=id;
+  const jam=r.jam_sample?new Date(r.jam_sample).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}):'—';
+  document.getElementById('mUnit').textContent=r.unit_id;
+  document.getElementById('mJam').textContent=jam;
+  document.getElementById('mLoading').textContent=r.loading_area||'—';
+  document.getElementById('mDumping').textContent=r.dumping_area||'—';
+  // Default jam timbang = sekarang
+  document.getElementById('inputJamTimbang').value=new Date().toTimeString().slice(0,5);
+  document.getElementById('inputTonase').value='';
+  document.getElementById('modalErr').style.display='none';
   document.getElementById('modalTonase').classList.add('show');
-  setTimeout(() => document.getElementById('inputTonase').focus(), 100);
-}
+  setTimeout(()=>document.getElementById('inputTonase').focus(),100);}
 
-function closeModal() {
-  document.getElementById('modalTonase').classList.remove('show');
-  selectedId = null;
-}
+function closeModal(){document.getElementById('modalTonase').classList.remove('show');selectedId=null;}
 
-async function saveTonase() {
-  const tonase = parseFloat(document.getElementById('inputTonase').value);
-  const errEl = document.getElementById('modalErr');
-  const btn = document.getElementById('saveTonaseBtn');
+async function saveTonase(){
+  const tonase=parseFloat(document.getElementById('inputTonase').value);
+  const jamTimbang=document.getElementById('inputJamTimbang').value;
+  const errEl=document.getElementById('modalErr');
+  const btn=document.getElementById('saveTonaseBtn');
 
-  if (!tonase || tonase <= 0) {
-    errEl.textContent = 'Tonase harus lebih dari 0.';
-    errEl.style.display = 'block'; return;
-  }
+  if(!jamTimbang){errEl.textContent='Jam timbang wajib diisi.';errEl.style.display='block';return;}
+  if(!tonase||tonase<=0){errEl.textContent='Tonase harus lebih dari 0.';errEl.style.display='block';return;}
 
-  btn.disabled = true; btn.textContent = 'Menyimpan...';
-  try {
-    const r = await fetch(`${API}/ritasi/${selectedId}/tonase`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + TOKEN },
-      body: JSON.stringify({ tonase, checker_tb: SESSION.id })
-    });
-    const d = await r.json();
-    if (d.success) {
-      closeModal();
-      loadRitasi();
-    } else {
-      errEl.textContent = d.message || 'Gagal menyimpan.';
-      errEl.style.display = 'block';
-    }
-  } catch (e) {
-    errEl.textContent = 'Koneksi gagal.';
-    errEl.style.display = 'block';
-  }
-  btn.disabled = false; btn.textContent = '⚖️ Simpan Tonase';
-}
+  btn.disabled=true;btn.innerHTML='<span class="mi mi-sm">hourglass_empty</span> Menyimpan...';
 
-// Close modal on outside click
-document.getElementById('modalTonase').addEventListener('click', function(e) {
-  if (e.target === this) closeModal();
-});
+  // Build jam_timbang as ISO string
+  const today=new Date().toISOString().slice(0,10);
+  const jam_timbang=`${today}T${jamTimbang}:00+08:00`;
+
+  try{
+    const r=await fetch(`${API}/ritasi/${selectedId}/tonase`,{method:'PATCH',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},
+      body:JSON.stringify({tonase,checker_tb:SESSION.id,jam_timbang})});
+    const d=await r.json();
+    if(d.success){closeModal();loadRitasi();}
+    else{errEl.textContent=d.message||'Gagal menyimpan.';errEl.style.display='block';}
+  }catch(e){errEl.textContent='Koneksi gagal.';errEl.style.display='block';}
+  btn.disabled=false;btn.innerHTML='<span class="mi mi-sm">save</span> Simpan';}
+
+document.getElementById('modalTonase').addEventListener('click',function(e){if(e.target===this)closeModal();});
+
+// ═══ DOWNLOAD REPORT ═══
+function openDownloadModal(){
+  document.getElementById('dlTanggal').value=document.getElementById('fTanggal').value||new Date().toISOString().slice(0,10);
+  const h=new Date().getHours(),shift=(h>=7&&h<19)?'1':'2';
+  document.getElementById('dlShift').value=shift;
+  document.getElementById('dlJamMulai').value='';
+  document.getElementById('dlJamSelesai').value='';
+  document.getElementById('modalDownload').classList.add('show');}
+
+function closeDownloadModal(){document.getElementById('modalDownload').classList.remove('show');}
+
+async function downloadReport(){
+  const tanggal=document.getElementById('dlTanggal').value;
+  const shift=document.getElementById('dlShift').value;
+  const jamMulai=document.getElementById('dlJamMulai').value;
+  const jamSelesai=document.getElementById('dlJamSelesai').value;
+
+  if(!tanggal){alert('Pilih tanggal terlebih dahulu.');return;}
+  if(!window.XLSX){alert('Library Excel belum ter-load, coba lagi.');return;}
+
+  try{
+    let url=`${API}/ritasi?tanggal=${tanggal}&limit=500`;
+    if(shift)url+=`&shift=${shift}`;
+    const r=await fetch(url,{headers:{'Authorization':'Bearer '+TOKEN}});
+    const d=await r.json();
+    if(!d.success){alert('Gagal mengambil data.');return;}
+
+    let list=d.data;
+
+    // Filter jam berdasarkan jam_timbang (kalau ada), fallback ke jam_sample
+    if(jamMulai||jamSelesai){
+      list=list.filter(r=>{
+        const timeRef=r.jam_timbang||r.jam_sample;
+        if(!timeRef)return false;
+        const t=new Date(timeRef);
+        const hm=t.getHours()*60+t.getMinutes();
+        const minM=jamMulai?parseInt(jamMulai.split(':')[0])*60+parseInt(jamMulai.split(':')[1]):0;
+        const maxM=jamSelesai?parseInt(jamSelesai.split(':')[0])*60+parseInt(jamSelesai.split(':')[1]):1439;
+        return hm>=minM&&hm<=maxM;});}
+
+    if(!list.length){alert('Tidak ada data untuk rentang waktu yang dipilih.');return;}
+
+    const headers=['No','No Unit','Jam Sample','Jam Timbang','Shift','Loading Area','Dumping Area','Tonase (ton)','Status','Checker RS','Checker TB'];
+    const rows=list.map((r,i)=>{
+      const jamS=r.jam_sample?new Date(r.jam_sample).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}):'';
+      const jamT=r.jam_timbang?new Date(r.jam_timbang).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}):'';
+      return[i+1,r.unit_id,jamS,jamT,'Shift '+r.shift,r.loading_area||'',r.dumping_area||'',r.tonase?parseFloat(r.tonase):'',r.status,r.checker_rs_name||r.checker_rs||'',r.checker_tb_name||r.checker_tb||''];});
+
+    const ws=XLSX.utils.aoa_to_sheet([headers,...rows]);
+    ws['!cols']=headers.map((h,i)=>({wch:Math.max(h.length,...rows.map(r=>String(r[i]||'').length))+2}));
+    const wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,ws,'Ritasi Timbangan');
+
+    let fname=`Ritasi_Timbangan_${tanggal}`;
+    if(shift)fname+=`_Shift${shift}`;
+    if(jamMulai||jamSelesai)fname+=`_${jamMulai||'00:00'}-${jamSelesai||'23:59'}`.replace(/:/g,'');
+    XLSX.writeFile(wb,fname+'.xlsx');
+    closeDownloadModal();
+  }catch(e){alert('Gagal download: '+e.message);}}
+
+document.getElementById('modalDownload').addEventListener('click',function(e){if(e.target===this)closeDownloadModal();});
 </script>
 </body>
 </html>
