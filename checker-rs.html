@@ -5,211 +5,701 @@
 <title>Checker Rumah Sample</title>
 <link rel="manifest" href="manifest.json"/>
 <link rel="stylesheet" href="style.css"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
-.ck-wrap{max-width:480px;margin:0 auto;padding:14px}
-.ck-topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 0 16px}
+.mi{font-family:'Material Icons Outlined';font-size:18px;vertical-align:middle;font-weight:normal;font-style:normal;line-height:1;text-transform:none;letter-spacing:normal}
+.mi-sm{font-size:14px}.mi-lg{font-size:24px}
+.ck-wrap{max-width:500px;margin:0 auto;padding:14px}
+.ck-topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 0 14px}
 .ck-title{font-size:1rem;font-weight:800}.ck-sub{font-size:.62rem;color:var(--text-muted)}
-.ck-back{background:none;border:none;font-family:var(--font);font-size:.75rem;color:var(--text-muted);cursor:pointer;padding:0}
+.ck-back{background:none;border:none;font-family:var(--font);font-size:.75rem;color:var(--text-muted);cursor:pointer;padding:0;display:flex;align-items:center;gap:4px}
 .ck-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:12px}
-.ck-card-header{padding:12px 16px;background:linear-gradient(135deg,var(--success),var(--primary));color:#FFF;font-size:.88rem;font-weight:700}
+.ck-card-header{padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
+.ck-card-header.green{background:linear-gradient(135deg,var(--success),var(--primary));color:#FFF}
+.ck-card-title{font-size:.88rem;font-weight:700}
 .ck-card-body{padding:16px}
 .ck-field{margin-bottom:12px}
-.ck-field label{display:block;font-size:.65rem;font-weight:600;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em}
-.ck-field input,.ck-field textarea{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:.88rem;font-family:var(--font);background:var(--input-bg);color:var(--text);outline:none;transition:border .15s}
+.ck-field label{display:block;font-size:.65rem;font-weight:600;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em;display:flex;align-items:center;gap:4px}
+.ck-field input,.ck-field textarea,.ck-field select{width:100%;padding:12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:.92rem;font-family:var(--font);background:var(--input-bg);color:var(--text);outline:none;transition:border .15s}
 .ck-field input:focus,.ck-field textarea:focus{border-color:var(--success)}
 .ck-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.ck-btn{width:100%;padding:13px;background:linear-gradient(135deg,var(--success),var(--primary));color:#FFF;border:none;border-radius:var(--radius-sm);font-family:var(--font);font-size:.9rem;font-weight:700;cursor:pointer;min-height:48px;margin-top:4px}
+.ck-btn{width:100%;padding:15px;background:linear-gradient(135deg,var(--success),var(--primary));color:#FFF;border:none;border-radius:var(--radius-sm);font-family:var(--font);font-size:.95rem;font-weight:700;cursor:pointer;min-height:52px;margin-top:4px;display:flex;align-items:center;justify-content:center;gap:6px}
 .ck-btn:disabled{opacity:.5;cursor:not-allowed}
+.ck-btn-secondary{width:100%;padding:12px;background:var(--input-bg);color:var(--primary);border:1.5px solid var(--primary);border-radius:var(--radius-sm);font-family:var(--font);font-size:.85rem;font-weight:700;cursor:pointer;min-height:44px;display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:10px}
 .ck-status{padding:10px 14px;border-radius:var(--radius-sm);font-size:.78rem;margin-bottom:10px;display:none}
 .ck-status.ok{background:rgba(0,200,83,.08);color:var(--success);display:block}
 .ck-status.err{background:rgba(239,68,68,.08);color:#EF4444;display:block}
+.ck-status.warn{background:rgba(245,158,11,.08);color:#F59E0B;display:block}
+/* Autocomplete */
+.ac-wrap{position:relative}
+.ac-drop{display:none;position:absolute;top:100%;left:0;right:0;background:var(--card);border:1px solid var(--border);border-radius:0 0 8px 8px;max-height:180px;overflow-y:auto;z-index:20;box-shadow:0 4px 12px rgba(0,0,0,.15)}
+.ac-item{padding:9px 12px;font-size:.85rem;cursor:pointer;transition:background .1s;display:flex;align-items:center;gap:6px;justify-content:space-between}
+.ac-item:hover{background:var(--input-bg)}
+.ac-item-left{display:flex;align-items:center;gap:6px}
+.ac-badge{font-size:.6rem;padding:1px 6px;border-radius:8px;background:var(--input-bg);color:var(--text-muted)}
+.ac-group-label{padding:6px 12px;font-size:.58rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;background:var(--bg)}
+/* Foto upload */
+.foto-area{border:2px dashed var(--border);border-radius:var(--radius-sm);padding:18px;text-align:center;cursor:pointer;transition:all .2s;background:var(--input-bg);min-height:70px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px}
+.foto-area:hover{border-color:var(--success);background:rgba(0,200,83,.04)}
+.foto-area.has-foto{border-style:solid;border-color:var(--success)}
+.foto-preview{width:100%;max-height:140px;object-fit:cover;border-radius:6px;margin-top:6px;display:none}
 /* History list */
-.hist-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);font-size:.78rem}
-.hist-unit{font-weight:700}.hist-meta{color:var(--text-muted);font-size:.65rem;margin-top:2px}
+.hist-item{padding:11px 16px;border-bottom:1px solid var(--border)}
+.hist-top{display:flex;justify-content:space-between;align-items:start}
+.hist-unit{font-size:.88rem;font-weight:800;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.hist-meta{font-size:.65rem;color:var(--text-muted);margin-top:3px;display:flex;align-items:center;gap:3px;flex-wrap:wrap}
 .hist-badge{padding:3px 8px;border-radius:5px;font-size:.6rem;font-weight:700}
 .badge-pending{background:rgba(245,158,11,.08);color:#F59E0B}
 .badge-done{background:rgba(0,200,83,.08);color:var(--success)}
-.shift-badge{padding:4px 10px;border-radius:6px;font-size:.68rem;font-weight:700}
+.ritasi-count{font-size:.58rem;font-weight:700;padding:2px 7px;border-radius:10px;background:rgba(0,176,255,.1);color:var(--primary)}
+.shift-badge{padding:4px 10px;border-radius:6px;font-size:.68rem;font-weight:700;cursor:pointer}
 .s1{background:rgba(0,200,83,.08);color:var(--success)}.s2{background:rgba(0,176,255,.08);color:var(--primary)}
+/* Live counter widget */
+.live-counter{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px 16px}
+.lc-box{background:var(--input-bg);border-radius:var(--radius-sm);padding:12px;text-align:center}
+.lc-val{font-size:1.6rem;font-weight:800;color:var(--success)}
+.lc-label{font-size:.6rem;color:var(--text-muted);margin-top:2px}
+.lc-clock{font-size:1.1rem;font-weight:700;font-variant-numeric:tabular-nums}
+/* Modal */
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(4px);z-index:100;align-items:center;justify-content:center;padding:16px}
+.modal-ov.show{display:flex}
+.modal{background:var(--card);border-radius:var(--radius);width:100%;max-width:400px;box-shadow:0 8px 30px rgba(0,0,0,.15);overflow:hidden}
+.modal-h{padding:14px 18px;background:linear-gradient(135deg,var(--success),var(--primary));color:#FFF;font-size:.9rem;font-weight:700;display:flex;align-items:center;gap:8px}
+.modal-b{padding:18px;max-height:70vh;overflow-y:auto}
+.modal-f{padding:12px 18px;display:flex;gap:8px;border-top:1px solid var(--border)}
+.mbtn-c{flex:1;padding:10px;border-radius:var(--radius-sm);font-family:var(--font);font-size:.8rem;font-weight:700;cursor:pointer;border:1px solid var(--border);background:var(--input-bg);color:var(--text-muted)}
+.mbtn-o{flex:2;padding:10px;border-radius:var(--radius-sm);font-family:var(--font);font-size:.8rem;font-weight:700;cursor:pointer;border:none;background:linear-gradient(135deg,var(--success),var(--primary));color:#FFF;display:flex;align-items:center;justify-content:center;gap:6px}
+.empty-box{padding:20px;text-align:center;color:var(--text-muted);font-size:.78rem}
+/* Voice button */
+.voice-btn{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-muted);padding:4px}
+.voice-btn.listening{color:var(--danger,#EF4444);animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+/* Tab riwayat 7 hari */
+.hist-tabs{display:flex;gap:6px;padding:10px 16px 0}
+.hist-tab{padding:6px 12px;border-radius:6px;font-size:.68rem;font-weight:700;cursor:pointer;background:var(--input-bg);color:var(--text-muted);border:1px solid var(--border)}
+.hist-tab.active{background:var(--success);color:#FFF;border-color:var(--success)}
 </style>
 </head>
 <body style="background:var(--bg)">
 <div class="ck-wrap">
   <div class="ck-topbar">
     <div>
-      <div class="ck-title">🏠 Checker Rumah Sample</div>
+      <div class="ck-title"><span class="mi">home</span> Checker Rumah Sample</div>
       <div class="ck-sub" id="topbarInfo">—</div>
     </div>
     <div style="display:flex;gap:8px;align-items:center">
-      <span class="shift-badge" id="shiftBadge">Shift 1</span>
-      <button class="ck-back" onclick="window.location.href='checker.html'">← Kembali</button>
+      <span class="shift-badge" id="shiftBadge" onclick="cycleShift()">Shift 1</span>
+      <button class="ck-back" onclick="window.location.href='checker.html'"><span class="mi mi-sm">arrow_back</span></button>
     </div>
   </div>
 
-  <!-- FORM INPUT RITASI -->
+  <!-- LIVE COUNTER -->
   <div class="ck-card">
-    <div class="ck-card-header">+ Input Ritasi DT</div>
+    <div class="live-counter">
+      <div class="lc-box">
+        <div class="lc-val" id="lcJamIni">0</div>
+        <div class="lc-label"><span class="mi mi-sm">timer</span> Ritasi 1 Jam Terakhir</div>
+      </div>
+      <div class="lc-box">
+        <div class="lc-clock" id="lcClock">--:--:--</div>
+        <div class="lc-label"><span class="mi mi-sm">schedule</span> Waktu Sekarang</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OFFLINE INDICATOR -->
+  <div id="offlineBar" style="display:none;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:var(--radius-sm);padding:8px 12px;margin-bottom:10px;font-size:.72rem;color:#F59E0B;display:flex;align-items:center;gap:6px">
+    <span class="mi mi-sm">cloud_off</span>
+    <span id="offlineText">Offline — <span id="pendingSyncCount">0</span> data menunggu sync</span>
+  </div>
+
+  <!-- FORM INPUT -->
+  <div class="ck-card">
+    <div class="ck-card-header green">
+      <div class="ck-card-title"><span class="mi mi-sm">add_circle</span> Input Ritasi DT</div>
+    </div>
     <div class="ck-card-body">
       <div id="formStatus" class="ck-status"></div>
-      <div class="ck-field">
-        <label>No Unit *</label>
-        <input type="text" id="fUnit" placeholder="Contoh: HDTS001" autocomplete="off" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"/>
+
+      <!-- Tombol Unit Sama Lagi -->
+      <div id="quickRepeatBox" style="display:none;margin-bottom:12px">
+        <button class="ck-btn-secondary" onclick="quickRepeat()">
+          <span class="mi mi-sm">replay</span> Unit Sama Lagi: <strong id="lastUnitLabel"></strong>
+        </button>
       </div>
+
+      <!-- No Unit with autocomplete -->
+      <div class="ck-field">
+        <label><span class="mi mi-sm">local_shipping</span> No Unit *</label>
+        <div class="ac-wrap">
+          <input type="text" id="fUnit" placeholder="Contoh: HDTS001" autocomplete="off" style="text-transform:uppercase"
+            oninput="this.value=this.value.toUpperCase();showUnitAC()"
+            onfocus="showUnitAC()"/>
+          <div class="ac-drop" id="acUnit"></div>
+        </div>
+      </div>
+
       <div class="ck-grid">
         <div class="ck-field">
-          <label>Jam Sample</label>
+          <label><span class="mi mi-sm">schedule</span> Jam Sample</label>
           <input type="time" id="fJam"/>
         </div>
         <div class="ck-field">
-          <label>Shift</label>
-          <select id="fShift" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font);font-size:.88rem;background:var(--input-bg)">
+          <label><span class="mi mi-sm">swap_horiz</span> Shift</label>
+          <select id="fShift" onchange="onShiftChange()">
             <option value="1">Shift 1 (07:00-19:00)</option>
             <option value="2">Shift 2 (19:00-07:00)</option>
           </select>
         </div>
       </div>
+
+      <!-- Loading Area -->
       <div class="ck-field">
-        <label>Loading Area *</label>
-        <input type="text" id="fLoading" placeholder="Contoh: Pit A Block 3"/>
+        <label><span class="mi mi-sm">place</span> Loading Area *</label>
+        <div class="ac-wrap">
+          <input type="text" id="fLoading" placeholder="Contoh: Pit A Block 3" autocomplete="off"
+            oninput="showAC('fLoading','acLoading','loading')"
+            onfocus="showAC('fLoading','acLoading','loading')"/>
+          <div class="ac-drop" id="acLoading"></div>
+        </div>
       </div>
+
+      <!-- Dumping Area -->
       <div class="ck-field">
-        <label>Dumping Area *</label>
-        <input type="text" id="fDumping" placeholder="Contoh: ROM Stockpile"/>
+        <label><span class="mi mi-sm">place</span> Dumping Area *</label>
+        <div class="ac-wrap">
+          <input type="text" id="fDumping" placeholder="Contoh: ROM Stockpile" autocomplete="off"
+            oninput="showAC('fDumping','acDumping','dumping')"
+            onfocus="showAC('fDumping','acDumping','dumping')"/>
+          <div class="ac-drop" id="acDumping"></div>
+        </div>
       </div>
+
+      <!-- Foto unit (opsional) -->
       <div class="ck-field">
-        <label>Catatan (opsional)</label>
+        <label><span class="mi mi-sm">photo_camera</span> Foto Unit (opsional)</label>
+        <div class="foto-area" id="fotoArea" onclick="document.getElementById('fotoInput').click()">
+          <span class="mi" style="color:var(--text-muted)">add_a_photo</span>
+          <span style="font-size:.75rem;color:var(--text-muted)">Tap untuk ambil foto / pilih file</span>
+          <img id="fotoPreview" class="foto-preview"/>
+        </div>
+        <input type="file" id="fotoInput" accept="image/*" capture="environment" style="display:none" onchange="handleFoto(this)"/>
+      </div>
+
+      <div class="ck-field">
+        <label><span class="mi mi-sm">notes</span> Catatan (opsional)</label>
         <input type="text" id="fCatatan" placeholder="Catatan tambahan jika ada"/>
       </div>
-      <button class="ck-btn" id="submitBtn" onclick="submitRitasi()">✓ Simpan Ritasi</button>
+
+      <button class="ck-btn" id="submitBtn" onclick="submitRitasi()">
+        <span class="mi">save</span> Simpan Ritasi
+      </button>
     </div>
   </div>
 
-  <!-- RIWAYAT HARI INI -->
+  <!-- DOWNLOAD REPORT -->
   <div class="ck-card">
-    <div class="ck-card-header">📋 Ritasi Hari Ini (<span id="histCount">0</span>)</div>
-    <div class="ck-card-body" id="histList">
-      <div style="text-align:center;color:var(--text-muted);font-size:.78rem;padding:16px 0">Belum ada ritasi hari ini.</div>
+    <div class="ck-card-header green">
+      <div class="ck-card-title"><span class="mi mi-sm">download</span> Download Report</div>
+    </div>
+    <div class="ck-card-body" style="padding:14px 16px">
+      <button class="ck-btn" style="background:linear-gradient(135deg,var(--success),var(--primary));margin-top:0" onclick="openDownloadModal()">
+        <span class="mi mi-sm">file_download</span> Download Laporan Ritasi
+      </button>
+    </div>
+  </div>
+
+  <!-- RIWAYAT -->
+  <div class="ck-card">
+    <div class="ck-card-header green">
+      <div class="ck-card-title"><span class="mi mi-sm">list_alt</span> Riwayat Ritasi</div>
+      <span style="font-size:.8rem;font-weight:700" id="histCount">0 ritasi</span>
+    </div>
+    <!-- Tab pilih rentang -->
+    <div class="hist-tabs">
+      <div class="hist-tab active" id="tabToday" onclick="switchHistTab('today')">Hari Ini</div>
+      <div class="hist-tab" id="tab7d" onclick="switchHistTab('7d')">7 Hari</div>
+    </div>
+    <!-- Unit summary -->
+    <div id="unitSummary" style="padding:10px 16px;border-bottom:1px solid var(--border);display:none">
+      <div style="font-size:.62rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Ritasi per unit</div>
+      <div id="unitCountList" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+    </div>
+    <div id="histList"><div class="empty-box">Belum ada ritasi hari ini.</div></div>
+  </div>
+</div>
+
+<!-- MODAL EDIT -->
+<div class="modal-ov" id="modalEdit">
+  <div class="modal">
+    <div class="modal-h"><span class="mi">edit</span> Edit Ritasi</div>
+    <div class="modal-b">
+      <div class="ck-field"><label>No Unit</label><input type="text" id="eUnit" readonly style="background:var(--input-bg)"/></div>
+      <div class="ck-grid">
+        <div class="ck-field"><label>Jam Sample</label><input type="time" id="eJam"/></div>
+        <div class="ck-field"><label>Shift</label><select id="eShift"><option value="1">Shift 1</option><option value="2">Shift 2</option></select></div>
+      </div>
+      <div class="ck-field"><label>Loading Area</label><input type="text" id="eLoading"/></div>
+      <div class="ck-field"><label>Dumping Area</label><input type="text" id="eDumping"/></div>
+      <div class="ck-field"><label>Catatan</label><input type="text" id="eCatatan"/></div>
+    </div>
+    <div class="modal-f">
+      <button class="mbtn-c" onclick="closeEdit()">Batal</button>
+      <button class="mbtn-o" onclick="saveEdit()"><span class="mi mi-sm">save</span> Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DOWNLOAD -->
+<div class="modal-ov" id="modalDownload">
+  <div class="modal">
+    <div class="modal-h"><span class="mi">file_download</span> Download Laporan</div>
+    <div class="modal-b">
+      <div class="ck-field">
+        <label><span class="mi mi-sm">event</span> Tanggal</label>
+        <input type="date" id="dlTanggal"/>
+      </div>
+      <div class="ck-field">
+        <label><span class="mi mi-sm">swap_horiz</span> Shift</label>
+        <select id="dlShift">
+          <option value="">Semua Shift</option>
+          <option value="1">Shift 1 (07:00-19:00)</option>
+          <option value="2">Shift 2 (19:00-07:00)</option>
+        </select>
+      </div>
+      <div class="ck-grid">
+        <div class="ck-field"><label><span class="mi mi-sm">schedule</span> Jam Mulai</label><input type="time" id="dlJamMulai"/></div>
+        <div class="ck-field"><label><span class="mi mi-sm">schedule</span> Jam Selesai</label><input type="time" id="dlJamSelesai"/></div>
+      </div>
+      <div style="font-size:.65rem;color:var(--text-muted);margin-top:-4px">Kosongkan jam untuk semua rentang waktu</div>
+    </div>
+    <div class="modal-f">
+      <button class="mbtn-c" onclick="closeDownloadModal()">Batal</button>
+      <button class="mbtn-o" onclick="downloadReport()"><span class="mi mi-sm">download</span> Download</button>
     </div>
   </div>
 </div>
 
 <script>
-const API = 'https://starting-hte.my.id/api/v1';
-const TOKEN = localStorage.getItem('fms_token');
-const SESSION = JSON.parse(localStorage.getItem('fms_session') || 'null');
-if (!SESSION || !TOKEN || SESSION.role !== 'Checker') window.location.href = 'index.html';
+const API='https://starting-hte.my.id/api/v1';
+const TOKEN=localStorage.getItem('fms_token');
+const SESSION=JSON.parse(localStorage.getItem('fms_session')||'null');
+if(!SESSION||!TOKEN||SESSION.role!=='Checker')window.location.href='index.html';
 
-let ritasiList = [];
+let ritasiList=[];let editingId=null;let fotoBase64=null;
+let allUnitsList=[];let histMode='today';let lastUnit=null;
 
-window.addEventListener('DOMContentLoaded', () => {
-  // Set info topbar
-  document.getElementById('topbarInfo').textContent = SESSION.name + ' · ' + new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' });
+// localStorage keys
+const LOADING_KEY='ck_loading_history';
+const DUMPING_KEY='ck_dumping_history';
+const OFFLINE_QUEUE_KEY='ck_offline_queue';
 
-  // Auto-detect shift
-  const h = new Date().getHours();
-  const shift = (h >= 7 && h < 19) ? '1' : '2';
-  document.getElementById('fShift').value = shift;
-  const badge = document.getElementById('shiftBadge');
-  badge.textContent = shift === '1' ? 'Shift 1' : 'Shift 2';
-  badge.className = 'shift-badge ' + (shift === '1' ? 's1' : 's2');
+function getHistory(key){try{return JSON.parse(localStorage.getItem(key)||'[]');}catch{return[];}}
+function addHistory(key,val){if(!val)return;let h=getHistory(key).filter(x=>x!==val);h.unshift(val);localStorage.setItem(key,JSON.stringify(h.slice(0,15)));}
 
-  // Auto-set jam sekarang
-  const now = new Date();
-  document.getElementById('fJam').value = now.toTimeString().slice(0, 5);
+// ═══ FITUR #2: AUTOCOMPLETE NO UNIT ═══
+async function loadUnitList(){
+  try{
+    const r=await fetch(`${API}/vehicles`,{headers:{'Authorization':'Bearer '+TOKEN}});
+    const d=await r.json();
+    if(d.success)allUnitsList=d.data.map(u=>u.unit_id);
+  }catch(e){
+    // Fallback ke riwayat unit yang pernah diketik sendiri
+    allUnitsList=getHistory('ck_unit_history');
+  }}
 
+function showUnitAC(){
+  const q=document.getElementById('fUnit').value.toUpperCase();
+  const dd=document.getElementById('acUnit');
+  const ownHist=getHistory('ck_unit_history');
+  let src=allUnitsList.length?allUnitsList:ownHist;
+  const matches=q?src.filter(u=>u.includes(q)).slice(0,8):ownHist.slice(0,8);
+  if(!matches.length){dd.style.display='none';return;}
+  dd.innerHTML=matches.map(u=>{
+    const isRecent=ownHist.includes(u);
+    return`<div class="ac-item" onclick="selectUnitAC('${u}')">
+      <div class="ac-item-left"><span class="mi mi-sm" style="color:var(--text-muted)">${isRecent?'history':'local_shipping'}</span>${u}</div>
+      ${isRecent?'<span class="ac-badge">Terakhir</span>':''}
+    </div>`;}).join('');
+  dd.style.display='block';}
+
+function selectUnitAC(unit){
+  document.getElementById('fUnit').value=unit;
+  document.getElementById('acUnit').style.display='none';}
+
+// ═══ FITUR #3: UNIT SAMA LAGI (QUICK REPEAT) ═══
+function updateQuickRepeat(){
+  if(lastUnit){
+    document.getElementById('quickRepeatBox').style.display='block';
+    document.getElementById('lastUnitLabel').textContent=lastUnit;
+  }else{
+    document.getElementById('quickRepeatBox').style.display='none';
+  }}
+
+function quickRepeat(){
+  if(!lastUnit)return;
+  document.getElementById('fUnit').value=lastUnit;
+  document.getElementById('fJam').value=new Date().toTimeString().slice(0,5);
+  // Loading/Dumping tetap terisi dari input terakhir (biasanya sama)
+  submitRitasi();}
+
+// ═══ FITUR #6: AUTOCOMPLETE LOADING/DUMPING (grouped, terpisah) ═══
+function showAC(inputId,dropId,type){
+  const q=document.getElementById(inputId).value.toLowerCase();
+  const key=type==='loading'?LOADING_KEY:DUMPING_KEY;
+  const hist=getHistory(key);
+  const matches=q?hist.filter(h=>h.toLowerCase().includes(q)):hist;
+  const dd=document.getElementById(dropId);
+  if(!matches.length){dd.style.display='none';return;}
+  const icon=type==='loading'?'terrain':'inventory_2';
+  dd.innerHTML=`<div class="ac-group-label">${type==='loading'?'Loading Area Terakhir':'Dumping Area Terakhir'}</div>`+
+    matches.map(m=>`<div class="ac-item" onclick="selectAC('${inputId}','${dropId}','${m.replace(/'/g,"\\'")}')">
+      <div class="ac-item-left"><span class="mi mi-sm" style="color:var(--text-muted)">${icon}</span>${m}</div>
+    </div>`).join('');
+  dd.style.display='block';}
+
+function selectAC(inputId,dropId,val){
+  document.getElementById(inputId).value=val;
+  document.getElementById(dropId).style.display='none';}
+
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.ac-wrap')){document.querySelectorAll('.ac-drop').forEach(d=>d.style.display='none');}});
+
+// Foto handler
+function handleFoto(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    fotoBase64=e.target.result;
+    const preview=document.getElementById('fotoPreview');
+    preview.src=fotoBase64;preview.style.display='block';
+    document.getElementById('fotoArea').classList.add('has-foto');};
+  reader.readAsDataURL(file);}
+
+// ═══ FITUR #7: LIVE COUNTER (jam berjalan + ritasi 1 jam terakhir) ═══
+function updateClock(){
+  document.getElementById('lcClock').textContent=new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',second:'2-digit'});}
+
+function updateJamIniCounter(){
+  const now=new Date();
+  const oneHourAgo=new Date(now.getTime()-60*60*1000);
+  const count=ritasiList.filter(r=>{
+    if(!r.jam_sample)return false;
+    const t=new Date(r.jam_sample);
+    return t>=oneHourAgo&&t<=now;}).length;
+  document.getElementById('lcJamIni').textContent=count;}
+
+// ═══ SHIFT HANDLING ═══
+function cycleShift(){
+  const sel=document.getElementById('fShift');
+  sel.value=sel.value==='1'?'2':'1';
+  onShiftChange();}
+
+function onShiftChange(){
+  const shift=document.getElementById('fShift').value;
+  const badge=document.getElementById('shiftBadge');
+  badge.textContent=shift==='1'?'Shift 1':'Shift 2';
+  badge.className='shift-badge '+(shift==='1'?'s1':'s2');
+  if(histMode==='today')loadRitasi();}
+
+// ═══ TAB RIWAYAT (Hari Ini / 7 Hari) — FITUR #10 ═══
+function switchHistTab(mode){
+  histMode=mode;
+  document.getElementById('tabToday').classList.toggle('active',mode==='today');
+  document.getElementById('tab7d').classList.toggle('active',mode==='7d');
+  if(mode==='today')loadRitasi();
+  else load7Days();}
+
+async function load7Days(){
+  document.getElementById('histList').innerHTML='<div class="empty-box">Memuat riwayat 7 hari...</div>';
+  try{
+    const dates=[];for(let i=0;i<7;i++){const d=new Date();d.setDate(d.getDate()-i);dates.push(d.toISOString().slice(0,10));}
+    const results=await Promise.all(dates.map(dt=>fetch(`${API}/ritasi?tanggal=${dt}&limit=200`,{headers:{'Authorization':'Bearer '+TOKEN}}).then(r=>r.json()).catch(()=>({success:false}))));
+    let all=[];results.forEach(d=>{if(d.success)all=all.concat(d.data.filter(x=>x.checker_rs===SESSION.id));});
+    ritasiList=all;
+    document.getElementById('unitSummary').style.display='none';
+    renderHist(true);
+  }catch(e){document.getElementById('histList').innerHTML='<div class="empty-box">Gagal memuat riwayat.</div>';}}
+
+window.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('topbarInfo').textContent=SESSION.name+' · '+new Date().toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long'});
+  const h=new Date().getHours(),shift=(h>=7&&h<19)?'1':'2';
+  document.getElementById('fShift').value=shift;
+  const badge=document.getElementById('shiftBadge');
+  badge.textContent=shift==='1'?'Shift 1':'Shift 2';
+  badge.className='shift-badge '+(shift==='1'?'s1':'s2');
+  document.getElementById('fJam').value=new Date().toTimeString().slice(0,5);
+
+  updateClock();setInterval(updateClock,1000);
+  setInterval(updateJamIniCounter,10000);
+
+  loadUnitList();
   loadRitasi();
+
+  // Fitur #5: offline detection
+  window.addEventListener('online',()=>{syncOfflineQueue();updateOfflineBar();});
+  window.addEventListener('offline',updateOfflineBar);
+  updateOfflineBar();
+  if(navigator.onLine)syncOfflineQueue();
 });
 
-async function loadRitasi() {
-  try {
-    const today = new Date().toISOString().slice(0, 10);
-    const r = await fetch(`${API}/ritasi?tanggal=${today}&limit=50`, {
-      headers: { 'Authorization': 'Bearer ' + TOKEN }
-    });
-    const d = await r.json();
-    if (d.success) {
-      // Filter hanya yang diinput oleh checker ini
-      ritasiList = d.data.filter(x => x.checker_rs === SESSION.id);
+async function loadRitasi(){
+  try{
+    const today=new Date().toISOString().slice(0,10);
+    const currentShift=document.getElementById('fShift').value;
+    const r=await fetch(`${API}/ritasi?tanggal=${today}&shift=${currentShift}&limit=100`,{headers:{'Authorization':'Bearer '+TOKEN}});
+    const d=await r.json();
+    if(d.success){
+      ritasiList=d.data.filter(x=>x.checker_rs===SESSION.id);
+      if(ritasiList.length>0)lastUnit=ritasiList[0].unit_id;
+      updateQuickRepeat();
       renderHist();
+      updateJamIniCounter();
     }
-  } catch (e) { console.error(e); }
-}
+  }catch(e){console.error(e);}}
 
-function renderHist() {
-  const c = document.getElementById('histList');
-  document.getElementById('histCount').textContent = ritasiList.length;
-  if (!ritasiList.length) {
-    c.innerHTML = '<div style="text-align:center;color:var(--text-muted);font-size:.78rem;padding:16px 0">Belum ada ritasi hari ini.</div>';
+function renderHist(show7d){
+  const c=document.getElementById('histList');
+  document.getElementById('histCount').textContent=ritasiList.length+' ritasi';
+
+  if(ritasiList.length>0&&!show7d){
+    const unitMap={};ritasiList.forEach(r=>{unitMap[r.unit_id]=(unitMap[r.unit_id]||0)+1;});
+    document.getElementById('unitSummary').style.display='block';
+    document.getElementById('unitCountList').innerHTML=Object.entries(unitMap).sort((a,b)=>b[1]-a[1]).map(([uid,cnt])=>`<span style="padding:3px 10px;border-radius:10px;font-size:.65rem;font-weight:700;background:var(--input-bg);border:1px solid var(--border)">${uid} <span style="color:var(--primary)">${cnt}x</span></span>`).join('');
+  }else{document.getElementById('unitSummary').style.display='none';}
+
+  if(!ritasiList.length){c.innerHTML='<div class="empty-box">Belum ada ritasi.</div>';return;}
+
+  const unitMap={};ritasiList.forEach(r=>{if(!unitMap[r.unit_id])unitMap[r.unit_id]=[];unitMap[r.unit_id].push(r);});
+
+  c.innerHTML=ritasiList.map(r=>{
+    const jam=r.jam_sample?new Date(r.jam_sample).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}):'—';
+    const tgl=show7d&&r.jam_sample?new Date(r.jam_sample).toLocaleDateString('id-ID',{day:'2-digit',month:'short'})+' · ':'';
+    const isDone=r.status==='Completed';
+    const unitRitasiCount=unitMap[r.unit_id]?.length||1;
+    const unitRitasiIdx=(unitMap[r.unit_id]?.indexOf(r)||0)+1;
+    return`<div class="hist-item">
+      <div class="hist-top">
+        <div>
+          <div class="hist-unit">
+            <span class="mi mi-sm" style="color:var(--success)">local_shipping</span>
+            ${r.unit_id}
+            ${unitRitasiCount>1&&!show7d?`<span class="ritasi-count">Ke-${unitRitasiIdx}/${unitRitasiCount}</span>`:''}
+            ${r._offline?`<span class="ritasi-count" style="background:rgba(245,158,11,.1);color:#F59E0B">Belum sync</span>`:''}
+          </div>
+          <div class="hist-meta"><span class="mi mi-sm">schedule</span> ${tgl}${jam} &nbsp;·&nbsp; <span class="mi mi-sm">place</span> ${r.loading_area||'—'} → ${r.dumping_area||'—'}</div>
+          ${r.tonase?`<div class="hist-meta" style="color:var(--success);font-weight:600"><span class="mi mi-sm">scale</span> ${r.tonase} ton</div>`:''}
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+          <span class="hist-badge ${isDone?'badge-done':'badge-pending'}">${isDone?'Done':'Pending'}</span>
+          ${!isDone&&!r._offline?`<button onclick="openEdit(${r.ritasi_id})" style="background:none;border:none;cursor:pointer;color:var(--primary);font-size:.65rem;display:flex;align-items:center;gap:2px"><span class="mi mi-sm">edit</span> Edit</button>`:''}
+        </div>
+      </div>
+    </div>`;}).join('');}
+
+// ═══ FITUR #5: VALIDASI DUPLIKAT DALAM RENTANG WAKTU PENDEK ═══
+function checkDuplicateRecent(unit){
+  const now=new Date();
+  const recent=ritasiList.find(r=>{
+    if(r.unit_id!==unit)return false;
+    if(!r.jam_sample)return false;
+    const diffMin=(now-new Date(r.jam_sample))/60000;
+    return diffMin<5;});
+  return recent;}
+
+async function submitRitasi(){
+  const unit=document.getElementById('fUnit').value.trim();
+  const jam=document.getElementById('fJam').value;
+  const loading=document.getElementById('fLoading').value.trim();
+  const dumping=document.getElementById('fDumping').value.trim();
+  const catatan=document.getElementById('fCatatan').value.trim();
+  const shift=document.getElementById('fShift').value;
+  const st=document.getElementById('formStatus');
+  const btn=document.getElementById('submitBtn');
+
+  if(!unit){showStatus('Unit wajib diisi.','err');return;}
+  if(!loading){showStatus('Loading Area wajib diisi.','err');return;}
+  if(!dumping){showStatus('Dumping Area wajib diisi.','err');return;}
+
+  // Fitur #5: cek duplikat
+  const dup=checkDuplicateRecent(unit);
+  if(dup){
+    const dupJam=new Date(dup.jam_sample).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+    if(!confirm(`Unit ${unit} baru diinput jam ${dupJam} (kurang dari 5 menit lalu). Yakin input lagi?`))return;
+  }
+
+  btn.disabled=true;btn.innerHTML='<span class="mi">hourglass_empty</span> Menyimpan...';
+
+  const today=new Date().toISOString().slice(0,10);
+  const jam_sample=jam?`${today}T${jam}:00+08:00`:new Date().toISOString();
+  const payload={unit_id:unit,jam_sample,loading_area:loading,dumping_area:dumping,foto_url:fotoBase64||null,catatan,shift,checker_rs:SESSION.id};
+
+  // Fitur #5: offline handling
+  if(!navigator.onLine){
+    saveToOfflineQueue(payload);
+    showStatus(`Offline — ${unit} disimpan di antrian, akan sync otomatis.`,'warn');
+    resetForm();
+    addHistory(LOADING_KEY,loading);addHistory(DUMPING_KEY,dumping);addHistory('ck_unit_history',unit);
+    lastUnit=unit;updateQuickRepeat();
+    // Tampilkan sebagai pending lokal
+    ritasiList.unshift({...payload,ritasi_id:'offline_'+Date.now(),status:'Pending Timbangan',_offline:true});
+    renderHist();updateJamIniCounter();
+    btn.disabled=false;btn.innerHTML='<span class="mi">save</span> Simpan Ritasi';
     return;
   }
-  c.innerHTML = ritasiList.map(r => {
-    const jam = r.jam_sample ? new Date(r.jam_sample).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '—';
-    const isDone = r.status === 'Completed';
-    return `<div class="hist-item">
-      <div>
-        <div class="hist-unit">${r.unit_id}</div>
-        <div class="hist-meta">${jam} · ${r.loading_area || '—'} → ${r.dumping_area || '—'}</div>
-        ${r.tonase ? `<div class="hist-meta" style="color:var(--success);font-weight:600">${r.tonase} ton</div>` : ''}
-      </div>
-      <span class="hist-badge ${isDone ? 'badge-done' : 'badge-pending'}">${isDone ? '✓ Done' : 'Pending'}</span>
-    </div>`;
-  }).join('');
-}
 
-async function submitRitasi() {
-  const unit = document.getElementById('fUnit').value.trim();
-  const jam = document.getElementById('fJam').value;
-  const loading = document.getElementById('fLoading').value.trim();
-  const dumping = document.getElementById('fDumping').value.trim();
-  const catatan = document.getElementById('fCatatan').value.trim();
-  const shift = document.getElementById('fShift').value;
-  const st = document.getElementById('formStatus');
-  const btn = document.getElementById('submitBtn');
-
-  if (!unit) { showStatus('Unit wajib diisi.', 'err'); return; }
-  if (!loading) { showStatus('Loading Area wajib diisi.', 'err'); return; }
-  if (!dumping) { showStatus('Dumping Area wajib diisi.', 'err'); return; }
-
-  btn.disabled = true; btn.textContent = 'Menyimpan...';
-
-  // Build jam_sample timestamp
-  const today = new Date().toISOString().slice(0, 10);
-  const jam_sample = jam ? `${today}T${jam}:00+08:00` : new Date().toISOString();
-
-  try {
-    const r = await fetch(`${API}/ritasi`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + TOKEN },
-      body: JSON.stringify({ unit_id: unit, jam_sample, loading_area: loading, dumping_area: dumping, catatan, shift, checker_rs: SESSION.id })
-    });
-    const d = await r.json();
-
-    if (d.success) {
-      showStatus(`✅ Ritasi ${unit} berhasil disimpan!`, 'ok');
-      // Reset form
-      document.getElementById('fUnit').value = '';
-      document.getElementById('fLoading').value = '';
-      document.getElementById('fDumping').value = '';
-      document.getElementById('fCatatan').value = '';
-      // Update jam ke sekarang
-      document.getElementById('fJam').value = new Date().toTimeString().slice(0, 5);
+  try{
+    const r=await fetch(`${API}/ritasi`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},body:JSON.stringify(payload)});
+    const d=await r.json();
+    if(d.success){
+      showStatus(`Ritasi ${unit} berhasil disimpan!`,'ok');
+      addHistory(LOADING_KEY,loading);addHistory(DUMPING_KEY,dumping);addHistory('ck_unit_history',unit);
+      lastUnit=unit;updateQuickRepeat();
+      resetForm();
       loadRitasi();
-    } else {
-      showStatus(d.message || 'Gagal menyimpan.', 'err');
-    }
-  } catch (e) {
-    showStatus('Koneksi gagal. Coba lagi.', 'err');
+    }else{showStatus(d.message||'Gagal menyimpan.','err');}
+  }catch(e){
+    // Fallback: kalau fetch gagal (network error) → simpan offline
+    saveToOfflineQueue(payload);
+    showStatus(`Koneksi gagal — ${unit} disimpan di antrian offline.`,'warn');
+    addHistory(LOADING_KEY,loading);addHistory(DUMPING_KEY,dumping);addHistory('ck_unit_history',unit);
+    lastUnit=unit;updateQuickRepeat();
+    resetForm();
+    ritasiList.unshift({...payload,ritasi_id:'offline_'+Date.now(),status:'Pending Timbangan',_offline:true});
+    renderHist();updateJamIniCounter();
   }
+  btn.disabled=false;btn.innerHTML='<span class="mi">save</span> Simpan Ritasi';}
 
-  btn.disabled = false; btn.textContent = '✓ Simpan Ritasi';
-}
+function resetForm(){
+  document.getElementById('fUnit').value='';
+  document.getElementById('fLoading').value='';
+  document.getElementById('fDumping').value='';
+  document.getElementById('fCatatan').value='';
+  document.getElementById('fJam').value=new Date().toTimeString().slice(0,5);
+  document.getElementById('fotoPreview').style.display='none';
+  document.getElementById('fotoArea').classList.remove('has-foto');
+  fotoBase64=null;}
 
-function showStatus(msg, type) {
-  const el = document.getElementById('formStatus');
-  el.textContent = msg;
-  el.className = 'ck-status ' + type;
-  setTimeout(() => { el.style.display = 'none'; el.className = 'ck-status'; }, 4000);
-}
+function showStatus(msg,type){const el=document.getElementById('formStatus');el.textContent=msg;el.className='ck-status '+type;setTimeout(()=>{el.style.display='none';el.className='ck-status';},4000);}
+
+// ═══ FITUR #5: OFFLINE QUEUE ═══
+function saveToOfflineQueue(payload){
+  const q=getHistory(OFFLINE_QUEUE_KEY);
+  q.push({...payload,_queuedAt:Date.now()});
+  localStorage.setItem(OFFLINE_QUEUE_KEY,JSON.stringify(q));
+  updateOfflineBar();}
+
+function updateOfflineBar(){
+  const q=getHistory(OFFLINE_QUEUE_KEY);
+  const bar=document.getElementById('offlineBar');
+  if(!navigator.onLine){
+    bar.style.display='flex';
+    document.getElementById('offlineText').innerHTML=`Offline — <span id="pendingSyncCount">${q.length}</span> data menunggu sync`;
+  }else if(q.length>0){
+    bar.style.display='flex';
+    bar.style.background='rgba(0,176,255,.1)';bar.style.borderColor='rgba(0,176,255,.3)';bar.style.color='var(--primary)';
+    document.getElementById('offlineText').innerHTML=`<span id="pendingSyncCount">${q.length}</span> data sedang sync...`;
+  }else{
+    bar.style.display='none';
+  }}
+
+async function syncOfflineQueue(){
+  let q=getHistory(OFFLINE_QUEUE_KEY);
+  if(!q.length)return;
+  updateOfflineBar();
+  const remaining=[];
+  for(const item of q){
+    try{
+      const {_queuedAt,...payload}=item;
+      const r=await fetch(`${API}/ritasi`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},body:JSON.stringify(payload)});
+      const d=await r.json();
+      if(!d.success)remaining.push(item);
+    }catch(e){remaining.push(item);}}
+  localStorage.setItem(OFFLINE_QUEUE_KEY,JSON.stringify(remaining));
+  updateOfflineBar();
+  if(remaining.length<q.length)loadRitasi();}
+
+// Edit modal
+function openEdit(id){
+  const r=ritasiList.find(x=>x.ritasi_id===id);if(!r)return;
+  editingId=id;
+  document.getElementById('eUnit').value=r.unit_id;
+  document.getElementById('eJam').value=r.jam_sample?new Date(r.jam_sample).toTimeString().slice(0,5):'';
+  document.getElementById('eShift').value=r.shift||'1';
+  document.getElementById('eLoading').value=r.loading_area||'';
+  document.getElementById('eDumping').value=r.dumping_area||'';
+  document.getElementById('eCatatan').value=r.catatan||'';
+  document.getElementById('modalEdit').classList.add('show');}
+
+function closeEdit(){document.getElementById('modalEdit').classList.remove('show');editingId=null;}
+
+async function saveEdit(){
+  const jam=document.getElementById('eJam').value;
+  const loading=document.getElementById('eLoading').value.trim();
+  const dumping=document.getElementById('eDumping').value.trim();
+  const shift=document.getElementById('eShift').value;
+  const catatan=document.getElementById('eCatatan').value.trim();
+  const today=new Date().toISOString().slice(0,10);
+  const jam_sample=jam?`${today}T${jam}:00+08:00`:undefined;
+  try{
+    const r=await fetch(`${API}/ritasi/${editingId}`,{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},body:JSON.stringify({jam_sample,loading_area:loading,dumping_area:dumping,shift,catatan})});
+    const d=await r.json();
+    if(d.success){closeEdit();loadRitasi();}else alert(d.message||'Gagal.');
+  }catch(e){alert('Koneksi gagal.');}}
+
+document.getElementById('modalEdit').addEventListener('click',function(e){if(e.target===this)closeEdit();});
+
+// ═══ DOWNLOAD REPORT ═══
+function openDownloadModal(){
+  document.getElementById('dlTanggal').value=new Date().toISOString().slice(0,10);
+  const h=new Date().getHours(),shift=(h>=7&&h<19)?'1':'2';
+  document.getElementById('dlShift').value=shift;
+  document.getElementById('dlJamMulai').value='';
+  document.getElementById('dlJamSelesai').value='';
+  document.getElementById('modalDownload').classList.add('show');}
+
+function closeDownloadModal(){document.getElementById('modalDownload').classList.remove('show');}
+
+async function downloadReport(){
+  const tanggal=document.getElementById('dlTanggal').value;
+  const shift=document.getElementById('dlShift').value;
+  const jamMulai=document.getElementById('dlJamMulai').value;
+  const jamSelesai=document.getElementById('dlJamSelesai').value;
+  if(!tanggal){alert('Pilih tanggal terlebih dahulu.');return;}
+  if(!window.XLSX){alert('Library Excel belum ter-load, coba lagi.');return;}
+  try{
+    let url=`${API}/ritasi?tanggal=${tanggal}&limit=500`;
+    if(shift)url+=`&shift=${shift}`;
+    const r=await fetch(url,{headers:{'Authorization':'Bearer '+TOKEN}});
+    const d=await r.json();
+    if(!d.success){alert('Gagal mengambil data.');return;}
+    let list=d.data.filter(x=>x.checker_rs===SESSION.id);
+    if(jamMulai||jamSelesai){
+      list=list.filter(r=>{
+        if(!r.jam_sample)return false;
+        const t=new Date(r.jam_sample);
+        const hm=t.getHours()*60+t.getMinutes();
+        const minM=jamMulai?parseInt(jamMulai.split(':')[0])*60+parseInt(jamMulai.split(':')[1]):0;
+        const maxM=jamSelesai?parseInt(jamSelesai.split(':')[0])*60+parseInt(jamSelesai.split(':')[1]):1439;
+        return hm>=minM&&hm<=maxM;});}
+    if(!list.length){alert('Tidak ada data untuk rentang waktu yang dipilih.');return;}
+    const headers=['No','No Unit','Jam Sample','Shift','Loading Area','Dumping Area','Tonase (ton)','Status','Catatan'];
+    const rows=list.map((r,i)=>{
+      const jam=r.jam_sample?new Date(r.jam_sample).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}):'';
+      return[i+1,r.unit_id,jam,'Shift '+r.shift,r.loading_area||'',r.dumping_area||'',r.tonase?parseFloat(r.tonase):'',r.status,r.catatan||''];});
+    const ws=XLSX.utils.aoa_to_sheet([headers,...rows]);
+    ws['!cols']=headers.map((h,i)=>({wch:Math.max(h.length,...rows.map(r=>String(r[i]||'').length))+2}));
+    const wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,ws,'Ritasi RS');
+    let fname=`Ritasi_RumahSample_${tanggal}`;
+    if(shift)fname+=`_Shift${shift}`;
+    if(jamMulai||jamSelesai)fname+=`_${jamMulai||'00:00'}-${jamSelesai||'23:59'}`.replace(/:/g,'');
+    XLSX.writeFile(wb,fname+'.xlsx');
+    closeDownloadModal();
+  }catch(e){alert('Gagal download: '+e.message);}}
+
+document.getElementById('modalDownload').addEventListener('click',function(e){if(e.target===this)closeDownloadModal();});
 </script>
 </body>
 </html>
